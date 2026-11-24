@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhoneDesk • Central de Configurações</title>
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.2);
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 32px 24px 60px 24px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #065f46);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 18px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(16px);
+    }
+    h2 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #e2e8f0;
+    }
+    .mode-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .mode-card {
+      background: rgba(0,0,0,0.3);
+      border: 2px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .mode-card:hover {
+      border-color: rgba(255,255,255,0.2);
+    }
+    .mode-card.active {
+      border-color: var(--primary);
+      background: rgba(16, 185, 129, 0.08);
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+    .mode-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mode-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    input, select {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #000;
+    }
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.12);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: #000;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="brand-logo">PD</div>
+        <div>
+          <h1 style="font-size: 18px; font-weight: 800;">PhoneDesk Settings</h1>
+          <p style="font-size: 12px; color: var(--text-muted);">Painel de Gestão & Personalização do Dispositivo</p>
+        </div>
+      </div>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span id="devStatus">PC Conectado (Porta 8770)</span>
+      </div>
+    </header>
+
+    <!-- 1. PERFIL DE TELEMETRIA -->
+    <div class="card">
+      <h2>📊 Perfil de Telemetria do Sistema (Tela 4)</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Escolha as métricas exibidas no painel. Em PCs de trabalho corporativo, o modo trabalho foca em CPU, RAM e Disco sem ruídos de jogos.
+      </p>
+
+      <div class="mode-selector">
+        <div class="mode-card active" id="cardWork" onclick="selectMode('workstation')">
+          <div class="mode-title">💼 Modo Trabalho / Produtividade <span style="font-size: 10px; background: rgba(16,185,129,0.2); color:#10b981; padding: 2px 6px; border-radius: 4px;">Padrão</span></div>
+          <div class="mode-desc">Exibe CPU %, Memória RAM em GB, Armazenamento SSD C: livre e status de Rede LAN com Uptime real. Ideal para trabalho diário.</div>
+        </div>
+
+        <div class="mode-card" id="cardGamer" onclick="selectMode('gamer')">
+          <div class="mode-title">🎮 Modo Gamer / Desempenho</div>
+          <div class="mode-desc">Exibe Temperatura e Carga de GPU, FPS em tempo real, VRAM e Latência/Ping de jogos. Ative apenas quando estiver jogando.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. MODO DESCANSO (iOS STANDBY) -->
+    <div class="card">
+      <h2>🌙 Modo Descanso (iOS StandBy - Tela 1)</h2>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Cidade do Clima (Open-Meteo)</label>
+          <input type="text" id="cfgCity" value="Juiz de Fora" placeholder="Ex: Juiz de Fora">
+        </div>
+        <div class="form-group">
+          <label>Texto de Status Inferior</label>
+          <input type="text" id="cfgStatusText" value="● Juiz de Fora • Modo Trabalho" placeholder="Ex: ● Modo Trabalho Ativo">
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. BOTOES STREAM DECK -->
+    <div class="card">
+      <h2>🕹️ Stream Deck (Personalização dos Botões)</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Os 12 botões da Tela 2 disparam ações diretas no seu PC via Python Native.
+      </p>
+      
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 12px;" id="buttonsList">
+        <!-- Renderizado dinamicamente -->
+      </div>
+    </div>
+
+    <!-- AÇÃO SALVAR -->
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="window.open('/', '_blank')">Abrir PhoneDesk Web</button>
+      <button class="btn btn-primary" onclick="saveConfig()">Salvar & Atualizar Celular</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Configurações salvas com sucesso!</div>
+
+  <script>
+    let currentConfig = {};
+
+    async function load() {
+      try {
+        const res = await fetch('/api/config');
+        currentConfig = await res.json();
+        
+        // Mode
+        selectMode(currentConfig.telemetry_mode || 'workstation');
+        
+        // StandBy
+        if (currentConfig.weather && currentConfig.weather.city) {
+          document.getElementById('cfgCity').value = currentConfig.weather.city;
+        }
+        if (currentConfig.standby_status) {
+          document.getElementById('cfgStatusText').value = currentConfig.standby_status;
+        }
+
+        renderButtons();
+      } catch (e) {
+        console.error("Erro ao carregar config:", e);
+      }
+    }
+
+    function selectMode(mode) {
+      currentConfig.telemetry_mode = mode;
+      document.getElementById('cardWork').className = mode === 'workstation' ? 'mode-card active' : 'mode-card';
+      document.getElementById('cardGamer').className = mode === 'gamer' ? 'mode-card active' : 'mode-card';
+    }
+
+    function renderButtons() {
+      const el = document.getElementById('buttonsList');
+      if (!currentConfig.buttons) return;
+      el.innerHTML = currentConfig.buttons.map((b, idx) => `
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="font-weight: bold; color: ${b.color || '#fff'};">${idx + 1}. ${b.label}</div>
+          <div style="font-size: 10px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.target || b.command || b.action}</div>
+        </div>
+      `).join('');
+    }
+
+    async function saveConfig() {
+      currentConfig.weather = currentConfig.weather || {};
+      currentConfig.weather.city = document.getElementById('cfgCity').value.trim();
+      currentConfig.standby_status = document.getElementById('cfgStatusText').value.trim();
+
+      try {
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(currentConfig)
+        });
+        if (res.ok) {
+          showToast();
+        } else {
+          alert("Erro ao salvar configuração no PC.");
+        }
+      } catch (e) {
+        alert("Erro de conexão com o agente.");
+      }
+    }
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    load();
+  </script>
+</body>
+</html>

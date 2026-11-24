@@ -1,0 +1,19 @@
+{
+  "name": "PhoneDesk Control Deck",
+  "short_name": "PhoneDesk",
+  "description": "Smart Desk Control Deck & Standby Panel para Android",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "orientation": "landscape",
+  "background_color": "#080c14",
+  "theme_color": "#080c14",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

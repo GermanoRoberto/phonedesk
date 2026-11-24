@@ -1,0 +1,109 @@
+{
+  "device_name": "Galaxy A04e Desk Panel",
+  "telemetry_mode": "workstation",
+  "standby_status": "● Juiz de Fora • Modo Trabalho",
+  "weather": {
+    "city": "Juiz de Fora",
+    "lat": -21.7642,
+    "lon": -43.3496,
+    "interval_min": 15
+  },
+  "buttons": [
+    {
+      "id": "antigravity",
+      "label": "Antigravity",
+      "icon": "rocket",
+      "color": "#3b82f6",
+      "action": "launch",
+      "target": "C:\\Users\\TI Camilo\\AppData\\Local\\Programs\\Antigravity\\Antigravity.exe"
+    },
+    {
+      "id": "operations",
+      "label": "Ops Center",
+      "icon": "building",
+      "color": "#0ea5e9",
+      "action": "launch",
+      "target": "C:\\Program Files\\Google\\Chrome\\Application\\chrome_proxy.exe --app-id=faflnifmifdkmadpfdanheikmknjbbcg"
+    },
+    {
+      "id": "sankhya",
+      "label": "Sankhya ERP",
+      "icon": "trending-up",
+      "color": "#10b981",
+      "action": "launch",
+      "target": "C:\\Program Files\\Google\\Chrome\\Application\\chrome_proxy.exe --app-id=kjikbbkddkggblglgcljlnffmbbjkllo"
+    },
+    {
+      "id": "teamviewer",
+      "label": "TeamViewer",
+      "icon": "monitor",
+      "color": "#2563eb",
+      "action": "launch",
+      "target": "C:\\Program Files\\TeamViewer\\TeamViewer.exe"
+    },
+    {
+      "id": "sandbox",
+      "label": "Win Sandbox",
+      "icon": "shield",
+      "color": "#6366f1",
+      "action": "powershell",
+      "command": "Start-Process WindowsSandbox.exe"
+    },
+    {
+      "id": "outlook",
+      "label": "Outlook",
+      "icon": "mail",
+      "color": "#0284c7",
+      "action": "launch",
+      "target": "outlook.exe"
+    },
+    {
+      "id": "whatsapp",
+      "label": "WhatsApp",
+      "icon": "message-circle",
+      "color": "#22c55e",
+      "action": "powershell",
+      "command": "explorer.exe shell:AppsFolder\\5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App"
+    },
+    {
+      "id": "whatsapp_beta",
+      "label": "WhatsApp Beta",
+      "icon": "smartphone",
+      "color": "#16a34a",
+      "action": "powershell",
+      "command": "explorer.exe shell:AppsFolder\\5319275A.WhatsAppDesktopBeta_cv1g1gvanyjgm!App"
+    },
+    {
+      "id": "spotify",
+      "label": "Spotify",
+      "icon": "headphones",
+      "color": "#10b981",
+      "action": "powershell",
+      "command": "explorer.exe shell:AppsFolder\\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify"
+    },
+    {
+      "id": "explorer",
+      "label": "Arquivos",
+      "icon": "folder",
+      "color": "#eab308",
+      "action": "launch",
+      "target": "explorer.exe"
+    },
+    {
+      "id": "chrome",
+      "label": "Navegador",
+      "icon": "globe",
+      "color": "#f97316",
+      "action": "launch",
+      "target": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+    },
+    {
+      "id": "lock_pc",
+      "label": "Bloquear PC",
+      "icon": "lock",
+      "color": "#ef4444",
+      "action": "lock",
+      "target": ""
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Upstream & Vendor
+upstream/
+*.apk
+
+# Scratch helper scripts
+update_ui.py
+upgrade_media_wakelock.py
+inject_phonedesk.py
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
