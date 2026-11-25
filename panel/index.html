@@ -1428,8 +1428,8 @@
       } catch (_) {
         document.getElementById('netStatus').textContent = 'OFFLINE';
         offlineSeconds += 1.5;
-        // Se o computador estiver desligado por mais de 10 segundos, ativa economia de tela Desk Clock
-        if (offlineSeconds >= 10 && Date.now() > wakeLockUntil) {
+        // Se o computador estiver desligado ou em espera por mais de 3 minutos (180s), ativa economia de tela Desk Clock
+        if (offlineSeconds >= 180 && Date.now() > wakeLockUntil) {
           setEcoMode(true);
         }
       }
