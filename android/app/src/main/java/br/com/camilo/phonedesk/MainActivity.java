@@ -21,6 +21,37 @@ public class MainActivity extends Activity {
     private static final String TARGET_USB_URL = "http://127.0.0.1:8770/";
     private boolean useUsb = false;
     private boolean isRetrying = false;
+    private boolean hasLoadedPage = false;
+
+    public class PhoneDeskInterface {
+        @android.webkit.JavascriptInterface
+        public void setBrightness(final float brightness) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        WindowManager.LayoutParams lp = getWindow().getAttributes();
+                        lp.screenBrightness = Math.max(0.01f, Math.min(1.0f, brightness));
+                        getWindow().setAttributes(lp);
+                    } catch (Exception e) {}
+                }
+            });
+        }
+
+        @android.webkit.JavascriptInterface
+        public void resetBrightness() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        WindowManager.LayoutParams lp = getWindow().getAttributes();
+                        lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+                        getWindow().setAttributes(lp);
+                    } catch (Exception e) {}
+                }
+            });
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,11 +88,18 @@ public class MainActivity extends Activity {
         ws.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
         webView.setWebChromeClient(new WebChromeClient());
+        webView.addJavascriptInterface(new PhoneDeskInterface(), "PhoneDeskNative");
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);
                 return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                hasLoadedPage = true;
             }
 
             @Override
@@ -89,6 +127,9 @@ public class MainActivity extends Activity {
     }
 
     private void handleLoadError() {
+        // Se a página já foi carregada alguma vez, NÃO substitua a página pelo erro do navegador.
+        // O JavaScript local manterá o relógio na tela como um desk clock autônomo.
+        if (hasLoadedPage) return;
         if (isRetrying) return;
         isRetrying = true;
         webView.postDelayed(new Runnable() {

@@ -516,6 +516,12 @@
         grid-template-rows: repeat(2, minmax(0, 1fr));
       }
     }
+    body {
+      transition: filter 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    body.eco-dimmed {
+      filter: brightness(0.22) contrast(0.95);
+    }
   </style>
 </head>
 <body>
@@ -1405,10 +1411,55 @@
         document.getElementById('gPingAvg').textContent = ping.avgMs !== undefined ? `Média ${Math.round(ping.avgMs)} ms` : '--';
         document.getElementById('gLoss').textContent = ping.lossPct !== undefined ? `${ping.lossPct}% LOSS` : '--';
         document.getElementById('gPingHost').textContent = ping.host || '--';
+
+        // PC Online: cancela o modo eco se estiver ativo
+        offlineSeconds = 0;
+        if (isEcoMode) setEcoMode(false);
       } catch (_) {
         document.getElementById('netStatus').textContent = 'OFFLINE';
+        offlineSeconds += 1.5;
+        // Se o computador estiver desligado por mais de 10 segundos, ativa economia de tela Desk Clock
+        if (offlineSeconds >= 10 && Date.now() > wakeLockUntil) {
+          setEcoMode(true);
+        }
       }
     }
+
+    let offlineSeconds = 0;
+    let isEcoMode = false;
+    let wakeLockUntil = 0;
+
+    function setEcoMode(active) {
+      if (isEcoMode === active) return;
+      isEcoMode = active;
+      if (active) {
+        document.body.classList.add('eco-dimmed');
+        if (window.PhoneDeskNative && window.PhoneDeskNative.setBrightness) {
+          try { window.PhoneDeskNative.setBrightness(0.02); } catch (_) {}
+        }
+        // Se estiver em outra tela, volta suavemente para a Tela 1 (Relógio Desk StandBy)
+        if (typeof curPage !== 'undefined' && curPage !== 0 && typeof goToPage === 'function') {
+          goToPage(0);
+        }
+      } else {
+        document.body.classList.remove('eco-dimmed');
+        if (window.PhoneDeskNative && window.PhoneDeskNative.resetBrightness) {
+          try { window.PhoneDeskNative.resetBrightness(); } catch (_) {}
+        }
+      }
+    }
+
+    function handleUserActivity() {
+      if (isEcoMode) {
+        // Ao tocar na tela com o PC desligado, acorda para ver as horas claramente por 15 segundos
+        wakeLockUntil = Date.now() + 15000;
+        setEcoMode(false);
+      }
+    }
+    window.addEventListener('touchstart', handleUserActivity, { passive: true });
+    window.addEventListener('pointerdown', handleUserActivity, { passive: true });
+    window.addEventListener('click', handleUserActivity, { passive: true });
+
     fetchState();
     setInterval(fetchState, 1500);
 
