@@ -21,6 +21,8 @@
       --pd-card-bg: rgba(255, 255, 255, 0.06);
       --pd-card-border: rgba(255, 255, 255, 0.13);
       --pd-divider: rgba(255, 255, 255, 0.14);
+      --pd-item-bg: rgba(255, 255, 255, 0.04);
+      --pd-item-border: rgba(255, 255, 255, 0.08);
       --pd-radius: 18px;
       --pd-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     }
@@ -107,6 +109,15 @@
     #fullDay, #wTemp, #mediaTitle, #cpuVal, #ramUsed, #diskFree, #pcUptime, #gpuMain, #gpuVram, #gCpuVal, #gRam, #netDown, #gPing, #gPingHost { color: var(--pd-text); }
     #fullMonth, #wCity, #mediaArtist, #mediaPos, #mediaDur, #deckCountHint { color: var(--pd-muted); }
 
+    html[data-light="1"] {
+      --pd-item-bg: rgba(15, 23, 42, 0.04) !important;
+      --pd-item-border: rgba(15, 23, 42, 0.12) !important;
+      --pd-text: #0f172a !important;
+      --pd-muted: #475569 !important;
+      --pd-soft: #0f172a !important;
+      --pd-card-bg: #ffffff !important;
+      --pd-card-border: #cbd5e1 !important;
+    }
     html[data-light="1"] .pager { background: rgba(255, 255, 255, 0.88); border-color: rgba(15, 23, 42, 0.16); }
     html[data-light="1"] .dot { background: rgba(15, 23, 42, 0.25); }
     html[data-light="1"] .btn-settings { background: rgba(15, 23, 42, 0.06); border-color: rgba(15, 23, 42, 0.16); color: var(--pd-text); }
@@ -731,6 +742,17 @@
       }
     }
 
+    const initPage = parseInt(new URLSearchParams(location.search).get('p') || location.hash.replace('#', ''), 10);
+    if (!Number.isNaN(initPage) && initPage >= 0 && initPage < TOTAL_PAGES) {
+      cur = initPage;
+      const trk = document.getElementById('track');
+      if (trk) trk.style.transform = `translateX(-${cur * 20}%)`;
+      for (let i = 0; i < TOTAL_PAGES; i++) {
+        const dotEl = document.getElementById('d' + i);
+        if (dotEl) dotEl.className = (i === cur) ? 'dot active' : 'dot';
+      }
+    }
+
     // Touch swipe suave sem brigar com slider de volume ou listas roláveis
     let touchStartX = 0, touchStartY = 0, touchLock = false;
     window.addEventListener('touchstart', (e) => {
@@ -949,6 +971,8 @@
       r.style.setProperty('--pd-card-bg', rgbaFromHex(pal.cardBg || '#ffffff', op, 'rgba(255,255,255,0.06)'));
       r.style.setProperty('--pd-card-border', rgbaFromHex(pal.cardBorder || '#ffffff', light ? 0.65 : 0.24, 'rgba(255,255,255,0.13)'));
       r.style.setProperty('--pd-divider', light ? 'rgba(15,23,42,0.14)' : 'rgba(255,255,255,0.14)');
+      r.style.setProperty('--pd-item-bg', light ? 'rgba(15,23,42,0.04)' : 'rgba(255,255,255,0.04)');
+      r.style.setProperty('--pd-item-border', light ? 'rgba(15,23,42,0.1)' : 'rgba(255,255,255,0.08)');
       r.style.setProperty('--pd-radius', radius + 'px');
       r.style.setProperty('--pd-shadow', light ? '0 4px 20px rgba(15,23,42,0.08)' : '0 8px 32px rgba(0,0,0,0.5)');
 
@@ -980,7 +1004,7 @@
 
     async function loadConfigShortcuts() {
       try {
-        const r = await fetch('/api/config', { cache: 'no-store' });
+        const r = await fetch('/api/config?_t=' + Date.now(), { cache: 'no-store' });
         if (!r.ok) return;
         const raw = await r.json();
         const cfg = raw.config || raw;
@@ -1331,25 +1355,25 @@
         list.textContent = '';
         if (!events.length) {
           const empty = document.createElement('div');
-          empty.style.cssText = 'color:#94a3b8;font-size:12px;padding:12px 0;';
+          empty.style.cssText = 'color:var(--pd-muted);font-size:12px;padding:12px 0;';
           empty.textContent = 'Nenhum compromisso próximo na agenda.';
           list.appendChild(empty);
           return;
         }
         for (const ev of events.slice(0, 10)) {
           const row = document.createElement('div');
-          row.style.cssText = 'padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);';
+          row.style.cssText = 'padding:8px 10px;border-radius:10px;background:var(--pd-item-bg);border:1px solid var(--pd-item-border);';
           const meta = document.createElement('div');
-          meta.style.cssText = 'font-size:10px;font-weight:800;color:#86efac;';
+          meta.style.cssText = 'font-size:10px;font-weight:800;color:var(--pd-accent);';
           meta.textContent = ev.allDay ? `${fmtDateShort(ev.start)} • Dia todo` : `${fmtDateShort(ev.start)} • ${fmtTime(ev.start)}`;
           const title = document.createElement('div');
-          title.style.cssText = 'font-size:12px;font-weight:700;color:#ffffff;margin-top:2px;';
+          title.style.cssText = 'font-size:12px;font-weight:700;color:var(--pd-text);margin-top:2px;';
           title.textContent = ev.title;
           row.appendChild(meta);
           row.appendChild(title);
           if (ev.location) {
             const loc = document.createElement('div');
-            loc.style.cssText = 'font-size:10px;color:#94a3b8;margin-top:2px;';
+            loc.style.cssText = 'font-size:10px;color:var(--pd-muted);margin-top:2px;';
             loc.textContent = ev.location;
             row.appendChild(loc);
           }
@@ -1381,7 +1405,7 @@
         list.textContent = '';
         if (!items.length) {
           const empty = document.createElement('div');
-          empty.style.cssText = 'color:#94a3b8;font-size:12px;padding:12px 0;';
+          empty.style.cssText = 'color:var(--pd-muted);font-size:12px;padding:12px 0;';
           empty.textContent = 'Nenhum feed carregado.';
           list.appendChild(empty);
           return;
@@ -1389,19 +1413,19 @@
         for (const it of items.slice(0, 15)) {
           const row = document.createElement('div');
           row.className = it.openable ? 'tactile' : '';
-          row.style.cssText = 'padding:9px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);';
+          row.style.cssText = 'padding:9px 10px;border-radius:10px;background:var(--pd-item-bg);border:1px solid var(--pd-item-border);';
           const meta = document.createElement('div');
-          meta.style.cssText = 'display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:#38bdf8;';
+          meta.style.cssText = 'display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:var(--pd-accent);';
           const src = document.createElement('span');
           src.textContent = it.source || it.category || 'Feed';
           const tm = document.createElement('span');
-          tm.style.color = '#94a3b8';
+          tm.style.color = 'var(--pd-muted)';
           tm.textContent = fmtRel(it.published);
           meta.appendChild(src);
           meta.appendChild(tm);
 
           const title = document.createElement('div');
-          title.style.cssText = 'font-size:12px;font-weight:700;color:#f1f5f9;margin-top:3px;line-height:1.3;';
+          title.style.cssText = 'font-size:12px;font-weight:700;color:var(--pd-text);margin-top:3px;line-height:1.3;';
           title.textContent = it.title;
           row.appendChild(meta);
           row.appendChild(title);

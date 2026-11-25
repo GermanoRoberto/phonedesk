@@ -1,6 +1,6 @@
 // PhoneDesk Service Worker - rede primeiro; cache só como reserva se o PC estiver fora do ar.
 // Troque CACHE_NAME para forçar todos os aparelhos a descartarem versões antigas.
-const CACHE_NAME = 'phonedesk-v3';
+const CACHE_NAME = 'phonedesk-v5';
 const ASSETS = ['./', './index.html'];
 
 self.addEventListener('install', (e) => {

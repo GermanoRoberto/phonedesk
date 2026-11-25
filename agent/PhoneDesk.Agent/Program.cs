@@ -1460,13 +1460,14 @@ public partial class Program
     {
         static bool HasIndex(string? dir) => !string.IsNullOrWhiteSpace(dir) && Directory.Exists(dir) && File.Exists(Path.Combine(dir, "index.html"));
         if (HasIndex(configuredWebRoot)) return Path.GetFullPath(configuredWebRoot!);
+        if (HasIndex(AppContext.BaseDirectory)) return Path.GetFullPath(AppContext.BaseDirectory);
         if (HasIndex(configDir)) return Path.GetFullPath(configDir);
         var baseWww = Path.Combine(AppContext.BaseDirectory, "www");
         if (HasIndex(baseWww)) return Path.GetFullPath(baseWww);
         var cur = new DirectoryInfo(AppContext.BaseDirectory);
         for (var i = 0; i < 8 && cur is not null; i++, cur = cur.Parent)
         {
-            if (File.Exists(Path.Combine(cur.FullName, "index.html")) && File.Exists(Path.Combine(cur.FullName, "config.json")))
+            if (File.Exists(Path.Combine(cur.FullName, "index.html")))
                 return cur.FullName;
         }
         return null;
