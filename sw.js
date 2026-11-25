@@ -1,38 +1,32 @@
-// DeskDock Service Worker - Cache-First para funcionamento 100% offline no celular
-const CACHE_NAME = 'deskdock-v1.0.0';
-const ASSETS = [
-  './',
-  './index.html',
-  './style.css',
-  './app.js',
-  './manifest.json',
-  './icon.svg'
-];
+// PhoneDesk Service Worker - rede primeiro; cache só como reserva se o PC estiver fora do ar.
+// Troque CACHE_NAME para forçar todos os aparelhos a descartarem versões antigas.
+const CACHE_NAME = 'phonedesk-v2';
+const ASSETS = ['./', './index.html'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {}));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => Promise.all(
-      keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-    ))
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then((clients) => clients.forEach((c) => c.navigate(c.url).catch(() => {})))
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
-  // Ignora requisições de API para não cachear telemetria em tempo real
-  if (e.request.url.includes('/api/')) {
-    return;
-  }
+  const url = new URL(e.request.url);
+  if (e.request.method !== 'GET' || url.pathname.startsWith('/api/')) return;
   e.respondWith(
-    caches.match(e.request).then((res) => {
-      return res || fetch(e.request).catch(() => caches.match('./index.html'));
-    })
+    fetch(e.request)
+      .then((res) => {
+        if (res.ok) { const copy = res.clone(); caches.open(CACHE_NAME).then((c) => c.put(e.request, copy)); }
+        return res;
+      })
+      .catch(() => caches.match(e.request).then((res) => res || caches.match('./index.html')))
   );
 });

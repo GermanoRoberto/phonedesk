@@ -490,165 +490,326 @@ def get_default_config():
         ]
     }
 
+# PhoneBox original (agente instalado) como backend real de todas as funcionalidades.
+# O PhoneDesk serve a interface própria na porta 8770 e repassa ao agente original
+# (127.0.0.1:8765) as rotas que ele já implementa: configurações completas, estado,
+# áudio, mídia, atalhos, agenda, feeds, etc.
+import http.client
+
+PHONEBOX_HOST = "127.0.0.1"
+PHONEBOX_PORT = 8765
+
+# Rotas que o telefone pode usar pela rede (espelha Lan.AllowedOverLan do PhoneBox original).
+LAN_EXACT = {
+    "/api/controls/spotify/state", "/api/controls/plex/state", "/api/controls/state", "/api/controls/listen",
+    "/api/lyrics", "/api/wallpaper", "/api/dictate", "/api/steam/library", "/api/steam/cover", "/api/steam/launch",
+    "/api/camera", "/api/spectrum", "/api/steam", "/api/steam/avatar", "/api/wake/macs",
+}
+LAN_PREFIX = (
+    "/api/controls/spotify/action", "/api/controls/plex/action", "/api/controls/radio-logo", "/api/controls/command",
+    "/api/controls/obs", "/api/state", "/api/config", "/api/art", "/api/media", "/api/volume", "/api/quotas",
+    "/api/work", "/api/procs", "/api/run", "/api/apps", "/api/shortcuts/icon", "/api/console", "/api/widget",
+    "/api/calendar", "/api/feeds", "/api/photos", "/api/docker", "/api/obs", "/api/discord", "/api/batteries",
+    "/api/ha/states", "/api/ha/toggle", "/api/approvals", "/api/rules/pause", "/api/phone/battery", "/api/stream",
+    "/api/trackpad", "/api/weather",
+)
+HOP_HEADERS = {"connection", "keep-alive", "transfer-encoding", "te", "trailer", "upgrade", "proxy-authorization",
+               "proxy-authenticate", "host", "content-length"}
+
+
+def lan_allowed(path):
+    return path in LAN_EXACT or any(path == p or path.startswith(p + "/") for p in LAN_PREFIX)
+
+
+SHORTCUT_PICKER_JS = r"""
+<script>
+(function () {
+  'use strict';
+  function el(tag, attrs, text) { var e = document.createElement(tag); for (var k in (attrs || {})) e.setAttribute(k, attrs[k]); if (text) e.textContent = text; return e; }
+  function slug(s) { return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'app'; }
+  function settingsCfg() { try { return cfg; } catch (_) { return null; } }
+  function open() {
+    var box = document.getElementById('pdApps');
+    if (box) { box.remove(); return; }
+    box = el('div', { id: 'pdApps', role: 'dialog', 'aria-label': 'Programas instalados' });
+    box.style.cssText = 'position:fixed;right:20px;bottom:76px;width:min(440px,92vw);max-height:70vh;display:flex;flex-direction:column;background:#fff;border:1px solid #d6d9de;border-radius:12px;box-shadow:0 18px 48px rgba(15,23,42,.18);z-index:9999;font:14px system-ui,sans-serif;color:#0f172a';
+    var head = el('div'); head.style.cssText = 'padding:14px 16px 10px;border-bottom:1px solid #eef0f3';
+    head.appendChild(el('b', {}, 'Programas instalados neste computador'));
+    var hint = el('div', {}, 'Escolha um programa para adicionar como atalho. Depois clique em Salvar.'); hint.style.cssText = 'color:#64748b;font-size:12.5px;margin-top:4px';
+    head.appendChild(hint);
+    var q = el('input', { type: 'search', placeholder: 'Buscar programa...', 'aria-label': 'Buscar programa' });
+    q.style.cssText = 'margin-top:10px;width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #d6d9de;border-radius:8px;font:inherit';
+    head.appendChild(q);
+    var list = el('div'); list.style.cssText = 'overflow:auto;padding:6px';
+    box.appendChild(head); box.appendChild(list); document.body.appendChild(box);
+    list.textContent = 'Carregando...';
+    fetch('/api/phonedesk/apps').then(function (r) { return r.json(); }).then(function (apps) {
+      function render() {
+        var c = settingsCfg();
+        var term = q.value.trim().toLowerCase();
+        list.textContent = '';
+        var have = new Set(((c && c.shortcuts) || []).map(function (s) { return (s.cmd || '').toLowerCase(); }));
+        apps.filter(function (a) { return !term || a.name.toLowerCase().indexOf(term) >= 0; }).forEach(function (a) {
+          var added = have.has(a.path.toLowerCase());
+          var row = el('button', { type: 'button' });
+          row.style.cssText = 'display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;border:0;border-radius:8px;background:transparent;font:inherit;text-align:left;cursor:pointer;transition:background .15s';
+          row.onmouseenter = function () { row.style.background = '#f1f5f9'; }; row.onmouseleave = function () { row.style.background = 'transparent'; };
+          row.appendChild(el('span', {}, a.name));
+          var tag = el('span', {}, added ? 'Adicionado' : 'Adicionar'); tag.style.cssText = 'font-size:12px;font-weight:600;color:' + (added ? '#16a34a' : '#2563eb');
+          row.appendChild(tag);
+          row.disabled = added;
+          row.onclick = function () {
+            var c2 = settingsCfg();
+            if (!c2) return;
+            c2.shortcuts = c2.shortcuts || [];
+            var id = slug(a.name), n = 2; while (c2.shortcuts.some(function (s) { return s.id === id; })) id = slug(a.name) + '-' + (n++);
+            c2.shortcuts.push({ id: id, label: a.name, icon: '\uD83D\uDDA5\uFE0F', color: '#2563eb', cmd: a.path });
+            try { renderDeck(); } catch (_) {}
+            try { changed(); } catch (_) {}
+            render();
+          };
+          list.appendChild(row);
+        });
+        if (!list.children.length) list.textContent = 'Nenhum programa encontrado.';
+      }
+      q.oninput = render; render(); q.focus();
+    }).catch(function () { list.textContent = 'Nao foi possivel listar os programas.'; });
+  }
+  function mount() {
+    var b = el('button', { type: 'button', id: 'pdAppsBtn' }, '+ Programas instalados');
+    b.style.cssText = 'position:fixed;right:20px;bottom:24px;z-index:9998;padding:10px 16px;border-radius:999px;border:1px solid #1d4ed8;background:#2563eb;color:#fff;font:600 13.5px system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(37,99,235,.28);transition:transform .12s,opacity .12s';
+    b.onmousedown = function () { b.style.transform = 'scale(.96)'; }; b.onmouseup = function () { b.style.transform = ''; };
+    b.onclick = open;
+    document.body.appendChild(b);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
+})();
+</script>
+"""
+
+
+def get_installed_windows_apps():
+    apps = []
+    roots = [
+        os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs"),
+        os.path.expandvars(r"%PROGRAMDATA%\Microsoft\Windows\Start Menu\Programs"),
+        os.path.join(os.path.expanduser("~"), "Desktop"),
+        os.path.expandvars(r"%PUBLIC%\Desktop"),
+    ]
+    skip = ("uninstall", "desinstalar", "remover", "help", "ajuda", "readme", "leia-me", "documentation")
+    seen = set()
+    for root in roots:
+        if not os.path.isdir(root):
+            continue
+        for dirpath, _, filenames in os.walk(root):
+            for f in filenames:
+                if not f.lower().endswith((".lnk", ".url")):
+                    continue
+                name = os.path.splitext(f)[0].strip()
+                if any(s in name.lower() for s in skip) or name.lower() in seen:
+                    continue
+                seen.add(name.lower())
+                apps.append({"name": name, "path": os.path.join(dirpath, f)})
+    apps.sort(key=lambda a: a["name"].lower())
+    return apps
+
+
 class DeskDockHandler(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
     def log_message(self, format, *args):
-        # Loga se não for polling repetitivo
         msg = format % args
-        if "/api/status" not in msg:
+        if "/api/status" not in msg and "/api/state" not in msg and "/api/stream" not in msg:
             print(f"[HTTP] {msg}")
 
-    def send_cors(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+    def is_loopback(self):
+        return self.client_address[0] in ("127.0.0.1", "::1")
 
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_cors()
+    def send_json(self, code, obj):
+        body = json.dumps(obj).encode("utf-8")
+        self.send_bytes(code, body, "application/json; charset=utf-8")
+
+    def send_bytes(self, code, body, ctype):
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
+        self.wfile.write(body)
 
-    def do_GET(self):
+    def read_body(self):
+        length = int(self.headers.get("Content-Length", 0) or 0)
+        return self.rfile.read(length) if length > 0 else b""
+
+    def proxy(self, method, target, body=b"", inject=None):
+        headers = {k: v for k, v in self.headers.items() if k.lower() not in HOP_HEADERS and k.lower() != "origin"}
+        if inject:
+            headers["Accept-Encoding"] = "identity"
+        conn = http.client.HTTPConnection(PHONEBOX_HOST, PHONEBOX_PORT, timeout=30)
+        try:
+            conn.request(method, target, body=body or None, headers=headers)
+            resp = conn.getresponse()
+        except OSError:
+            conn.close()
+            self.send_json(502, {"error": "Agente PhoneBox nao esta rodando em 127.0.0.1:8765"})
+            return
+        ctype = resp.getheader("Content-Type", "")
+        if "text/event-stream" in ctype:
+            self.send_response(resp.status)
+            for k, v in resp.getheaders():
+                if k.lower() not in HOP_HEADERS:
+                    self.send_header(k, v)
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.close_connection = True
+            try:
+                while True:
+                    chunk = resp.read1(4096)
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+                    self.wfile.flush()
+            except OSError:
+                pass
+            finally:
+                conn.close()
+            return
+        data = resp.read()
+        conn.close()
+        if inject and "text/html" in ctype:
+            data = data.replace(b"</body>", inject.encode("utf-8") + b"</body>", 1)
+        self.send_response(resp.status)
+        for k, v in resp.getheaders():
+            if k.lower() not in HOP_HEADERS:
+                self.send_header(k, v)
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        if method != "HEAD":
+            self.wfile.write(data)
+
+    def route_proxy(self, method, body=b""):
+        """True quando a requisição foi tratada repassando ao PhoneBox original."""
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+        if path in ("/settings", "/settings.html", "/config"):
+            if not self.is_loopback():
+                self.send_bytes(403, "<h3>As configuracoes abrem no navegador do computador.</h3>".encode("utf-8"),
+                                "text/html; charset=utf-8")
+                return True
+            self.proxy("GET", "/" + (("?" + parsed.query) if parsed.query else ""), inject=SHORTCUT_PICKER_JS)
+            return True
+        if path.startswith("/panel/") or path == "/favicon.ico":
+            self.proxy(method, self.path, body)
+            return True
+        if path.startswith("/api/") and not path.startswith("/api/phonedesk") and path not in ("/api/status", "/api/action", "/api/ping"):
+            if self.is_loopback() or lan_allowed(path):
+                self.proxy(method, self.path, body)
+            else:
+                self.send_json(403, {"error": "Rota disponivel apenas no computador"})
+            return True
+        return False
 
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    def do_PUT(self):
+        if not self.route_proxy("PUT", self.read_body()):
+            self.send_json(404, {"error": "Not Found"})
+
+    def do_DELETE(self):
+        if not self.route_proxy("DELETE", self.read_body()):
+            self.send_json(404, {"error": "Not Found"})
+
+    def do_GET(self):
+        try:
+            if self.route_proxy("GET"):
+                return
+            self.handle_local_get()
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            self.send_json(500, {"error": str(e)})
+
+    def handle_local_get(self):
+        path = urllib.parse.urlparse(self.path).path
         if path == "/api/status":
-            mem = get_windows_memory()
-            cpu = get_windows_cpu()
-            disk = get_windows_disk()
-            uptime = get_windows_uptime()
             cfg = load_config()
-            data = {
+            self.send_json(200, {
                 "status": "online",
                 "version": VERSION,
                 "hostname": socket.gethostname(),
                 "ips": get_local_ips(),
-                "cpu_percent": cpu,
-                "memory": mem,
-                "disk": disk,
-                "uptime": uptime,
+                "cpu_percent": get_windows_cpu(),
+                "memory": get_windows_memory(),
+                "disk": get_windows_disk(),
+                "uptime": get_windows_uptime(),
                 "telemetry_mode": cfg.get("telemetry_mode", "workstation"),
-                "timestamp": int(time.time())
-            }
-            res = json.dumps(data).encode("utf-8")
-            self.send_response(200)
-            self.send_cors()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(res)))
-            self.end_headers()
-            self.wfile.write(res)
+                "timestamp": int(time.time()),
+            })
             return
-
-        elif path == "/api/config":
-            cfg = load_config()
-            res = json.dumps(cfg).encode("utf-8")
-            self.send_response(200)
-            self.send_cors()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(res)))
-            self.end_headers()
-            self.wfile.write(res)
+        if path == "/api/ping":
+            self.send_bytes(200, b"pong", "text/plain")
             return
-
-        elif path == "/api/ping":
-            self.send_response(200)
-            self.send_cors()
-            self.send_header("Content-Type", "text/plain")
-            self.end_headers()
-            self.wfile.write(b"pong")
+        if path == "/api/phonedesk/apps":
+            if not self.is_loopback():
+                self.send_json(403, {"error": "Rota disponivel apenas no computador"})
+                return
+            self.send_json(200, get_installed_windows_apps())
             return
-
-        # Arquivos estáticos (PWA e Settings)
-        if path in ("/", "/index.html"):
-            file_path = os.path.join(BASE_DIR, "index.html")
-            content_type = "text/html; charset=utf-8"
-        elif path in ("/settings", "/settings.html", "/config"):
-            file_path = os.path.join(BASE_DIR, "settings.html")
-            content_type = "text/html; charset=utf-8"
-        elif path == "/manifest.json":
-            file_path = os.path.join(BASE_DIR, "manifest.json")
-            content_type = "application/manifest+json"
-        elif path == "/sw.js":
-            file_path = os.path.join(BASE_DIR, "sw.js")
-            content_type = "application/javascript"
-        else:
-            rel_path = path.lstrip("/").replace("/", os.sep)
-            file_path = os.path.join(BASE_DIR, rel_path)
-            if path.endswith(".css"):
-                content_type = "text/css"
-            elif path.endswith(".js"):
-                content_type = "application/javascript"
-            elif path.endswith(".json"):
-                content_type = "application/json"
-            elif path.endswith(".svg"):
-                content_type = "image/svg+xml"
-            elif path.endswith(".png"):
-                content_type = "image/png"
-            else:
-                content_type = "text/plain"
-
-        if os.path.exists(file_path) and os.path.isfile(file_path):
-            with open(file_path, "rb") as f:
-                content = f.read()
-            self.send_response(200)
-            self.send_cors()
-            self.send_header("Content-Type", content_type)
-            self.send_header("Content-Length", str(len(content)))
-            self.end_headers()
-            self.wfile.write(content)
-        else:
-            self.send_response(404)
-            self.send_cors()
-            self.end_headers()
-            self.wfile.write(b"Not Found")
+        if path == "/api/phonedesk/version":
+            self.send_json(200, {"version": str(int(os.path.getmtime(os.path.join(BASE_DIR, "index.html"))))})
+            return
+        static = {
+            "/": ("index.html", "text/html; charset=utf-8"),
+            "/index.html": ("index.html", "text/html; charset=utf-8"),
+            "/manifest.json": ("manifest.json", "application/manifest+json"),
+            "/sw.js": ("sw.js", "application/javascript"),
+            "/icon.svg": ("icon.svg", "image/svg+xml"),
+            "/app.js": ("app.js", "application/javascript"),
+            "/style.css": ("style.css", "text/css"),
+        }
+        if path in static:
+            name, ctype = static[path]
+            fp = os.path.join(BASE_DIR, name)
+            if os.path.isfile(fp):
+                with open(fp, "rb") as f:
+                    self.send_bytes(200, f.read(), ctype)
+                return
+        self.send_bytes(404, b"Not Found", "text/plain")
 
     def do_POST(self):
         try:
-            parsed = urllib.parse.urlparse(self.path)
-            path = parsed.path
-
-            length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(length) if length > 0 else b"{}"
+            body = self.read_body()
+            if self.route_proxy("POST", body):
+                return
+            path = urllib.parse.urlparse(self.path).path
             try:
-                payload = json.loads(body.decode("utf-8"))
+                payload = json.loads(body.decode("utf-8")) if body else {}
             except Exception:
                 payload = {}
-
             if path == "/api/action":
-                action_type = payload.get("action")
-                data = payload.get("payload", {})
-                success = execute_action(action_type, data)
-                res = json.dumps({"ok": bool(success)}).encode("utf-8")
-                self.send_response(200 if success else 400)
-                self.send_cors()
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(res)))
-                self.end_headers()
-                self.wfile.write(res)
+                success = execute_action(payload.get("action"), payload.get("payload", {}))
+                self.send_json(200 if success else 400, {"ok": bool(success)})
                 return
-
-            elif path == "/api/config":
-                saved = save_config(payload)
-                res = json.dumps({"ok": bool(saved)}).encode("utf-8")
-                self.send_response(200 if saved else 500)
-                self.send_cors()
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(res)))
-                self.end_headers()
-                self.wfile.write(res)
-                return
-
-            self.send_response(404)
-            self.send_cors()
-            self.end_headers()
+            self.send_json(404, {"error": "Not Found"})
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass
         except Exception as e:
-            print(f"[POST Exception] {e}")
-            err_res = json.dumps({"ok": False, "error": str(e)}).encode("utf-8")
-            self.send_response(500)
-            self.send_cors()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(err_res)))
-            self.end_headers()
-            self.wfile.write(err_res)
+            import traceback
+            traceback.print_exc()
+            self.send_json(500, {"ok": False, "error": str(e)})
+
+
+class PhoneDeskServer(ThreadingHTTPServer):
+    # No Windows, SO_REUSEADDR deixa dois processos ouvirem a mesma porta e as
+    # requisições caem no processo antigo. Porta exclusiva.
+    allow_reuse_address = False
+    daemon_threads = True
+
 
 # Serviço de Descoberta Automática via UDP Broadcast
 def udp_discovery_loop():
@@ -689,7 +850,7 @@ def main():
     t_udp.start()
 
     # Iniciar servidor HTTP multithreaded
-    server = ThreadingHTTPServer(("0.0.0.0", PORT), DeskDockHandler)
+    server = PhoneDeskServer(("0.0.0.0", PORT), DeskDockHandler)
     print(f"[DeskDock] Servidor ativo em 0.0.0.0:{PORT}")
     try:
         server.serve_forever()
