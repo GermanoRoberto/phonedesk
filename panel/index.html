@@ -557,7 +557,7 @@
           <span class="status-dot"></span>
           <span id="standbyStatusText" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carregando agenda...</span>
         </div>
-        <div id="weatherAlert" style="display: none; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: rgba(245, 158, 11, 0.16); border: 1px solid rgba(245, 158, 11, 0.45); color: #fbbf24; margin-top: 8px; width: fit-content;"></div>
+        <div id="weatherAlert" style="display: none; align-items: center; justify-content: flex-end; gap: 8px; font-size: clamp(12px, 1.8vw, 15px); font-weight: 700; color: #ef4444; margin-top: 6px; width: 100%; text-align: right;"></div>
       </div>
     </div>
 
@@ -913,17 +913,8 @@
           const al = document.getElementById('weatherAlert');
           if (al) {
             if (w.alert && w.alert.title) {
-              al.style.display = 'inline-flex';
-              al.innerHTML = `<span>${w.alert.icon || '⚠️'}</span><span>${w.alert.title}</span>`;
-              if (w.alert.level === 'danger') {
-                al.style.background = 'rgba(239, 68, 68, 0.16)';
-                al.style.borderColor = 'rgba(239, 68, 68, 0.45)';
-                al.style.color = '#f87171';
-              } else {
-                al.style.background = 'rgba(245, 158, 11, 0.16)';
-                al.style.borderColor = 'rgba(245, 158, 11, 0.45)';
-                al.style.color = '#fbbf24';
-              }
+              al.style.display = 'flex';
+              al.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.9); flex-shrink: 0;"></span><span id="weatherAlertText" style="color: #ef4444; font-weight: 700;">${w.alert.title}</span>`;
             } else {
               al.style.display = 'none';
             }
