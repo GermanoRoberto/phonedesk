@@ -3295,6 +3295,37 @@ function addShortcut() {
   setTimeout(() => document.querySelector('#editor input')?.select(), 0);
 }
 
+function pickIconForApp(name) {
+  const n = (name || '').toLowerCase();
+  if (/chrome|edge|firefox|brave|opera|browser|navegador/.test(n)) return '🌐';
+  if (/terminal|cmd|powershell|bash|zsh|wt/.test(n)) return '⌨️';
+  if (/spotify|music|deezer|apple music/.test(n)) return '🎵';
+  if (/whatsapp|telegram|discord|slack|teams|skype/.test(n)) return '💬';
+  if (/code|visual studio|sublime|notepad|bloco/.test(n)) return '📝';
+  if (/calc|calculadora/.test(n)) return '🔢';
+  if (/taskmgr|gerenciador de tarefas|process/.test(n)) return '📊';
+  if (/word|docs|documento/.test(n)) return '📄';
+  if (/excel|planilha|sheets/.test(n)) return '📈';
+  if (/steam|game|jogo|epic/.test(n)) return '🎮';
+  if (/setting|configura/.test(n)) return '⚙️';
+  if (/camera|webcam/.test(n)) return '📷';
+  if (/wireshark|advanced ip|network|scanner/.test(n)) return '📡';
+  return '🖥️';
+}
+function pickColorForApp(name) {
+  const n = (name || '').toLowerCase();
+  if (/chrome|edge|word|antigravity/.test(n)) return '#0284c7';
+  if (/spotify/.test(n)) return '#16a34a';
+  if (/whatsapp/.test(n)) return '#22c55e';
+  if (/excel/.test(n)) return '#15803d';
+  if (/discord|visual studio|code/.test(n)) return '#6366f1';
+  if (/notepad/.test(n)) return '#2563eb';
+  if (/calc/.test(n)) return '#0d9488';
+  if (/taskmgr|wireshark/.test(n)) return '#475569';
+  if (/terminal|powershell/.test(n)) return '#334155';
+  return '#0ea5e9';
+}
+
 function renderEditor() {
   const ed = $('editor');
   ed.textContent = '';
@@ -3313,8 +3344,40 @@ function renderEditor() {
   const markSwatch = () => sw.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.c === s.color));
   markSwatch();
   const cmdIn = h('input', { type: 'text', class: 'technical-input', value: s.cmd || '', placeholder: t('s.k.cmdPlaceholder'), oninput: (e) => upd('cmd', e.target.value, false) });
-  const preset = h('select', { onchange: (e) => { if (e.target.value) { cmdIn.value = e.target.value; upd('cmd', e.target.value, false); cmdIn.focus(); } e.target.value = ''; } },
-    ...presets().map(([v, l]) => h('option', { value: v }, tl(l))));
+  const preset = h('select', { onchange: (e) => {
+    const val = e.target.value;
+    if (val) {
+      cmdIn.value = val;
+      s.cmd = val;
+      const app = (window.pdInstalledApps || []).find(a => a.path === val);
+      if (app) {
+        if (!s.label || s.label === t('s.k.newShortcut') || s.label === '(untitled)' || s.label === 'Novo atalho') {
+          s.label = app.name;
+        }
+        s.icon = pickIconForApp(app.name);
+        s.color = pickColorForApp(app.name);
+      }
+      renderDeckKeysOnly();
+      renderEditor();
+      changed();
+      cmdIn.focus();
+    }
+    e.target.value = '';
+  } });
+
+  preset.appendChild(h('option', { value: '' }, 'Escolha um programa ou comando…'));
+  if (window.pdInstalledApps && window.pdInstalledApps.length > 0) {
+    const appGroup = h('optgroup', { label: `⚡ Programas Instalados no PC (${window.pdInstalledApps.length})` });
+    window.pdInstalledApps.forEach(a => {
+      appGroup.appendChild(h('option', { value: a.path }, a.name));
+    });
+    preset.appendChild(appGroup);
+  }
+  const sysGroup = h('optgroup', { label: 'Comandos do Sistema' });
+  presets().forEach(([v, l]) => {
+    if (v) sysGroup.appendChild(h('option', { value: v }, tl(l)));
+  });
+  preset.appendChild(sysGroup);
 
   ed.append(
     h('div', { class: 'row', style: { justifyContent: 'space-between', marginBottom: '12px' } },
@@ -3415,7 +3478,18 @@ function actionFields(s, upd, text, cmdIn, preset) {
     } }, ...Object.entries(KINDS()).map(([k, l]) => h('option', { value: k, selected: k === kind }, l))))];
   if (kind === 'run') {
     fields.push(
-      h('div', { class: 'field' }, h('label', {}, t('s.k.command')), cmdIn, preset,
+      h('div', { class: 'field' },
+        h('label', {}, t('s.k.command')),
+        cmdIn,
+        preset,
+        h('div', { style: { marginTop: '8px' } },
+          h('button', {
+            type: 'button',
+            class: 'btn sm',
+            style: { display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: '600', background: 'var(--panel-2)', borderColor: 'var(--line-strong)' },
+            onclick: () => openAppsPicker(s, cmdIn, upd)
+          }, icon('search', 'm'), '⚡ Escolher dos Programas Instalados no PC')
+        ),
         h('span', { class: 'hint' }, osName === 'windows' ? t('s.js.commandHintWindows') : t('s.js.commandHint'))),
       text('args', t('s.k.arguments'), osName === 'windows' ? t('s.k.argsPlaceholderWindows') : t('s.k.argsPlaceholderUnix')),
       text('cwd', t('s.k.workingFolder'), t('s.k.optional')));
@@ -4396,59 +4470,77 @@ setInterval(loadInfo, 5000);
   function slug(s) {
     return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'app';
   }
-  function openAppsPicker() {
+  function openAppsPicker(targetShortcut, cmdIn, upd) {
     var box = document.getElementById('pdApps');
     if (box) { box.remove(); return; }
     box = el('div', { id: 'pdApps', role: 'dialog', 'aria-label': 'Programas instalados' });
-    box.style.cssText = 'position:fixed;left:280px;bottom:24px;width:min(460px,calc(100vw - 32px));max-height:72vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 48px rgba(15,23,42,.18);z-index:9999;font:14px/1.45 "Segoe UI",system-ui,sans-serif;color:var(--text)';
-    if (window.innerWidth <= 900) box.style.left = '16px';
+    if (targetShortcut) {
+      box.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 32px));max-height:80vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 25px 60px rgba(15,23,42,.35);z-index:9999;font:14px/1.45 "Segoe UI",system-ui,sans-serif;color:var(--text)';
+    } else {
+      box.style.cssText = 'position:fixed;left:280px;bottom:24px;width:min(460px,calc(100vw - 32px));max-height:72vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 48px rgba(15,23,42,.18);z-index:9999;font:14px/1.45 "Segoe UI",system-ui,sans-serif;color:var(--text)';
+      if (window.innerWidth <= 900) box.style.left = '16px';
+    }
     var head = el('div');
     head.style.cssText = 'padding:14px 16px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px';
     var topRow = el('div');
     topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px';
-    topRow.appendChild(el('b', {}, 'Programas instalados neste computador'));
+    topRow.appendChild(el('b', {}, targetShortcut ? 'Escolher programa para o atalho' : 'Programas instalados neste computador'));
     var closeBtn = el('button', { type: 'button', 'aria-label': 'Fechar' }, '✕');
     closeBtn.style.cssText = 'border:1px solid var(--line);background:var(--panel-2);color:var(--text);border-radius:7px;width:26px;height:26px;cursor:pointer;display:grid;place-items:center';
     closeBtn.onclick = function () { box.remove(); };
     topRow.appendChild(closeBtn);
     head.appendChild(topRow);
-    var hint = el('div', {}, 'Escolha um programa para adicionar como atalho. Depois clique em Salvar.');
+    var hint = el('div', {}, targetShortcut ? 'Clique em um programa para aplicá-lo a este atalho.' : 'Escolha um programa para adicionar como atalho.');
     hint.style.cssText = 'color:var(--muted);font-size:12.5px';
     head.appendChild(hint);
-    var q = el('input', { type: 'search', placeholder: 'Buscar programa...', 'aria-label': 'Buscar programa' });
+    var q = el('input', { type: 'search', placeholder: 'Buscar programa instalado...', 'aria-label': 'Buscar programa' });
     q.style.cssText = 'margin-top:6px;width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--line-strong);border-radius:8px;background:var(--panel);color:var(--text);font:inherit';
     head.appendChild(q);
     var list = el('div');
-    list.style.cssText = 'overflow:auto;padding:6px';
+    list.style.cssText = 'overflow:auto;padding:6px;max-height:55vh';
     box.appendChild(head);
     box.appendChild(list);
     document.body.appendChild(box);
-    list.textContent = 'Carregando...';
-    fetch('/api/phonedesk/apps').then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    }).then(function (apps) {
+    list.textContent = 'Carregando programas do Windows...';
+
+    function setupList(apps) {
+      window.pdInstalledApps = apps;
       function render() {
         var term = q.value.trim().toLowerCase();
         list.textContent = '';
         var have = new Set(((cfg && cfg.shortcuts) || []).map(function (s) { return (s.cmd || '').toLowerCase(); }));
         apps.filter(function (a) { return !term || a.name.toLowerCase().indexOf(term) >= 0; }).forEach(function (a) {
-          var added = have.has(a.path.toLowerCase());
+          var added = !targetShortcut && have.has(a.path.toLowerCase());
           var row = el('button', { type: 'button' });
           row.style.cssText = 'display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;border:0;border-radius:8px;background:transparent;color:var(--text);font:inherit;text-align:left;cursor:pointer;transition:background .15s';
           row.onmouseenter = function () { row.style.background = 'var(--panel-2)'; };
           row.onmouseleave = function () { row.style.background = 'transparent'; };
           row.appendChild(el('span', {}, a.name));
-          var tag = el('span', {}, added ? 'Adicionado' : 'Adicionar');
+          var tag = el('span', {}, targetShortcut ? 'Selecionar' : (added ? 'Adicionado' : 'Adicionar'));
           tag.style.cssText = 'font-size:12px;font-weight:600;color:' + (added ? 'var(--ok)' : 'var(--accent)');
           row.appendChild(tag);
           row.disabled = added;
           row.onclick = function () {
+            if (targetShortcut) {
+              targetShortcut.cmd = a.path;
+              if (!targetShortcut.label || targetShortcut.label === t('s.k.newShortcut') || targetShortcut.label === '(untitled)' || targetShortcut.label === 'Novo atalho') {
+                targetShortcut.label = a.name;
+              }
+              targetShortcut.icon = pickIconForApp(a.name);
+              targetShortcut.color = pickColorForApp(a.name);
+              if (cmdIn) cmdIn.value = a.path;
+              box.remove();
+              renderDeckKeysOnly();
+              renderEditor();
+              changed();
+              toast('Programa selecionado: ' + a.name, 'ok');
+              return;
+            }
             if (!cfg) return;
             cfg.shortcuts = cfg.shortcuts || [];
             var id = slug(a.name), n = 2;
             while (cfg.shortcuts.some(function (s) { return s.id === id; })) id = slug(a.name) + '-' + (n++);
-            cfg.shortcuts.push({ id: id, label: a.name, icon: '\uD83D\uDDA5\uFE0F', color: '#0284c7', cmd: a.path });
+            cfg.shortcuts.push({ id: id, label: a.name, icon: pickIconForApp(a.name), color: pickColorForApp(a.name), cmd: a.path });
             renderDeck();
             changed();
             window.pdUpdateKpis && window.pdUpdateKpis();
@@ -4461,8 +4553,25 @@ setInterval(loadInfo, 5000);
       q.oninput = render;
       render();
       q.focus();
-    }).catch(function () { list.textContent = 'Não foi possível listar os programas.'; });
+    }
+
+    if (window.pdInstalledApps && window.pdInstalledApps.length > 0) {
+      setupList(window.pdInstalledApps);
+    } else {
+      fetch('/api/phonedesk/apps').then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(function (apps) {
+        setupList(apps);
+      }).catch(function () { list.textContent = 'Não foi possível listar os programas.'; });
+    }
   }
+  window.openAppsPicker = openAppsPicker;
+
+  // Preload installed apps on page boot
+  fetch('/api/phonedesk/apps').then(function (r) { return r.json(); }).then(function (apps) {
+    window.pdInstalledApps = apps;
+  }).catch(function () {});
   window.pdUpdateKpis = function () {
     try {
       if (typeof cfg === 'undefined' || !cfg) return;
