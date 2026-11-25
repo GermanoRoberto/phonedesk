@@ -8,10 +8,11 @@ __pycache__/
 upstream/
 *.apk
 
-# Scratch helper scripts
+# Scratch helper & local test suites
 update_ui.py
 upgrade_media_wakelock.py
 inject_phonedesk.py
+tests/
 
 # OS / Editor
 .DS_Store

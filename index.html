@@ -6,12 +6,14 @@
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <title>PhoneDesk</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
     html, body {
       width: 100%;
-      height: 100%;
+      height: 100dvh;
       background: #000000;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -21,13 +23,14 @@
 
     .track {
       display: flex;
-      width: 400%;
+      width: 500%;
       height: 100%;
-      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1);
+      transition: transform 0.34s cubic-bezier(0.2, 0.9, 0.4, 1);
+      will-change: transform;
     }
 
     .page {
-      width: 25%;
+      width: 20%;
       height: 100%;
       flex-shrink: 0;
       position: relative;
@@ -35,56 +38,213 @@
       flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
+      padding: clamp(10px, 2vh, 18px) clamp(14px, 2.6vw, 28px) clamp(28px, 5vh, 38px) clamp(14px, 2.6vw, 28px);
     }
 
     /* Liquid Glass Cards (macOS / iOS) */
     .glass {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.085) 0%, rgba(255, 255, 255, 0.025) 100%);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.2s ease;
     }
 
     .squircle {
       border-radius: 22%;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
     }
 
+    .tactile {
+      cursor: pointer;
+      transition: transform 0.1s ease, opacity 0.1s ease;
+    }
     .tactile:active {
       transform: scale(0.92);
-      opacity: 0.8;
-      transition: transform 0.08s ease;
+      opacity: 0.78;
     }
 
-    /* Tipografia StandBy de Alto Contraste */
+    /* Tela 1: StandBy iOS */
+    .standby-page {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(16px, 3vh, 28px) clamp(24px, 4.5vw, 48px) clamp(32px, 5vh, 42px) clamp(24px, 4.5vw, 48px);
+      gap: 20px;
+    }
+
+    .standby-clock {
+      display: flex;
+      align-items: baseline;
+      flex-shrink: 0;
+    }
+
     .standby-num {
-      font-size: clamp(105px, 24vw, 150px);
-      line-height: 0.85;
-      letter-spacing: -5px;
+      font-size: clamp(92px, 22vw, 154px);
+      line-height: 0.86;
+      letter-spacing: -0.04em;
       font-weight: 900;
       color: #86efac;
       font-variant-numeric: tabular-nums;
-      text-shadow: 0 0 20px rgba(134, 239, 172, 0.25);
+      text-shadow: 0 0 26px rgba(134, 239, 172, 0.24);
     }
 
-    /* Barras de progresso elegantes */
+    .standby-right {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(12px, 2.8vh, 22px);
+      min-width: 0;
+      max-width: 46%;
+    }
+
+    .standby-divider {
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      padding-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: clamp(12px, 1.8vw, 14px);
+      font-weight: 700;
+      color: #86efac;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      flex-shrink: 0;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    /* Stream Deck Grid */
+    .deck-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-auto-rows: minmax(0, 1fr);
+      gap: clamp(8px, 1.4vw, 12px);
+      min-height: 0;
+      overflow-y: auto;
+    }
+
+    .deck-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(6px, 1.2vh, 10px);
+      padding: clamp(6px, 1vh, 10px);
+      min-height: 0;
+    }
+
+    .deck-icon-box {
+      width: clamp(54px, 7.5vw, 76px);
+      height: clamp(54px, 7.5vw, 76px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .deck-icon-box svg {
+      width: clamp(30px, 4.2vw, 42px);
+      height: clamp(30px, 4.2vw, 42px);
+    }
+
+    .deck-label {
+      font-size: clamp(11px, 1.6vw, 13px);
+      font-weight: 800;
+      color: #ffffff;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Two-column layouts (Media & Agenda/Feeds) */
+    .split-2 {
+      flex: 1;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(10px, 2vw, 18px);
+      min-height: 0;
+    }
+
+    .split-5-7 {
+      flex: 1;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: clamp(10px, 2vw, 18px);
+      min-height: 0;
+    }
+
+    .hw-grid {
+      flex: 1;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: clamp(8px, 1.5vw, 14px);
+      min-height: 0;
+    }
+
+    /* Progress & Volume Bars */
     .bar-bg {
       width: 100%;
-      height: 4px;
+      height: 5px;
       background: rgba(255, 255, 255, 0.12);
-      border-radius: 2px;
+      border-radius: 3px;
       overflow: hidden;
       margin: 6px 0;
     }
     .bar-fill {
       height: 100%;
-      border-radius: 2px;
-      transition: width 0.4s ease;
+      border-radius: 3px;
+      transition: width 0.3s ease;
     }
 
-    /* Pager Flutuante do iOS */
+    .vol-slider {
+      position: relative;
+      width: 100%;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      touch-action: none;
+    }
+    .vol-track {
+      width: 100%;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .vol-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+      border-radius: 999px;
+      transition: width 0.12s ease;
+    }
+
+    .scroll-y {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .scroll-y::-webkit-scrollbar { display: none; }
+
+    /* Floating Pager & Settings Button */
     .pager {
       position: fixed;
       bottom: 8px;
@@ -92,530 +252,450 @@
       transform: translateX(-50%);
       display: flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
-      padding: 4px 10px;
+      gap: 7px;
+      background: rgba(12, 12, 14, 0.78);
+      backdrop-filter: blur(10px);
+      padding: 5px 12px;
       border-radius: 9999px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.14);
       z-index: 100;
     }
     .dot {
       width: 6px;
       height: 6px;
       border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.34);
+      cursor: pointer;
       transition: all 0.2s ease;
     }
     .dot.active {
-      width: 14px;
+      width: 16px;
       background: #ffffff;
     }
 
     .btn-settings {
       position: fixed;
-      top: 10px;
-      right: 14px;
+      top: 8px;
+      right: 10px;
+      z-index: 120;
       width: 28px;
       height: 28px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #cbd5e1;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255, 255, 255, 0.6);
       cursor: pointer;
-      z-index: 90;
-      transition: all 0.2s;
+      backdrop-filter: blur(8px);
+      transition: transform 0.12s ease, background 0.15s ease;
     }
-    .btn-settings:hover {
-      background: rgba(255, 255, 255, 0.18);
-      color: #fff;
+    .btn-settings:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.18); }
+
+    .toast {
+      position: fixed;
+      bottom: 38px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(56, 189, 248, 0.55);
+      backdrop-filter: blur(12px);
+      color: #ffffff;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 9999;
+      display: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .page-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 38px 0 2px;
+      flex-shrink: 0;
+    }
+    .page-head-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #cbd5e1;
+    }
+
+    /* Portrait / narrow devices */
+    @media (orientation: portrait), (max-width: 640px) {
+      .standby-page {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        padding: 28px 20px 44px 20px;
+      }
+      .standby-num {
+        font-size: clamp(78px, 24vw, 124px);
+      }
+      .standby-right {
+        text-align: center;
+        max-width: 100%;
+        align-items: center;
+      }
+      .standby-right > div { justify-content: center !important; }
+      .standby-divider { justify-content: center; }
+      .deck-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .split-2, .split-5-7 {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+      }
+      .media-art-box {
+        width: 82px !important;
+        height: 82px !important;
+      }
+      .hw-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+      }
     }
   </style>
 </head>
 <body>
+  <button type="button" onclick="openSettingsOnPC()" class="btn-settings" title="Abrir Configurações no Monitor do Computador" aria-label="Configurações">
+    <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+  </button>
 
-  <!-- Botão de Ajustes: Abre o Painel de Configurações no Navegador do PC -->
-  <div onclick="openSettingsOnPC()" class="btn-settings" title="Abrir Ajustes no Monitor do Computador" style="cursor: pointer;">
-    <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08 .47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-  </div>
-  <div id="toast" style="position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.95); border: 1px solid rgba(56,189,248,0.6); backdrop-filter: blur(12px); color: #fff; padding: 12px 26px; border-radius: 999px; font-size: 14px; font-weight: 800; z-index: 9999; display: none; box-shadow: 0 10px 35px rgba(0,0,0,0.7); pointer-events: none;"></div>
+  <div id="toast" class="toast"></div>
 
   <div class="track" id="track">
 
-    <!-- ======================================================== -->
-    <!-- TELA 1: STANDBY iOS (Alta Visibilidade do Ângulo da Mesa) -->
-    <!-- ======================================================== -->
-    <div class="page" style="flex-direction: row; align-items: center; justify-content: space-between; padding: 18px 40px 24px 40px;">
-      <!-- Relógio Gigante Verde Menta -->
-      <div style="display: flex; align-items: baseline;">
-        <span class="standby-num" id="clkH">17</span>
+    <!-- TELA 1: STANDBY iOS -->
+    <div class="page standby-page">
+      <div class="standby-clock">
+        <span class="standby-num" id="clkH">--</span>
         <span class="standby-num" style="opacity: 0.85; padding: 0 4px;">:</span>
-        <span class="standby-num" id="clkM">15</span>
+        <span class="standby-num" id="clkM">--</span>
       </div>
 
-      <!-- Lado Direito: Alta Legibilidade e Contraste Forte -->
-      <div style="text-align: right; display: flex; flex-direction: column; justify-content: space-between; height: 80%; padding: 6px 0;">
-        <!-- Data Bolder -->
+      <div class="standby-right">
         <div>
-          <div style="font-size: 30px; font-weight: 900; text-transform: uppercase; color: #ffffff; letter-spacing: -0.5px;" id="fullDay">TER, 24</div>
-          <div style="font-size: 15px; font-weight: 700; color: #cbd5e1; margin-top: 2px;" id="fullMonth">Novembro de 2026</div>
+          <div style="font-size: clamp(22px, 3.6vw, 32px); font-weight: 900; text-transform: uppercase; color: #ffffff; letter-spacing: -0.5px;" id="fullDay">---, --</div>
+          <div style="font-size: clamp(13px, 1.9vw, 16px); font-weight: 700; color: #cbd5e1; margin-top: 2px;" id="fullMonth">---</div>
         </div>
-        
-        <!-- Clima Juiz de Fora (Ícone Original Limpo) -->
+
         <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px;">
-          <svg style="width: 44px; height: 44px; color: #f59e0b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <div id="wIcon" style="width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+            <svg style="width: 44px; height: 44px; color: #f59e0b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </div>
           <div>
-            <div style="font-size: 40px; font-weight: 900; line-height: 1; color: #ffffff;" id="wTemp">32°</div>
-            <div style="font-size: 12px; font-weight: 700; color: #94a3b8; margin-top: 3px;" id="wCity">Juiz de Fora • Sensação 36°</div>
+            <div style="font-size: clamp(32px, 5vw, 42px); font-weight: 900; line-height: 1; color: #ffffff;" id="wTemp">--°</div>
+            <div style="font-size: clamp(11px, 1.5vw, 13px); font-weight: 700; color: #94a3b8; margin-top: 3px;" id="wCity">Carregando clima...</div>
           </div>
         </div>
 
-        <!-- Linha de Status / Tarefas Agendadas -->
-        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 13px; font-weight: 700; color: #86efac;" id="standbyStatus">
-          <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 8px #10b981;"></span>
-          <span id="standbyStatusText">18:00 Reunião Operacional</span>
+        <div class="standby-divider" id="standbyStatus">
+          <span class="status-dot"></span>
+          <span id="standbyStatusText" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carregando agenda...</span>
         </div>
       </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- TELA 2: STREAM DECK (ÍCONES GRANDES, REAIS E LEGÍVEIS)    -->
-    <!-- ======================================================== -->
-    <div class="page" style="padding: 10px 14px 22px 14px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 0 4px;">
-        <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #cbd5e1;">Controles & Aplicativos</span>
-        <span style="font-size: 10px; color: #64748b;">Deslize para trocar de tela ➔</span>
+    <!-- TELA 2: STREAM DECK (ATALHOS DINÂMICOS DO CONFIG) -->
+    <div class="page">
+      <div class="page-head">
+        <span class="page-head-title">Controles & Aplicativos</span>
+        <span id="deckCountHint" style="font-size: 10px; color: #64748b;">Deslize para trocar de tela</span>
       </div>
-
-      <div style="flex: 1; display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(2, 1fr); gap: 10px;">
-        <!-- 1. Antigravity -->
-        <div onclick="run('launch', 'antigravity')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #1e40af, #3b82f6); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 40px; height: 40px;" fill="none" stroke="#fff" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">Antigravity</span>
-        </div>
-
-        <!-- 2. Ops Center -->
-        <div onclick="run('launch', 'ops_center')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #0369a1, #0284c7); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 38px; height: 38px;" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">Ops Center</span>
-        </div>
-
-        <!-- 3. Sankhya ERP (Ícone Real Verde) -->
-        <div onclick="run('launch', 'sankhya')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #047857, #10b981); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 38px; height: 38px;" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">Sankhya ERP</span>
-        </div>
-
-        <!-- 4. TeamViewer (Ícone Real Azul) -->
-        <div onclick="run('launch', 'teamviewer')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #1d4ed8, #2563eb); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 40px; height: 40px;" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M8 12l2.5-2.5M8 12l2.5 2.5M16 12l-2.5-2.5M16 12l2.5 2.5"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">TeamViewer</span>
-        </div>
-
-        <!-- 5. Win Sandbox -->
-        <div onclick="run('launch', 'sandbox')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #4338ca, #6366f1); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 38px; height: 38px;" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">Sandbox</span>
-        </div>
-
-        <!-- 6. Outlook (Ícone Real Azul Microsoft) -->
-        <div onclick="run('launch', 'outlook')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #0369a1, #0284c7); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 38px; height: 38px;" fill="none" stroke="#fff" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">Outlook</span>
-        </div>
-
-        <!-- 7. WhatsApp (Ícone Real Verde) -->
-        <div onclick="run('launch', 'whatsapp')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #15803d, #22c55e); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 38px; height: 38px;" fill="#fff"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.13 7.34C8.94 7.34 8.65 7.41 8.4 7.68C8.15 7.95 7.45 8.6 7.45 9.94C7.45 11.27 8.42 12.56 8.56 12.75C8.7 12.93 10.47 15.65 13.18 16.82C13.82 17.1 14.33 17.27 14.72 17.39C15.37 17.6 15.96 17.57 16.43 17.5C16.95 17.42 18.03 16.85 18.26 16.2C18.49 15.56 18.49 15.01 18.42 14.9C18.35 14.78 18.17 14.71 17.9 14.57C17.62 14.43 16.29 13.78 16.04 13.69C15.8 13.6 15.62 13.55 15.44 13.83C15.26 14.1 14.75 14.71 14.59 14.89C14.44 15.08 14.28 15.1 14.01 14.96C13.74 14.83 12.86 14.54 11.82 13.61C11.01 12.89 10.46 12 10.32 11.76C10.18 11.51 10.3 11.38 10.44 11.24C10.56 11.12 10.71 10.93 10.85 10.77C10.99 10.6 11.03 10.48 11.12 10.3C11.22 10.12 11.17 9.96 11.1 9.82C11.03 9.68 10.48 8.33 10.25 7.79C10.03 7.25 9.8 7.33 9.64 7.34H9.13Z"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">WhatsApp</span>
-        </div>
-
-        <!-- 8. WA Beta -->
-        <div onclick="run('launch', 'whatsapp')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #0f766e, #14b8a6); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 38px; height: 38px;" fill="none" stroke="#fff" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">WA Beta</span>
-        </div>
-
-        <!-- 9. Spotify (Ícone Real Verde Spotify) -->
-        <div onclick="run('launch', 'spotify')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #15803d, #1db954); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 40px; height: 40px;" fill="#fff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-.2.4-.7.5-1.1.3-3-1.8-6.8-2.3-11.2-1.3-.5.1-.9-.2-1-.7-.1-.5.2-.9.7-1 4.9-1.1 9.1-.6 12.4 1.5.4.3.5.8.2 1.2zm1.5-3.3c-.3.4-.8.6-1.3.3-3.4-2.1-8.6-2.7-12.7-1.5-.5.2-1.1-.1-1.2-.6-.2-.5.1-1.1.6-1.2 4.6-1.4 10.3-.7 14.3 1.7.4.3.6.9.3 1.3zm.1-3.4c-4.1-2.4-10.9-2.7-14.8-1.5-.6.2-1.3-.2-1.5-.8-.2-.6.2-1.3.8-1.5 4.6-1.4 12.1-1.1 16.8 1.7.5.3.7 1.1.4 1.7-.3.5-1.1.7-1.7.4z"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">Spotify</span>
-        </div>
-
-        <!-- 10. Arquivos (Ícone Amarelo/Azul Windows) -->
-        <div onclick="run('launch', 'explorer')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #b45309, #f59e0b); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 38px; height: 38px;" fill="none" stroke="#fff" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">Arquivos</span>
-        </div>
-
-        <!-- 11. Google Chrome (Ícone Real 4 Cores) -->
-        <div onclick="run('launch', 'chrome')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px;">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #c2410c, #f97316); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 38px; height: 38px;" fill="none" stroke="#fff" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">Chrome</span>
-        </div>
-
-        <!-- 12. Travar PC (Ícone Vermelho de Bloqueio) -->
-        <div onclick="run('lock', '')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 6px; border-color: rgba(239,68,68,0.5);">
-          <div class="squircle" style="width: 72px; height: 72px; background: linear-gradient(135deg, #b91c1c, #ef4444); display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" style="width: 38px; height: 38px;" fill="none" stroke="#fff" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          </div>
-          <span style="font-size: 13px; font-weight: 800; color: #fca5a5; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">Travar PC</span>
+      <div class="deck-grid scroll-y" id="deckGrid">
+        <div class="glass" style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 13px; font-weight: 600;">
+          Carregando atalhos...
         </div>
       </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- TELA 3: MEDIA & CONTROLE DE ÁUDIO GIGANTE -->
-    <!-- ======================================================== -->
-    <div class="page" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 12px 20px 22px 20px;">
-      
-      <!-- Card Esquerdo: Controle de Reprodução (Spotify / Mídia) -->
-      <div class="glass" style="padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
-        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 32px; height: 32px; border-radius: 8px; background: #1db954; display: flex; align-items: center; justify-content: center;">
-              <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;" fill="#fff"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-.2.4-.7.5-1.1.3-3-1.8-6.8-2.3-11.2-1.3-.5.1-.9-.2-1-.7-.1-.5.2-.9.7-1 4.9-1.1 9.1-.6 12.4 1.5.4.3.5.8.2 1.2zm1.5-3.3c-.3.4-.8.6-1.3.3-3.4-2.1-8.6-2.7-12.7-1.5-.5.2-1.1-.1-1.2-.6-.2-.5.1-1.1.6-1.2 4.6-1.4 10.3-.7 14.3 1.7.4.3.6.9.3 1.3zm.1-3.4c-4.1-2.4-10.9-2.7-14.8-1.5-.6.2-1.3-.2-1.5-.8-.2-.6.2-1.3.8-1.5 4.6-1.4 12.1-1.1 16.8 1.7.5.3.7 1.1.4 1.7-.3.5-1.1.7-1.7.4z"/></svg>
+    <!-- TELA 3: MÍDIA & CONTROLE DE VOLUME REAL -->
+    <div class="page">
+      <div class="split-2">
+        <!-- Card Esquerdo: Tocando Agora -->
+        <div class="glass" style="padding: clamp(12px, 2.2vh, 20px); display: flex; flex-direction: column; justify-content: space-between; min-width: 0; overflow: hidden;">
+          <div style="flex: 1; display: flex; align-items: center; gap: clamp(14px, 2.2vw, 20px); min-width: 0; min-height: 0;">
+            <div id="mediaArtBox" class="media-art-box" style="width: clamp(112px, 28vh, 168px); height: clamp(112px, 28vh, 168px); border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55); background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+              <img id="mediaArtImg" alt="Capa" style="width: 100%; height: 100%; object-fit: cover; display: none;" />
+              <svg id="mediaArtFallback" viewBox="0 0 24 24" style="width: 52px; height: 52px; color: #10b981;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             </div>
-            <div>
-              <div style="font-size: 13px; font-weight: 800; color: #fff;">Controle de Mídia</div>
-              <div style="font-size: 11px; color: #10b981; font-weight: 700;">Spotify • YouTube • Navegador</div>
+            <div style="min-width: 0; flex: 1;">
+              <div id="mediaApp" style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.8px;">Mídia</div>
+              <div id="mediaTitle" style="font-size: clamp(17px, 2.7vw, 22px); font-weight: 800; line-height: 1.2; color: #ffffff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; overflow: hidden; margin-top: 4px;">Nada tocando no PC</div>
+              <div id="mediaArtist" style="font-size: clamp(12px, 1.8vw, 15px); color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 6px;">Pressione Play para iniciar</div>
             </div>
           </div>
-          <button onclick="run('launch', 'spotify')" class="tactile" style="background: rgba(29,185,84,0.15); border: 1px solid rgba(29,185,84,0.4); color: #10b981; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;">Abrir Spotify</button>
-        </div>
 
-        <!-- Botões Centrais Gigantes de Mídia -->
-        <div style="display: flex; align-items: center; justify-content: center; gap: 36px; margin: 14px 0;">
-          <button onclick="sendMedia('prev')" class="tactile" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; color: #cbd5e1; cursor: pointer;">
-            <svg style="width: 28px; height: 28px; fill: currentColor;" viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          </button>
-          
-          <button onclick="togglePlay()" class="tactile" style="background: linear-gradient(135deg, #059669, #10b981); border: none; border-radius: 50%; width: 78px; height: 78px; display: flex; align-items: center; justify-content: center; color: #ffffff; cursor: pointer; box-shadow: 0 8px 24px rgba(16,185,129,0.35);">
-            <svg id="svgPlay" style="width: 38px; height: 38px; fill: currentColor; margin-left: 3px;" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-            <svg id="svgPause" style="width: 38px; height: 38px; fill: currentColor; display: none;" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1.5"/><rect x="14" y="4" width="4" height="16" rx="1.5"/></svg>
-          </button>
-          
-          <button onclick="sendMedia('next')" class="tactile" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; color: #cbd5e1; cursor: pointer;">
-            <svg style="width: 28px; height: 28px; fill: currentColor;" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          </button>
-        </div>
-
-        <div style="text-align: center; font-size: 11px; font-weight: 700; color: #94a3b8;">
-          Toque para pausar ou avançar faixas do computador
-        </div>
-      </div>
-
-      <!-- Card Direito: Controle de Volume Gigante do Windows -->
-      <div class="glass" style="padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
-          <div>
-            <div style="font-size: 13px; font-weight: 800; color: #fff;">Volume do Windows</div>
-            <div style="font-size: 11px; color: #38bdf8; font-weight: 700;">Controle do Master de Áudio</div>
-          </div>
-          <span style="font-size: 10px; background: rgba(56,189,248,0.15); color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-weight: 800;">ATIVO</span>
-        </div>
-
-        <!-- 3 Grandes Botões de Ação para Volume -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 14px 0;">
-          <!-- Volume Down -->
-          <div onclick="sendMedia('voldown')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px 8px; cursor: pointer; border-radius: 16px;">
-            <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: #cbd5e1;">
-              <svg viewBox="0 0 24 24" style="width: 26px; height: 26px;" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <div style="margin: 10px 0;">
+            <div class="bar-bg" style="height: 6px;"><div id="mediaProgBar" class="bar-fill" style="width: 0%; background: #10b981;"></div></div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; font-variant-numeric: tabular-nums;">
+              <span id="mediaPos">0:00</span>
+              <span id="mediaDur">0:00</span>
             </div>
-            <span style="font-size: 12px; font-weight: 800; color: #ffffff;">VOL −</span>
           </div>
 
-          <!-- Volume Up -->
-          <div onclick="sendMedia('volup')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px 8px; cursor: pointer; border-radius: 16px; border-color: rgba(56,189,248,0.4);">
-            <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #0284c7, #38bdf8); display: flex; align-items: center; justify-content: center; color: #ffffff;">
+          <!-- Botões puros de transporte (apenas SVGs, sem círculo branco) -->
+          <div style="display: flex; align-items: center; justify-content: center; gap: clamp(28px, 5vw, 48px); padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
+            <button type="button" onclick="mediaAction('prev')" class="tactile" aria-label="Faixa anterior" style="background: none; border: none; color: #cbd5e1; padding: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg style="width: 32px; height: 32px; fill: currentColor;" viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </button>
+            <button type="button" onclick="mediaAction('playpause')" class="tactile" aria-label="Reproduzir ou pausar" style="background: none; border: none; color: #ffffff; padding: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg id="svgPlay" style="width: 42px; height: 42px; fill: currentColor;" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <svg id="svgPause" style="width: 42px; height: 42px; fill: currentColor; display: none;" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1.5"/><rect x="14" y="4" width="4" height="16" rx="1.5"/></svg>
+            </button>
+            <button type="button" onclick="mediaAction('next')" class="tactile" aria-label="Próxima faixa" style="background: none; border: none; color: #cbd5e1; padding: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg style="width: 32px; height: 32px; fill: currentColor;" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card Direito: Controle de Volume do Windows -->
+        <div class="glass" style="padding: clamp(12px, 2.2vh, 20px); display: flex; flex-direction: column; justify-content: space-between; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 28px 8px 0;">
+            <div style="min-width: 0; flex: 1;">
+              <div style="font-size: 13px; font-weight: 800; color: #ffffff;">Volume do Windows</div>
+              <div id="audioDeviceName" style="font-size: 11px; color: #38bdf8; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carregando saída de áudio...</div>
+            </div>
+            <div id="audioVolPct" style="font-size: clamp(22px, 3.6vw, 30px); font-weight: 900; font-variant-numeric: tabular-nums; color: #ffffff; flex-shrink: 0;">--%</div>
+          </div>
+
+          <div id="volSlider" class="vol-slider" role="slider" aria-label="Volume do Windows" aria-valuemin="0" aria-valuemax="100">
+            <div class="vol-track"><div id="volFill" class="vol-fill" style="width: 0%;"></div></div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <button type="button" onclick="stepVolume('down')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: clamp(10px, 2vh, 16px) 8px; border-radius: 16px; color: #ffffff;">
+              <svg viewBox="0 0 24 24" style="width: 26px; height: 26px; color: #cbd5e1;" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <span style="font-size: 12px; font-weight: 800;">VOL −</span>
+            </button>
+            <button type="button" onclick="stepVolume('up')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: clamp(10px, 2vh, 16px) 8px; border-radius: 16px; border-color: rgba(56,189,248,0.45); color: #38bdf8;">
               <svg viewBox="0 0 24 24" style="width: 26px; height: 26px;" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-            </div>
-            <span style="font-size: 12px; font-weight: 800; color: #38bdf8;">VOL +</span>
-          </div>
-
-          <!-- Mute -->
-          <div onclick="sendMedia('mute')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px 8px; cursor: pointer; border-radius: 16px; border-color: rgba(239,68,68,0.4);">
-            <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #991b1b, #ef4444); display: flex; align-items: center; justify-content: center; color: #ffffff;">
+              <span style="font-size: 12px; font-weight: 800;">VOL +</span>
+            </button>
+            <button type="button" id="btnMute" onclick="stepVolume('mute')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: clamp(10px, 2vh, 16px) 8px; border-radius: 16px; border-color: rgba(239,68,68,0.45); color: #fca5a5;">
               <svg viewBox="0 0 24 24" style="width: 26px; height: 26px;" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-            </div>
-            <span style="font-size: 12px; font-weight: 800; color: #fca5a5;">MUDO</span>
+              <span id="muteLabel" style="font-size: 12px; font-weight: 800;">MUDO</span>
+            </button>
           </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #94a3b8; font-weight: 700;">
-          <span>Resposta direta no hardware do PC</span>
-          <span style="color: #cbd5e1;">Ajuste em 2% por toque</span>
         </div>
       </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- TELA 4: TELEMETRIA SEM IP (FOCO EM MÉTRICAS ÚTEIS)       -->
-    <!-- ======================================================== -->
-    <div class="page" style="padding: 10px 14px 22px 14px;">
-      <!-- Barra Superior -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 0 4px;">
-        <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #cbd5e1;" id="hwModeTitle">Telemetria do Computador</span>
-        <button onclick="toggleTelemetryMode()" class="tactile" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 10px; font-weight: 700; cursor: pointer;" id="btnToggleMode">
-          💼 Modo Trabalho
+    <!-- TELA 4: HARDWARE PC (100% REAL, SEM IP) -->
+    <div class="page">
+      <div class="page-head">
+        <span class="page-head-title" id="hwModeTitle">Telemetria do Computador</span>
+        <button type="button" onclick="toggleTelemetryMode()" class="tactile" id="btnToggleMode" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); color: #ffffff; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700;">
+          <svg id="modeIcoWork" viewBox="0 0 24 24" style="width: 13px; height: 13px;" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <svg id="modeIcoGamer" viewBox="0 0 24 24" style="width: 13px; height: 13px; display: none;" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="4"/></svg>
+          <span id="modeLabel">Modo Trabalho</span>
         </button>
       </div>
 
-      <!-- Container Dinâmico: Modo Corporativo (Padrão) -->
-      <div id="viewWorkstation" style="flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-        <!-- Card 1: Processador (CPU) -->
-        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(56,189,248,0.3);">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;">
-            <span style="color: #38bdf8;">Processador</span>
-            <span style="color: #94a3b8; font-family: monospace;">CPU</span>
-          </div>
+      <!-- Modo Trabalho -->
+      <div id="viewWorkstation" class="hw-grid">
+        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(56,189,248,0.32);">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;"><span style="color: #38bdf8;">Processador</span><span style="color: #94a3b8; font-family: monospace;">CPU</span></div>
           <div>
-            <div style="font-size: 28px; font-weight: 900; font-family: monospace; line-height: 1; color: #ffffff;" id="cpuVal">14%</div>
-            <div class="bar-bg"><div class="bar-fill" id="cpuBar" style="width: 14%; background: #38bdf8;"></div></div>
-            <div style="font-size: 10px; color: #cbd5e1; font-weight: 600;" id="cpuHost">Host PE0D7QQS</div>
+            <div style="font-size: clamp(22px, 3.8vw, 30px); font-weight: 900; font-variant-numeric: tabular-nums;" id="cpuVal">--%</div>
+            <div class="bar-bg"><div class="bar-fill" id="cpuBar" style="width: 0%; background: #38bdf8;"></div></div>
+            <div style="font-size: 10px; color: #cbd5e1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="cpuModel">--</div>
           </div>
-          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px; font-size: 10px; font-family: monospace; color: #94a3b8;">
-            <div style="display: flex; justify-content: space-between;"><span>Status</span><span style="color:#38bdf8; font-weight: bold;">Estável</span></div>
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; font-size: 10px; font-family: monospace; color: #94a3b8; display: flex; justify-content: space-between;">
+            <span>Host</span><span id="cpuHost" style="color: #38bdf8; font-weight: 700;">--</span>
           </div>
         </div>
 
-        <!-- Card 2: Memória RAM -->
-        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(16,185,129,0.3);">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;">
-            <span style="color: #10b981;">Memória RAM</span>
-            <span style="color: #94a3b8; font-family: monospace;" id="ramLoad">92%</span>
-          </div>
+        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(16,185,129,0.32);">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;"><span style="color: #10b981;">Memória RAM</span><span style="color: #94a3b8; font-family: monospace;" id="ramLoad">--%</span></div>
           <div>
-            <div style="font-size: 28px; font-weight: 900; font-family: monospace; line-height: 1; color: #ffffff;" id="ramUsed">13.8 GB</div>
-            <div class="bar-bg"><div class="bar-fill" id="ramBar" style="width: 92%; background: #10b981;"></div></div>
-            <div style="font-size: 10px; color: #cbd5e1; font-weight: 600;" id="ramTotal">De 14.8 GB Total</div>
+            <div style="font-size: clamp(22px, 3.8vw, 30px); font-weight: 900; font-variant-numeric: tabular-nums;" id="ramUsed">-- GB</div>
+            <div class="bar-bg"><div class="bar-fill" id="ramBar" style="width: 0%; background: #10b981;"></div></div>
+            <div style="font-size: 10px; color: #cbd5e1; font-weight: 600;" id="ramTotal">De -- GB Total</div>
           </div>
-          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px; font-size: 10px; font-family: monospace; color: #94a3b8;">
-            <div style="display: flex; justify-content: space-between;"><span>Disponível</span><span style="color:#10b981; font-weight: bold;" id="ramAvail">1.0 GB</span></div>
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; font-size: 10px; font-family: monospace; color: #94a3b8; display: flex; justify-content: space-between;">
+            <span>Disponível</span><span id="ramAvail" style="color: #10b981; font-weight: 700;">-- GB</span>
           </div>
         </div>
 
-        <!-- Card 3: Armazenamento C: -->
-        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(245,158,11,0.3);">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;">
-            <span style="color: #f59e0b;">Armazenamento</span>
-            <span style="color: #94a3b8; font-family: monospace;">Disco C:</span>
-          </div>
+        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(245,158,11,0.32);">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;"><span style="color: #f59e0b;">Armazenamento</span><span style="color: #94a3b8; font-family: monospace;" id="diskName">Disco C:</span></div>
           <div>
-            <div style="font-size: 28px; font-weight: 900; font-family: monospace; line-height: 1; color: #ffffff;" id="diskFree">792 GB</div>
-            <div class="bar-bg"><div class="bar-fill" id="diskBar" style="width: 15%; background: #f59e0b;"></div></div>
-            <div style="font-size: 10px; color: #cbd5e1; font-weight: 600;" id="diskTotal">Livres de 930 GB</div>
+            <div style="font-size: clamp(22px, 3.8vw, 30px); font-weight: 900; font-variant-numeric: tabular-nums;" id="diskFree">-- GB</div>
+            <div class="bar-bg"><div class="bar-fill" id="diskBar" style="width: 0%; background: #f59e0b;"></div></div>
+            <div style="font-size: 10px; color: #cbd5e1; font-weight: 600;" id="diskTotal">Livres de -- GB</div>
           </div>
-          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px; font-size: 10px; font-family: monospace; color: #94a3b8;">
-            <div style="display: flex; justify-content: space-between;"><span>Uso</span><span style="color:#f59e0b; font-weight: bold;" id="diskPct">15% Ocupado</span></div>
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; font-size: 10px; font-family: monospace; color: #94a3b8; display: flex; justify-content: space-between;">
+            <span>Uso</span><span id="diskPct" style="color: #f59e0b; font-weight: 700;">--%</span>
           </div>
         </div>
 
-        <!-- Card 4: Internet & Conexão (SEM IP, COM STATUS REAL) -->
-        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(168,85,247,0.3);">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;">
-            <span style="color: #c084fc;">Internet & Rede</span>
-            <span style="color: #10b981; font-family: monospace;">FIBRA</span>
-          </div>
+        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(168,85,247,0.32);">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;"><span style="color: #c084fc;">Rede & Sistema</span><span id="netLoss" style="color: #10b981; font-family: monospace;">--</span></div>
           <div>
-            <div style="font-size: 26px; font-weight: 900; font-family: monospace; line-height: 1; color: #10b981;" id="netStatus">ONLINE</div>
+            <div style="font-size: clamp(20px, 3.4vw, 28px); font-weight: 900; color: #10b981;" id="netStatus">ONLINE</div>
             <div class="bar-bg"><div class="bar-fill" style="width: 100%; background: #10b981;"></div></div>
-            <div style="font-size: 10px; color: #cbd5e1; font-weight: 600;">Latência 12 ms • Estável</div>
+            <div style="font-size: 10px; color: #cbd5e1; font-weight: 600;" id="netPing">Latência -- ms</div>
           </div>
-          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px; font-size: 10px; font-family: monospace; color: #94a3b8;">
-            <div style="display: flex; justify-content: space-between;"><span>Ativo há</span><span style="color:#fff; font-weight: bold;" id="pcUptime">29h 15m</span></div>
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; font-size: 10px; font-family: monospace; color: #94a3b8; display: flex; justify-content: space-between;">
+            <span>Ativo há</span><span id="pcUptime" style="color: #ffffff; font-weight: 700;">--</span>
           </div>
         </div>
       </div>
 
-      <!-- Container Dinâmico: Modo Gamer (Opcional via Settings) -->
-      <div id="viewGamer" style="flex: 1; display: none; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(16,185,129,0.3);">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;"><span style="color: #10b981;">GPU Core</span><span style="color: #94a3b8;">RTX 4070</span></div>
-          <div><div style="font-size: 28px; font-weight: 900; font-family: monospace; line-height: 1;">71°C <span style="font-size: 12px; color: #10b981;">• 98%</span></div><div class="bar-bg"><div class="bar-fill" style="width: 98%; background: #10b981;"></div></div><div style="font-size: 10px; color: #94a3b8;">Temperatura Segura</div></div>
-          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px; font-size: 10px; font-family: monospace; color: #94a3b8;"><div style="display: flex; justify-content: space-between;"><span>VRAM</span><span style="color:#fff;">7.4 / 12 GB</span></div></div>
+      <!-- Modo Gamer (100% REAL) -->
+      <div id="viewGamer" class="hw-grid" style="display: none;">
+        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(16,185,129,0.32);">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;"><span style="color: #10b981;">GPU</span><span id="gpuKind" style="color: #94a3b8; font-family: monospace;">--</span></div>
+          <div>
+            <div style="font-size: clamp(20px, 3.5vw, 28px); font-weight: 900; font-variant-numeric: tabular-nums;" id="gpuMain">--</div>
+            <div class="bar-bg"><div class="bar-fill" id="gpuBar" style="width: 0%; background: #10b981;"></div></div>
+            <div style="font-size: 10px; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="gpuName">--</div>
+          </div>
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; font-size: 10px; font-family: monospace; color: #94a3b8; display: flex; justify-content: space-between;">
+            <span>VRAM</span><span id="gpuVram" style="color: #ffffff;">--</span>
+          </div>
         </div>
-        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(56,189,248,0.3);">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;"><span style="color: #38bdf8;">CPU Gaming</span><span style="color: #94a3b8;">4.85 GHz</span></div>
-          <div><div style="font-size: 28px; font-weight: 900; font-family: monospace; line-height: 1;">64°C <span style="font-size: 12px; color: #38bdf8;">• 52%</span></div><div class="bar-bg"><div class="bar-fill" style="width: 52%; background: #38bdf8;"></div></div><div style="font-size: 10px; color: #94a3b8;">16 Threads Ativas</div></div>
-          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px; font-size: 10px; font-family: monospace; color: #94a3b8;"><div style="display: flex; justify-content: space-between;"><span>Consumo</span><span style="color:#fff;">82 W</span></div></div>
+
+        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(56,189,248,0.32);">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;"><span style="color: #38bdf8;">CPU</span><span style="color: #94a3b8; font-family: monospace;">REALTIME</span></div>
+          <div>
+            <div style="font-size: clamp(22px, 3.8vw, 30px); font-weight: 900; font-variant-numeric: tabular-nums;" id="gCpuVal">--%</div>
+            <div class="bar-bg"><div class="bar-fill" id="gCpuBar" style="width: 0%; background: #38bdf8;"></div></div>
+            <div style="font-size: 10px; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="gCpuName">--</div>
+          </div>
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; font-size: 10px; font-family: monospace; color: #94a3b8; display: flex; justify-content: space-between;">
+            <span>RAM</span><span id="gRam" style="color: #ffffff;">--</span>
+          </div>
         </div>
-        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(245,158,11,0.3);">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;"><span style="color: #f59e0b;">Game FPS</span><span style="color: #10b981;">FLUID</span></div>
-          <div><div style="font-size: 28px; font-weight: 900; font-family: monospace; line-height: 1;">164 <span style="font-size: 12px; color: #f59e0b;">FPS</span></div><div class="bar-bg"><div class="bar-fill" style="width: 82%; background: #f59e0b;"></div></div><div style="font-size: 10px; color: #94a3b8;">1% Low: 138 FPS</div></div>
-          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px; font-size: 10px; font-family: monospace; color: #94a3b8;"><div style="display: flex; justify-content: space-between;"><span>Frametime</span><span style="color:#fff;">6.1 ms</span></div></div>
+
+        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(245,158,11,0.32);">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;"><span style="color: #f59e0b;">Tráfego Rede</span><span style="color: #10b981; font-family: monospace;">RX/TX</span></div>
+          <div>
+            <div style="font-size: clamp(18px, 3vw, 24px); font-weight: 900; font-variant-numeric: tabular-nums;" id="netDown">--</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">Download</div>
+          </div>
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; font-size: 10px; font-family: monospace; color: #94a3b8; display: flex; justify-content: space-between;">
+            <span>Upload</span><span id="netUp" style="color: #f59e0b; font-weight: 700;">--</span>
+          </div>
         </div>
-        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(168,85,247,0.3);">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;"><span style="color: #c084fc;">Latência</span><span style="color: #10b981;">0% LOSS</span></div>
-          <div><div style="font-size: 28px; font-weight: 900; font-family: monospace; line-height: 1;">14 <span style="font-size: 12px; color: #c084fc;">ms</span></div><div class="bar-bg"><div class="bar-fill" style="width: 14%; background: #c084fc;"></div></div><div style="font-size: 10px; color: #10b981;">Ping SP Estável</div></div>
-          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px; font-size: 10px; font-family: monospace; color: #94a3b8;"><div style="display: flex; justify-content: space-between;"><span>Jitter</span><span style="color:#fff;">1.2 ms</span></div></div>
+
+        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(168,85,247,0.32);">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800;"><span style="color: #c084fc;">Latência</span><span id="gLoss" style="color: #10b981; font-family: monospace;">--</span></div>
+          <div>
+            <div style="font-size: clamp(22px, 3.8vw, 30px); font-weight: 900; font-variant-numeric: tabular-nums;" id="gPing">-- ms</div>
+            <div class="bar-bg"><div class="bar-fill" id="gPingBar" style="width: 0%; background: #c084fc;"></div></div>
+            <div style="font-size: 10px; color: #cbd5e1;" id="gPingAvg">Média -- ms</div>
+          </div>
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; font-size: 10px; font-family: monospace; color: #94a3b8; display: flex; justify-content: space-between;">
+            <span>Host</span><span id="gPingHost" style="color: #ffffff;">--</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 5: AGENDA & FEEDS (100% REAL) -->
+    <div class="page">
+      <div class="split-5-7">
+        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; min-height: 0;">
+          <div class="page-head" style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 2px 6px 2px;">
+            <span class="page-head-title">Agenda</span>
+            <span id="calCount" style="font-size: 10px; color: #86efac; font-weight: 700;">--</span>
+          </div>
+          <div id="agendaList" class="scroll-y" style="flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0;">
+            <div style="color: #94a3b8; font-size: 12px;">Carregando agenda...</div>
+          </div>
+        </div>
+
+        <div class="glass" style="padding: 14px; display: flex; flex-direction: column; min-height: 0;">
+          <div class="page-head" style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
+            <span class="page-head-title" id="feedsTitle">Notícias & Feeds</span>
+            <span id="feedsCount" style="font-size: 10px; color: #38bdf8; font-weight: 700;">--</span>
+          </div>
+          <div id="feedsList" class="scroll-y" style="flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0;">
+            <div style="color: #94a3b8; font-size: 12px;">Carregando notícias...</div>
+          </div>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- Dots Pager -->
-  <div class="pager">
+  <!-- Pager 5 pontos -->
+  <div class="pager" role="tablist" aria-label="Telas">
     <div class="dot active" id="d0" onclick="go(0)"></div>
     <div class="dot" id="d1" onclick="go(1)"></div>
     <div class="dot" id="d2" onclick="go(2)"></div>
     <div class="dot" id="d3" onclick="go(3)"></div>
+    <div class="dot" id="d4" onclick="go(4)"></div>
   </div>
 
   <script>
+    'use strict';
+    const TOTAL_PAGES = 5;
     let cur = 0;
+
     function go(idx) {
-      cur = idx;
+      cur = Math.max(0, Math.min(TOTAL_PAGES - 1, idx));
       haptic();
-      document.getElementById('track').style.transform = 'translateX(-' + (idx * 25) + '%)';
-      for(let i=0; i<4; i++) {
-        document.getElementById('d' + i).className = (i === idx) ? 'dot active' : 'dot';
+      window.scrollTo(0, 0);
+      document.documentElement.scrollLeft = 0;
+      document.getElementById('track').style.transform = `translateX(-${cur * 20}%)`;
+      for (let i = 0; i < TOTAL_PAGES; i++) {
+        document.getElementById('d' + i).className = (i === cur) ? 'dot active' : 'dot';
       }
     }
 
-    // Touch Swipe Suave
-    let touchStartX = 0;
-    window.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, {passive:true});
-    window.addEventListener('touchend', e => {
-      let diff = touchStartX - e.changedTouches[0].clientX;
-      if (diff > 50 && cur < 3) go(cur + 1);
-      if (diff < -50 && cur > 0) go(cur - 1);
-    }, {passive:true});
+    // Touch swipe suave sem brigar com slider de volume ou listas roláveis
+    let touchStartX = 0, touchStartY = 0, touchLock = false;
+    window.addEventListener('touchstart', (e) => {
+      touchLock = !!e.target.closest('#volSlider');
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    window.addEventListener('touchend', (e) => {
+      if (touchLock) return;
+      const dx = touchStartX - e.changedTouches[0].clientX;
+      const dy = Math.abs(touchStartY - e.changedTouches[0].clientY);
+      if (Math.abs(dx) > 48 && Math.abs(dx) > dy * 1.2) {
+        if (dx > 0 && cur < TOTAL_PAGES - 1) go(cur + 1);
+        else if (dx < 0 && cur > 0) go(cur - 1);
+      }
+    }, { passive: true });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') go(cur + 1);
+      else if (e.key === 'ArrowLeft') go(cur - 1);
+    });
 
     function haptic() {
       if ('vibrate' in navigator) {
-        try { navigator.vibrate(25); } catch(e) {}
+        try { navigator.vibrate(25); } catch (_) {}
       }
     }
 
-    // Atualização de Relógio
-    function updateClock() {
-      const d = new Date();
-      document.getElementById('clkH').textContent = String(d.getHours()).padStart(2, '0');
-      document.getElementById('clkM').textContent = String(d.getMinutes()).padStart(2, '0');
-      
-      const dias = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
-      const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-      document.getElementById('fullDay').textContent = `${dias[d.getDay()]}, ${d.getDate()}`;
-      document.getElementById('fullMonth').textContent = `${meses[d.getMonth()]} de ${d.getFullYear()}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // Alternar Modo de Telemetria
-    let currentTeleMode = "workstation";
-    function setTeleMode(mode) {
-      currentTeleMode = mode;
-      const isWork = mode === "workstation";
-      document.getElementById('viewWorkstation').style.display = isWork ? 'grid' : 'none';
-      document.getElementById('viewGamer').style.display = isWork ? 'none' : 'grid';
-      document.getElementById('btnToggleMode').textContent = isWork ? '💼 Modo Trabalho' : '🎮 Modo Gamer';
-      document.getElementById('hwModeTitle').textContent = isWork ? 'Telemetria do Computador' : 'Cockpit Gamer de Desempenho';
+    let toastTimer = null;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { t.style.display = 'none'; }, 2400);
     }
 
-    function toggleTelemetryMode() {
-      haptic();
-      setTeleMode(currentTeleMode === "workstation" ? "gamer" : "workstation");
-    }
-
-    // Polling de Telemetria Real do PC Windows
-    async function fetchStatus() {
-      try {
-        const res = await fetch('/api/status');
-        if (!res.ok) return;
-        const data = await res.json();
-        
-        if (data.telemetry_mode && data.telemetry_mode !== currentTeleMode) {
-          setTeleMode(data.telemetry_mode);
-        }
-
-        // CPU
-        if (data.cpu_percent !== undefined) {
-          document.getElementById('cpuVal').textContent = `${data.cpu_percent}%`;
-          document.getElementById('cpuBar').style.width = `${Math.min(100, data.cpu_percent)}%`;
-        }
-        if (data.hostname) {
-          document.getElementById('cpuHost').textContent = `Host ${data.hostname}`;
-        }
-
-        // RAM
-        if (data.memory) {
-          document.getElementById('ramUsed').textContent = `${data.memory.used_gb} GB`;
-          document.getElementById('ramLoad').textContent = `${data.memory.load_percent}%`;
-          document.getElementById('ramBar').style.width = `${data.memory.load_percent}%`;
-          document.getElementById('ramTotal').textContent = `De ${data.memory.total_gb} GB Total`;
-          const avail = (data.memory.total_gb - data.memory.used_gb).toFixed(1);
-          document.getElementById('ramAvail').textContent = `${avail} GB`;
-        }
-
-        // Disco
-        if (data.disk) {
-          document.getElementById('diskFree').textContent = `${data.disk.free_gb} GB`;
-          document.getElementById('diskBar').style.width = `${data.disk.used_percent}%`;
-          document.getElementById('diskTotal').textContent = `Livres de ${data.disk.total_gb} GB`;
-          document.getElementById('diskPct').textContent = `${data.disk.used_percent}% Ocupado`;
-        }
-
-        // Uptime
-        if (data.uptime) {
-          document.getElementById('pcUptime').textContent = data.uptime;
-        }
-      } catch (e) {}
-    }
-    setInterval(fetchStatus, 3000);
-    fetchStatus();
-
-    // Wake Lock: Impede que a tela do celular desligue ou apague a iluminação na bateria
-    let wakeLock = null;
-    async function requestWakeLock() {
-      try {
-        if ('wakeLock' in navigator) {
-          wakeLock = await navigator.wakeLock.request('screen');
-          console.log('[WakeLock] Tela travada para permanecer sempre ligada.');
-        }
-      } catch (err) {
-        console.log('[WakeLock Error]:', err);
-      }
-    }
-    requestWakeLock();
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        requestWakeLock();
-      }
-    });
-
-
-    // Ações de execução no PC
-    
     function openSettingsOnPC() {
       haptic();
-      showToast("⚙️ Abrindo configurações no monitor do PC...");
+      showToast('Abrindo configurações no navegador do PC...');
       fetch('/api/action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -623,40 +703,570 @@
       }).catch(() => {});
     }
 
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      if (!t) return;
-      t.innerText = msg;
-      t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 2600);
+    // Relógio e Data em Português
+    const DIAS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+    const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    function updateClock() {
+      const d = new Date();
+      document.getElementById('clkH').textContent = String(d.getHours()).padStart(2, '0');
+      document.getElementById('clkM').textContent = String(d.getMinutes()).padStart(2, '0');
+      document.getElementById('fullDay').textContent = `${DIAS[d.getDay()]}, ${d.getDate()}`;
+      document.getElementById('fullMonth').textContent = `${MESES[d.getMonth()]} de ${d.getFullYear()}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Ícones SVG de Clima (ZERO emojis)
+    function weatherSvg(code, isDay) {
+      if (code >= 95) {
+        return '<svg style="width:44px;height:44px;color:#facc15;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"/><polyline points="13 11 9 17 15 17 11 23"/></svg>';
+      }
+      if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+        return '<svg style="width:44px;height:44px;color:#38bdf8;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 13v8M8 13v8M12 15v8"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/></svg>';
+      }
+      if (code >= 2) {
+        return '<svg style="width:44px;height:44px;color:#cbd5e1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>';
+      }
+      if (!isDay) {
+        return '<svg style="width:42px;height:42px;color:#93c5fd;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+      }
+      return '<svg style="width:44px;height:44px;color:#f59e0b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
     }
 
-    function run(action, target) {
-      haptic();
-      fetch('/api/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: action, payload: { target: target, command: target } })
-      }).catch(() => {});
+    async function fetchWeather() {
+      try {
+        const res = await fetch('/api/phonedesk/weather');
+        if (!res.ok) return;
+        const w = await res.json();
+        if (w.temp !== null && w.temp !== undefined) {
+          document.getElementById('wTemp').textContent = `${w.temp}°`;
+          document.getElementById('wCity').textContent = `${w.city || 'Juiz de Fora'} • Sensação ${w.feelsLike}°`;
+          document.getElementById('wIcon').innerHTML = weatherSvg(Number(w.code || 0), w.isDay !== false);
+        }
+      } catch (_) {}
+    }
+    fetchWeather();
+    setInterval(fetchWeather, 300000);
+
+    // Tela 2: Stream Deck dinâmico a partir de /api/config
+    const ICON_THEMES = [
+      { match: /antigravity/, bg: 'linear-gradient(135deg,#1e40af,#3b82f6)', svg: '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>' },
+      { match: /operations|ops/, bg: 'linear-gradient(135deg,#0369a1,#0284c7)', svg: '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/>' },
+      { match: /sankhya/, bg: 'linear-gradient(135deg,#047857,#10b981)', svg: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>' },
+      { match: /teamviewer/, bg: 'linear-gradient(135deg,#1d4ed8,#2563eb)', svg: '<circle cx="12" cy="12" r="9"/><path d="M8 12h8M8 12l2.5-2.5M8 12l2.5 2.5M16 12l-2.5-2.5M16 12l2.5 2.5"/>' },
+      { match: /sandbox/, bg: 'linear-gradient(135deg,#4338ca,#6366f1)', svg: '<path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/>' },
+      { match: /outlook|mail/, bg: 'linear-gradient(135deg,#0369a1,#0284c7)', svg: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>' },
+      { match: /whatsapp.*beta|beta|whatsapp2/, bg: 'linear-gradient(135deg,#0f766e,#14b8a6)', svg: '<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 10h3.5a2 2 0 0 1 0 4H9z"/>' },
+      { match: /whatsapp/, bg: 'linear-gradient(135deg,#15803d,#22c55e)', fill: true, svg: '<path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.81 9.81 0 0 0 12.04 2zm4.64 13.79c-.2.55-1.14 1.05-1.57 1.11-.4.06-.92.09-1.48-.09-.35-.11-.8-.26-1.37-.5-2.4-1.04-3.97-3.47-4.09-3.63-.12-.16-.98-1.3-.98-2.48 0-1.18.62-1.76.84-2 .22-.24.48-.3.64-.3h.46c.15 0 .35-.06.55.42.2.49.69 1.69.75 1.81.06.12.1.26.02.42-.08.16-.12.26-.24.4-.12.14-.25.31-.36.42-.12.12-.24.25-.1.49.14.24.62 1.03 1.33 1.66.91.81 1.68 1.07 1.92 1.19.24.12.38.1.52-.06.14-.16.6-.7.76-.94.16-.24.32-.2.54-.12.22.08 1.4.66 1.64.78.24.12.4.18.46.28.06.1.06.59-.14 1.14z"/>' },
+      { match: /spotify/, bg: 'linear-gradient(135deg,#15803d,#1db954)', fill: true, svg: '<path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-.2.4-.7.5-1.1.3-3-1.8-6.8-2.3-11.2-1.3-.5.1-.9-.2-1-.7-.1-.5.2-.9.7-1 4.9-1.1 9.1-.6 12.4 1.5.4.3.5.8.2 1.2zm1.5-3.3c-.3.4-.8.6-1.3.3-3.4-2.1-8.6-2.7-12.7-1.5-.5.2-1.1-.1-1.2-.6-.2-.5.1-1.1.6-1.2 4.6-1.4 10.3-.7 14.3 1.7.4.3.6.9.3 1.3zm.1-3.4c-4.1-2.4-10.9-2.7-14.8-1.5-.6.2-1.3-.2-1.5-.8-.2-.6.2-1.3.8-1.5 4.6-1.4 12.1-1.1 16.8 1.7.5.3.7 1.1.4 1.7-.3.5-1.1.7-1.7.4z"/>' },
+      { match: /explorer|files|arquivos/, bg: 'linear-gradient(135deg,#b45309,#f59e0b)', svg: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>' },
+      { match: /browser|chrome|edge|firefox|opera/, bg: 'linear-gradient(135deg,#c2410c,#f97316)', svg: '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>' },
+      { match: /lock|bloquear|travar/, bg: 'linear-gradient(135deg,#b91c1c,#ef4444)', svg: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', danger: true },
+      { match: /vscode|code/, bg: 'linear-gradient(135deg,#1d4ed8,#0284c7)', svg: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>' },
+      { match: /terminal|powershell|cmd/, bg: 'linear-gradient(135deg,#334155,#475569)', svg: '<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>' },
+    ];
+    const FALLBACK_SVG = '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>';
+
+    function themeForShortcut(sc) {
+      const key = `${sc.id || ''} ${sc.label || ''}`.toLowerCase();
+      for (const t of ICON_THEMES) {
+        if (t.match.test(key)) return t;
+      }
+      return { bg: sc.color && sc.color !== '#262b34' ? sc.color : 'linear-gradient(135deg,#334155,#475569)', svg: FALLBACK_SVG };
     }
 
-    let isPlaying = false;
-    function togglePlay() {
-      haptic();
-      isPlaying = !isPlaying;
-      document.getElementById('svgPlay').style.display = isPlaying ? 'none' : 'block';
-      document.getElementById('svgPause').style.display = isPlaying ? 'block' : 'none';
-      sendMedia('playpause');
+    let lastShortcutsSig = '';
+    function renderDeck(shortcuts) {
+      const sig = JSON.stringify(shortcuts || []);
+      if (sig === lastShortcutsSig) return;
+      lastShortcutsSig = sig;
+      const grid = document.getElementById('deckGrid');
+      grid.textContent = '';
+      if (!shortcuts || !shortcuts.length) {
+        const empty = document.createElement('div');
+        empty.className = 'glass';
+        empty.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;justify-content:center;padding:20px;color:#94a3b8;font-size:13px;font-weight:600;text-align:center;';
+        empty.textContent = 'Nenhum atalho configurado. Use as configurações no computador para adicionar aplicativos.';
+        grid.appendChild(empty);
+        return;
+      }
+      for (const sc of shortcuts) {
+        const th = themeForShortcut(sc);
+        const card = document.createElement('div');
+        card.className = 'glass tactile deck-item';
+        if (th.danger) card.style.borderColor = 'rgba(239,68,68,0.5)';
+        card.onclick = () => runShortcut(sc.id, sc.label);
+
+        const sq = document.createElement('div');
+        sq.className = 'squircle deck-icon-box';
+        sq.style.background = th.bg;
+        sq.innerHTML = th.fill
+          ? `<svg viewBox="0 0 24 24" fill="#ffffff">${th.svg}</svg>`
+          : `<svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${th.svg}</svg>`;
+
+        const lbl = document.createElement('span');
+        lbl.className = 'deck-label';
+        if (th.danger) lbl.style.color = '#fca5a5';
+        lbl.textContent = sc.label || sc.id;
+
+        card.appendChild(sq);
+        card.appendChild(lbl);
+        grid.appendChild(card);
+      }
     }
 
-    function sendMedia(cmd) {
-      haptic();
-      fetch('/api/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'media', payload: { command: cmd } })
-      }).catch(() => {});
+    async function loadConfigShortcuts() {
+      try {
+        const r = await fetch('/api/config');
+        if (!r.ok) return;
+        const raw = await r.json();
+        const cfg = raw.config || raw;
+        renderDeck(cfg.shortcuts || []);
+      } catch (_) {}
     }
+    loadConfigShortcuts();
+
+    async function runShortcut(id, label) {
+      haptic();
+      showToast(`Executando ${label || id}...`);
+      try {
+        const r = await fetch(`/api/run/${encodeURIComponent(id)}`, { method: 'POST' });
+        if (!r.ok) showToast(`Não foi possível abrir ${label || id}`);
+      } catch (_) {
+        showToast('Sem conexão com o computador');
+      }
+    }
+
+    // Mídia & Áudio
+    function fmtMs(ms) {
+      const s = Math.max(0, Math.floor((ms || 0) / 1000));
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    let lastArtId = null;
+    function updateMediaUI(m) {
+      const appEl = document.getElementById('mediaApp');
+      const titleEl = document.getElementById('mediaTitle');
+      const artistEl = document.getElementById('mediaArtist');
+      const img = document.getElementById('mediaArtImg');
+      const fb = document.getElementById('mediaArtFallback');
+      const svgPlay = document.getElementById('svgPlay');
+      const svgPause = document.getElementById('svgPause');
+      const bar = document.getElementById('mediaProgBar');
+      const posEl = document.getElementById('mediaPos');
+      const durEl = document.getElementById('mediaDur');
+
+      if (!m || !m.title) {
+        appEl.textContent = 'Mídia';
+        titleEl.textContent = 'Nada tocando no PC';
+        artistEl.textContent = 'Pressione Play para iniciar';
+        img.style.display = 'none';
+        fb.style.display = 'block';
+        svgPlay.style.display = 'block';
+        svgPause.style.display = 'none';
+        bar.style.width = '0%';
+        posEl.textContent = '0:00';
+        durEl.textContent = '0:00';
+        return;
+      }
+
+      appEl.textContent = m.app || 'Mídia';
+      titleEl.textContent = m.title;
+      artistEl.textContent = [m.artist, m.album].filter(Boolean).join(' • ') || 'Reproduzindo no Windows';
+
+      const playing = !!m.playing;
+      svgPlay.style.display = playing ? 'none' : 'block';
+      svgPause.style.display = playing ? 'block' : 'none';
+
+      const dur = Number(m.durMs || 0);
+      const pos = Math.min(dur || Infinity, Number(m.posMs || 0) + (playing ? Number(m.ageMs || 0) : 0));
+      posEl.textContent = fmtMs(pos);
+      durEl.textContent = fmtMs(dur);
+      bar.style.width = dur > 0 ? `${Math.min(100, (pos / dur) * 100)}%` : '0%';
+
+      if (m.artId && m.artId > 0) {
+        if (lastArtId !== m.artId) {
+          lastArtId = m.artId;
+          img.onerror = () => { img.style.display = 'none'; fb.style.display = 'block'; };
+          img.onload = () => { img.style.display = 'block'; fb.style.display = 'none'; };
+          img.src = `/api/art?id=${encodeURIComponent(m.artId)}`;
+        }
+      } else {
+        lastArtId = null;
+        img.style.display = 'none';
+        fb.style.display = 'block';
+      }
+    }
+
+    function updateAudioUI(a) {
+      if (!a) return;
+      const pct = Math.max(0, Math.min(100, Number(a.volume ?? 0)));
+      const muted = !!a.muted;
+      document.getElementById('audioVolPct').textContent = muted ? 'MUDO' : `${pct}%`;
+      document.getElementById('audioVolPct').style.color = muted ? '#fca5a5' : '#ffffff';
+      document.getElementById('volFill').style.width = `${pct}%`;
+      document.getElementById('volFill').style.opacity = muted ? '0.4' : '1';
+      document.getElementById('muteLabel').textContent = muted ? 'ATIVAR SOM' : 'MUDO';
+      document.getElementById('btnMute').style.background = muted
+        ? 'rgba(239, 68, 68, 0.28)'
+        : 'linear-gradient(135deg, rgba(255,255,255,0.085) 0%, rgba(255,255,255,0.025) 100%)';
+    }
+
+    async function mediaAction(cmd) {
+      haptic();
+      try {
+        const r = await fetch(`/api/media/${encodeURIComponent(cmd)}`, { method: 'POST' });
+        if (r.ok) {
+          const d = await r.json().catch(() => null);
+          if (d && d.media) updateMediaUI(d.media);
+        }
+        setTimeout(fetchState, 600);
+      } catch (_) {}
+    }
+
+    async function stepVolume(op) {
+      haptic();
+      try {
+        const qs = op === 'mute' ? 'op=mute' : `op=${encodeURIComponent(op)}&step=5`;
+        const r = await fetch(`/api/volume?${qs}`, { method: 'POST' });
+        if (r.ok) {
+          const d = await r.json();
+          updateAudioUI(d);
+        }
+      } catch (_) {}
+    }
+
+    async function setVolumeLevel(pct) {
+      const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+      document.getElementById('audioVolPct').textContent = `${clamped}%`;
+      document.getElementById('volFill').style.width = `${clamped}%`;
+      try {
+        const r = await fetch(`/api/volume?level=${clamped}`, { method: 'POST' });
+        if (r.ok) updateAudioUI(await r.json());
+      } catch (_) {}
+    }
+
+    // Touch & pointer handling for volume slider
+    (function bindVolSlider() {
+      const slider = document.getElementById('volSlider');
+      let dragging = false, lastSent = 0;
+      function pctFromEvent(ev) {
+        const rect = slider.getBoundingClientRect();
+        const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+        return Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+      }
+      slider.addEventListener('pointerdown', (e) => {
+        dragging = true;
+        slider.setPointerCapture(e.pointerId);
+        const pct = Math.round(pctFromEvent(e));
+        document.getElementById('audioVolPct').textContent = `${pct}%`;
+        document.getElementById('volFill').style.width = `${pct}%`;
+      });
+      slider.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const pct = Math.round(pctFromEvent(e));
+        document.getElementById('audioVolPct').textContent = `${pct}%`;
+        document.getElementById('volFill').style.width = `${pct}%`;
+        const now = Date.now();
+        if (now - lastSent > 90) {
+          lastSent = now;
+          fetch(`/api/volume?level=${pct}`, { method: 'POST' }).catch(() => {});
+        }
+      });
+      slider.addEventListener('pointerup', (e) => {
+        if (!dragging) return;
+        dragging = false;
+        haptic();
+        setVolumeLevel(pctFromEvent(e));
+      });
+    })();
+
+    async function fetchAudioDevices() {
+      try {
+        const r = await fetch('/api/controls/state');
+        if (!r.ok) return;
+        const d = await r.json();
+        const devs = d.audio?.devices || [];
+        const def = devs.find((x) => x.default && x.direction === 'output') || devs.find((x) => x.default) || devs[0];
+        if (def && def.name) {
+          document.getElementById('audioDeviceName').textContent = def.name;
+        }
+      } catch (_) {}
+    }
+    fetchAudioDevices();
+    setInterval(fetchAudioDevices, 15000);
+
+    // Tela 4: Hardware PC (Trabalho / Gamer)
+    let teleMode = localStorage.getItem('pd_tele_mode') || 'workstation';
+    function applyTeleMode(mode) {
+      teleMode = mode === 'gamer' ? 'gamer' : 'workstation';
+      localStorage.setItem('pd_tele_mode', teleMode);
+      const isWork = teleMode === 'workstation';
+      document.getElementById('viewWorkstation').style.display = isWork ? 'grid' : 'none';
+      document.getElementById('viewGamer').style.display = isWork ? 'none' : 'grid';
+      document.getElementById('modeIcoWork').style.display = isWork ? 'block' : 'none';
+      document.getElementById('modeIcoGamer').style.display = isWork ? 'none' : 'block';
+      document.getElementById('modeLabel').textContent = isWork ? 'Modo Trabalho' : 'Modo Gamer';
+      document.getElementById('hwModeTitle').textContent = isWork ? 'Telemetria do Computador' : 'Desempenho & GPU (Modo Gamer)';
+    }
+    applyTeleMode(teleMode);
+
+    function toggleTelemetryMode() {
+      haptic();
+      applyTeleMode(teleMode === 'workstation' ? 'gamer' : 'workstation');
+    }
+
+    function fmtUptime(sec) {
+      if (!sec && sec !== 0) return '--';
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      return `${h}h ${m}m`;
+    }
+
+    function fmtRate(bps) {
+      const b = Number(bps || 0);
+      if (b >= 1048576) return `${(b / 1048576).toFixed(1)} MB/s`;
+      return `${Math.round(b / 1024)} KB/s`;
+    }
+
+    let lastCfgVer = null;
+    async function fetchState() {
+      try {
+        const res = await fetch('/api/state');
+        if (!res.ok) return;
+        const d = await res.json();
+
+        if (d.cfgVersion && d.cfgVersion !== lastCfgVer) {
+          lastCfgVer = d.cfgVersion;
+          loadConfigShortcuts();
+        }
+
+        updateMediaUI(d.media);
+        updateAudioUI(d.audio);
+
+        const pc = d.pc || {};
+        const ping = d.ping || {};
+        const cpuPct = pc.cpu !== undefined ? Math.round(pc.cpu) : null;
+        if (cpuPct !== null) {
+          document.getElementById('cpuVal').textContent = `${cpuPct}%`;
+          document.getElementById('cpuBar').style.width = `${Math.min(100, cpuPct)}%`;
+          document.getElementById('gCpuVal').textContent = `${cpuPct}%`;
+          document.getElementById('gCpuBar').style.width = `${Math.min(100, cpuPct)}%`;
+        }
+        document.getElementById('cpuModel').textContent = pc.cpuName || '--';
+        document.getElementById('gCpuName').textContent = pc.cpuName || '--';
+        document.getElementById('cpuHost').textContent = d.host || '--';
+
+        if (pc.ramTotalGb) {
+          const used = Number(pc.ramUsedGb || 0);
+          const tot = Number(pc.ramTotalGb);
+          const pct = Math.round((used / tot) * 100);
+          const avail = Math.max(0, tot - used).toFixed(1);
+          document.getElementById('ramUsed').textContent = `${used.toFixed(1)} GB`;
+          document.getElementById('ramLoad').textContent = `${pct}%`;
+          document.getElementById('ramBar').style.width = `${pct}%`;
+          document.getElementById('ramTotal').textContent = `De ${tot.toFixed(1)} GB Total`;
+          document.getElementById('ramAvail').textContent = `${avail} GB`;
+          document.getElementById('gRam').textContent = `${used.toFixed(1)}/${tot.toFixed(1)} GB`;
+        }
+
+        if (pc.disks && pc.disks.length) {
+          const dk = pc.disks[0];
+          const tot = Number(dk.totalGb || 0);
+          const used = Number(dk.usedGb || 0);
+          const free = Math.max(0, tot - used);
+          const pct = tot > 0 ? Math.round((used / tot) * 100) : 0;
+          document.getElementById('diskName').textContent = `Disco ${dk.name || 'C:'}`;
+          document.getElementById('diskFree').textContent = `${free} GB`;
+          document.getElementById('diskBar').style.width = `${pct}%`;
+          document.getElementById('diskTotal').textContent = `Livres de ${tot} GB`;
+          document.getElementById('diskPct').textContent = `${pct}% Ocupado`;
+        }
+
+        document.getElementById('pcUptime').textContent = fmtUptime(pc.uptimeSec);
+        document.getElementById('netStatus').textContent = 'ONLINE';
+        const ms = ping.ms !== undefined && ping.ms !== null ? Math.round(ping.ms) : null;
+        document.getElementById('netPing').textContent = ms !== null ? `Latência ${ms} ms` : 'Rede local ativa';
+        document.getElementById('netLoss').textContent = ping.lossPct !== undefined ? `${ping.lossPct}% LOSS` : 'OK';
+
+        // Gamer view (100% real)
+        const gpu = pc.gpu || {};
+        document.getElementById('gpuKind').textContent = gpu.integrated ? 'INTEGRADA' : (gpu.vendor ? gpu.vendor.toUpperCase() : 'GPU');
+        const gpuParts = [];
+        if (gpu.temp !== null && gpu.temp !== undefined) gpuParts.push(`${Math.round(gpu.temp)}°C`);
+        if (gpu.util !== null && gpu.util !== undefined) gpuParts.push(`${Math.round(gpu.util)}%`);
+        document.getElementById('gpuMain').textContent = gpuParts.length ? gpuParts.join(' • ') : '--';
+        document.getElementById('gpuBar').style.width = `${Math.min(100, Math.round(gpu.util || 0))}%`;
+        document.getElementById('gpuName').textContent = gpu.name || 'Sem GPU detectada';
+        document.getElementById('gpuVram').textContent = gpu.vramTotal ? `${Number(gpu.vramUsed || 0).toFixed(2)} / ${Number(gpu.vramTotal).toFixed(2)} GB` : '--';
+
+        document.getElementById('netDown').textContent = fmtRate(pc.netDownBps);
+        document.getElementById('netUp').textContent = fmtRate(pc.netUpBps);
+
+        document.getElementById('gPing').textContent = ms !== null ? `${ms} ms` : '--';
+        document.getElementById('gPingBar').style.width = ms !== null ? `${Math.min(100, ms)}%` : '0%';
+        document.getElementById('gPingAvg').textContent = ping.avgMs !== undefined ? `Média ${Math.round(ping.avgMs)} ms` : '--';
+        document.getElementById('gLoss').textContent = ping.lossPct !== undefined ? `${ping.lossPct}% LOSS` : '--';
+        document.getElementById('gPingHost').textContent = ping.host || '--';
+      } catch (_) {
+        document.getElementById('netStatus').textContent = 'OFFLINE';
+      }
+    }
+    fetchState();
+    setInterval(fetchState, 1500);
+
+    // Tela 1 + Tela 5: Agenda Real (/api/calendar)
+    function fmtTime(ms) {
+      const d = new Date(ms);
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+    function fmtDateShort(ms) {
+      const d = new Date(ms);
+      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    async function fetchCalendar() {
+      try {
+        const r = await fetch('/api/calendar');
+        if (!r.ok) return;
+        const d = await r.json();
+        const now = Date.now();
+        const events = (d.events || []).filter((e) => (e.end || e.start) >= now).sort((a, b) => a.start - b.start);
+
+        // Atualiza linha do StandBy (Tela 1) — ponto verde + texto real apenas
+        const statusEl = document.getElementById('standbyStatusText');
+        if (events.length) {
+          const next = events[0];
+          const prefix = next.allDay ? 'Hoje' : fmtTime(next.start);
+          statusEl.textContent = `${prefix} ${next.title}`;
+        } else {
+          statusEl.textContent = 'Sem compromissos hoje';
+        }
+
+        // Atualiza coluna Agenda (Tela 5)
+        document.getElementById('calCount').textContent = `${events.length} evento${events.length === 1 ? '' : 's'}`;
+        const list = document.getElementById('agendaList');
+        list.textContent = '';
+        if (!events.length) {
+          const empty = document.createElement('div');
+          empty.style.cssText = 'color:#94a3b8;font-size:12px;padding:12px 0;';
+          empty.textContent = 'Nenhum compromisso próximo na agenda.';
+          list.appendChild(empty);
+          return;
+        }
+        for (const ev of events.slice(0, 10)) {
+          const row = document.createElement('div');
+          row.style.cssText = 'padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);';
+          const meta = document.createElement('div');
+          meta.style.cssText = 'font-size:10px;font-weight:800;color:#86efac;';
+          meta.textContent = ev.allDay ? `${fmtDateShort(ev.start)} • Dia todo` : `${fmtDateShort(ev.start)} • ${fmtTime(ev.start)}`;
+          const title = document.createElement('div');
+          title.style.cssText = 'font-size:12px;font-weight:700;color:#ffffff;margin-top:2px;';
+          title.textContent = ev.title;
+          row.appendChild(meta);
+          row.appendChild(title);
+          if (ev.location) {
+            const loc = document.createElement('div');
+            loc.style.cssText = 'font-size:10px;color:#94a3b8;margin-top:2px;';
+            loc.textContent = ev.location;
+            row.appendChild(loc);
+          }
+          list.appendChild(row);
+        }
+      } catch (_) {}
+    }
+    fetchCalendar();
+    setInterval(fetchCalendar, 60000);
+
+    // Tela 5: Feeds & Notícias Reais (/api/feeds)
+    function fmtRel(ms) {
+      if (!ms) return '';
+      const diffMin = Math.max(0, Math.floor((Date.now() - ms) / 60000));
+      if (diffMin < 60) return `${diffMin}m`;
+      const h = Math.floor(diffMin / 60);
+      if (h < 24) return `${h}h`;
+      return `${Math.floor(h / 24)}d`;
+    }
+
+    async function fetchFeeds() {
+      try {
+        const r = await fetch('/api/feeds');
+        if (!r.ok) return;
+        const d = await r.json();
+        const items = d.items || [];
+        document.getElementById('feedsCount').textContent = `${items.length} itens`;
+        const list = document.getElementById('feedsList');
+        list.textContent = '';
+        if (!items.length) {
+          const empty = document.createElement('div');
+          empty.style.cssText = 'color:#94a3b8;font-size:12px;padding:12px 0;';
+          empty.textContent = 'Nenhum feed carregado.';
+          list.appendChild(empty);
+          return;
+        }
+        for (const it of items.slice(0, 15)) {
+          const row = document.createElement('div');
+          row.className = it.openable ? 'tactile' : '';
+          row.style.cssText = 'padding:9px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);';
+          const meta = document.createElement('div');
+          meta.style.cssText = 'display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:#38bdf8;';
+          const src = document.createElement('span');
+          src.textContent = it.source || it.category || 'Feed';
+          const tm = document.createElement('span');
+          tm.style.color = '#94a3b8';
+          tm.textContent = fmtRel(it.published);
+          meta.appendChild(src);
+          meta.appendChild(tm);
+
+          const title = document.createElement('div');
+          title.style.cssText = 'font-size:12px;font-weight:700;color:#f1f5f9;margin-top:3px;line-height:1.3;';
+          title.textContent = it.title;
+          row.appendChild(meta);
+          row.appendChild(title);
+          if (it.openable) {
+            row.onclick = () => {
+              haptic();
+              showToast('Abrindo notícia no PC...');
+              fetch(`/api/feeds/open?id=${encodeURIComponent(it.id)}`, { method: 'POST' }).catch(() => {});
+            };
+          }
+          list.appendChild(row);
+        }
+      } catch (_) {}
+    }
+    fetchFeeds();
+    setInterval(fetchFeeds, 120000);
+
+    // Wake Lock: manter tela sempre ligada
+    let wakeLock = null;
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (_) {}
+    }
+    requestWakeLock();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') requestWakeLock();
+    });
+    window.addEventListener('pointerdown', requestWakeLock, { once: true, passive: true });
+    window.addEventListener('touchstart', requestWakeLock, { once: true, passive: true });
+
+    // Service Worker + auto-reload quando index.html for atualizado no PC
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then((reg) => reg.update()).catch(() => {});
+    }
+    let _appVer = null;
+    setInterval(async () => {
+      try {
+        const r = await fetch('/api/phonedesk/version', { cache: 'no-store' });
+        if (!r.ok) return;
+        const v = (await r.json()).version;
+        if (_appVer && v && v !== _appVer) location.reload();
+        _appVer = v;
+      } catch (_) {}
+    }, 15000);
   </script>
 </body>
 </html>

@@ -6,7 +6,7 @@
 // Estado da Aplicação
 const state = {
   activeTab: 'deck',
-  agentIp: localStorage.getItem('deskdock_agent_ip') || window.location.hostname || '192.168.101.72',
+  agentIp: localStorage.getItem('deskdock_agent_ip') || window.location.hostname || '127.0.0.1',
   agentPort: 8770,
   isOnline: false,
   wakeLock: null,
@@ -35,19 +35,11 @@ const ICONS = {
   cpu: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>`
 };
 
-// Configuração Padrão dos 12 Botões
+// Configuração Padrão Genérica (personalize pelo seletor + Programas instalados em /settings)
 const DEFAULT_BUTTONS = [
-  { id: 'antigravity', label: 'Antigravity', icon: 'rocket', color: '#38bdf8', action: 'launch', target: 'C:\\Users\\TI Camilo\\AppData\\Local\\Programs\\Antigravity\\Antigravity.exe' },
-  { id: 'operations', label: 'Ops Center', icon: 'building', color: '#0ea5e9', action: 'launch', target: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome_proxy.exe --app-id=faflnifmifdkmadpfdanheikmknjbbcg' },
-  { id: 'sankhya', label: 'Sankhya ERP', icon: 'trending-up', color: '#10b981', action: 'launch', target: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome_proxy.exe --app-id=kjikbbkddkggblglgcljlnffmbbjkllo' },
-  { id: 'teamviewer', label: 'TeamViewer', icon: 'monitor', color: '#2563eb', action: 'launch', target: 'C:\\Program Files\\TeamViewer\\TeamViewer.exe' },
-  { id: 'sandbox', label: 'Win Sandbox', icon: 'shield', color: '#6366f1', action: 'powershell', command: 'Start-Process WindowsSandbox.exe' },
-  { id: 'outlook', label: 'Outlook', icon: 'mail', color: '#0284c7', action: 'launch', target: 'outlook.exe' },
-  { id: 'whatsapp', label: 'WhatsApp', icon: 'message-circle', color: '#22c55e', action: 'powershell', command: 'explorer.exe shell:AppsFolder\\5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App' },
-  { id: 'whatsapp_beta', label: 'WhatsApp Beta', icon: 'smartphone', color: '#16a34a', action: 'powershell', command: 'explorer.exe shell:AppsFolder\\5319275A.WhatsAppDesktopBeta_cv1g1gvanyjgm!App' },
-  { id: 'spotify', label: 'Spotify', icon: 'headphones', color: '#10b981', action: 'powershell', command: 'explorer.exe shell:AppsFolder\\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify' },
   { id: 'explorer', label: 'Arquivos', icon: 'folder', color: '#eab308', action: 'launch', target: 'explorer.exe' },
-  { id: 'chrome', label: 'Navegador', icon: 'globe', color: '#f97316', action: 'launch', target: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' },
+  { id: 'chrome', label: 'Navegador', icon: 'globe', color: '#f97316', action: 'launch', target: 'chrome.exe' },
+  { id: 'terminal', label: 'Terminal', icon: 'terminal', color: '#475569', action: 'launch', target: 'wt.exe' },
   { id: 'lock_pc', label: 'Bloquear PC', icon: 'lock', color: '#ef4444', action: 'lock', target: '' }
 ];
 
@@ -529,7 +521,7 @@ function initFeed() {
         <div class="news-meta">Audite conexões simultâneas de trabalho remoto</div>
       </div>
       <div class="news-item">
-        <div class="news-title">Backup Imutável de Base Sankhya ERP</div>
+        <div class="news-title">Exemplo de Feed RSS</div>
         <div class="news-meta">Rotina noturna de snapshot validada com sucesso</div>
       </div>
     `;

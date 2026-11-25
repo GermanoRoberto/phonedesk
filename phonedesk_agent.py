@@ -212,33 +212,15 @@ def launch_app(target):
     app_key = target.lower().strip().replace(".exe", "")
     print(f"[Launcher] Request to open: {target} (normalized: {app_key})")
     
-    SANKHYA_LNK = r"C:\Users\TI Camilo\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\SANKHYA.lnk"
-    OPS_LNK = r"C:\Users\TI Camilo\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Camilo dos Santos   Operations Center.lnk"
-    CHROME_EXE = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-    ANTIGRAVITY = r"C:\Users\TI Camilo\AppData\Local\Programs\Antigravity\Antigravity.exe"
-    TEAMVIEWER = r"C:\Program Files\TeamViewer\TeamViewer.exe"
-    TEAMVIEWER_X86 = r"C:\Program Files (x86)\TeamViewer\TeamViewer.exe"
-    OUTLOOK = r"C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
-    SPOTIFY = r"C:\Users\TI Camilo\AppData\Local\Microsoft\WindowsApps\Spotify.exe"
+    CHROME_EXE = os.path.expandvars(r"%ProgramFiles%\Google\Chrome\Application\chrome.exe")
+    ANTIGRAVITY = os.path.expandvars(r"%LOCALAPPDATA%\Programs\Antigravity\Antigravity.exe")
+    TEAMVIEWER = os.path.expandvars(r"%ProgramFiles%\TeamViewer\TeamViewer.exe")
+    TEAMVIEWER_X86 = os.path.expandvars(r"%ProgramFiles(x86)%\TeamViewer\TeamViewer.exe")
+    OUTLOOK = os.path.expandvars(r"%ProgramFiles%\Microsoft Office\root\Office16\OUTLOOK.EXE")
+    SPOTIFY = os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\WindowsApps\Spotify.exe")
 
     try:
-        if app_key == "sankhya":
-            if os.path.exists(SANKHYA_LNK):
-                os.startfile(SANKHYA_LNK)
-                print(f"[Launcher] Aberto com sucesso via atalho: {SANKHYA_LNK}")
-                return True
-            subprocess.Popen([CHROME_EXE, "--app-id=ogolepfkgjklanfdnhbcimgjaaimband"])
-            return True
-
-        elif app_key == "ops_center":
-            if os.path.exists(OPS_LNK):
-                os.startfile(OPS_LNK)
-                print(f"[Launcher] Aberto com sucesso via atalho: {OPS_LNK}")
-                return True
-            subprocess.Popen([CHROME_EXE, "--app-id=faflnifmifdkmadpfdanheikmknjbbcg"])
-            return True
-
-        elif app_key == "antigravity":
+        if app_key == "antigravity":
             if os.path.exists(ANTIGRAVITY):
                 os.startfile(ANTIGRAVITY)
                 return True
@@ -336,6 +318,23 @@ def execute_action(action_type, payload):
         spec = payload.get("keys") or payload.get("command") or payload.get("target") or ""
         return send_hotkey(spec)
 
+    elif action_type == "run_shortcut":
+        sid = payload.get("id") or payload.get("target") or ""
+        if not sid:
+            return False
+        try:
+            import urllib.request
+            req = urllib.request.Request(
+                f"http://{PHONEBOX_HOST}:{PHONEBOX_PORT}/api/run/{urllib.parse.quote(str(sid))}",
+                data=b"",
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return 200 <= resp.status < 300
+        except Exception as e:
+            print(f"[Shortcut Proxy Error] {e}")
+            return False
+
     elif action_type == "launch":
         target = payload.get("target", "")
         if not target:
@@ -381,9 +380,8 @@ def save_config(cfg):
 
 def get_default_config():
     return {
-        "device_name": "Galaxy A04e Desk Panel",
+        "device_name": "PhoneDesk Panel",
         "telemetry_mode": "workstation",
-        "standby_status": "● Juiz de Fora • Modo Trabalho",
         "weather": {
             "city": "Juiz de Fora",
             "lat": -21.7642,
@@ -391,78 +389,6 @@ def get_default_config():
             "interval_min": 15
         },
         "buttons": [
-            {
-                "id": "antigravity",
-                "label": "Antigravity",
-                "icon": "rocket",
-                "color": "#3b82f6",
-                "action": "launch",
-                "target": r"C:\Users\TI Camilo\AppData\Local\Programs\Antigravity\Antigravity.exe"
-            },
-            {
-                "id": "operations",
-                "label": "Ops Center",
-                "icon": "building",
-                "color": "#0ea5e9",
-                "action": "launch",
-                "target": r"C:\Program Files\Google\Chrome\Application\chrome_proxy.exe --app-id=faflnifmifdkmadpfdanheikmknjbbcg"
-            },
-            {
-                "id": "sankhya",
-                "label": "Sankhya ERP",
-                "icon": "trending-up",
-                "color": "#10b981",
-                "action": "launch",
-                "target": r"C:\Program Files\Google\Chrome\Application\chrome_proxy.exe --app-id=kjikbbkddkggblglgcljlnffmbbjkllo"
-            },
-            {
-                "id": "teamviewer",
-                "label": "TeamViewer",
-                "icon": "monitor",
-                "color": "#2563eb",
-                "action": "launch",
-                "target": r"C:\Program Files\TeamViewer\TeamViewer.exe"
-            },
-            {
-                "id": "sandbox",
-                "label": "Win Sandbox",
-                "icon": "shield",
-                "color": "#6366f1",
-                "action": "powershell",
-                "command": "Start-Process WindowsSandbox.exe"
-            },
-            {
-                "id": "outlook",
-                "label": "Outlook",
-                "icon": "mail",
-                "color": "#0284c7",
-                "action": "launch",
-                "target": "outlook.exe"
-            },
-            {
-                "id": "whatsapp",
-                "label": "WhatsApp",
-                "icon": "message-circle",
-                "color": "#22c55e",
-                "action": "powershell",
-                "command": "explorer.exe shell:AppsFolder\\5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App"
-            },
-            {
-                "id": "whatsapp_beta",
-                "label": "WhatsApp Beta",
-                "icon": "smartphone",
-                "color": "#16a34a",
-                "action": "powershell",
-                "command": "explorer.exe shell:AppsFolder\\5319275A.WhatsAppDesktopBeta_cv1g1gvanyjgm!App"
-            },
-            {
-                "id": "spotify",
-                "label": "Spotify",
-                "icon": "headphones",
-                "color": "#10b981",
-                "action": "powershell",
-                "command": "explorer.exe shell:AppsFolder\\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify"
-            },
             {
                 "id": "explorer",
                 "label": "Arquivos",
@@ -477,7 +403,15 @@ def get_default_config():
                 "icon": "globe",
                 "color": "#f97316",
                 "action": "launch",
-                "target": r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+                "target": "chrome.exe"
+            },
+            {
+                "id": "terminal",
+                "label": "Terminal",
+                "icon": "terminal",
+                "color": "#475569",
+                "action": "launch",
+                "target": "wt.exe"
             },
             {
                 "id": "lock_pc",
@@ -586,6 +520,66 @@ SHORTCUT_PICKER_JS = r"""
 })();
 </script>
 """
+
+
+_weather_cache = {"key": None, "ts": 0.0, "data": None}
+_weather_lock = threading.Lock()
+
+
+def get_real_weather():
+    import urllib.request
+    lat, lon, city, unit = -21.7642, -43.3496, "Juiz de Fora", "celsius"
+    try:
+        with urllib.request.urlopen(f"http://{PHONEBOX_HOST}:{PHONEBOX_PORT}/api/config", timeout=3) as r:
+            raw = json.loads(r.read().decode("utf-8"))
+            w = (raw.get("config") or raw).get("weather") or {}
+            if w.get("lat") is not None and w.get("lon") is not None:
+                lat = float(w["lat"])
+                lon = float(w["lon"])
+            if w.get("city"):
+                city = str(w["city"]).strip()
+            if w.get("unit"):
+                unit = str(w["unit"]).strip().lower()
+    except Exception:
+        pass
+
+    if city.upper() == "JF":
+        city = "Juiz de Fora"
+
+    cache_key = (round(lat, 4), round(lon, 4), unit)
+    now = time.time()
+    with _weather_lock:
+        if _weather_cache["data"] and _weather_cache["key"] == cache_key and (now - _weather_cache["ts"]) < 600:
+            res = dict(_weather_cache["data"])
+            res["city"] = city
+            return res
+
+    unit_param = "&temperature_unit=fahrenheit" if unit == "fahrenheit" else ""
+    url = (
+        f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
+        f"&current=temperature_2m,apparent_temperature,weather_code,is_day&timezone=auto{unit_param}"
+    )
+    try:
+        with urllib.request.urlopen(url, timeout=8) as r:
+            j = json.loads(r.read().decode("utf-8"))
+            cur = j.get("current") or {}
+            data = {
+                "city": city,
+                "temp": round(float(cur.get("temperature_2m", 0))),
+                "feelsLike": round(float(cur.get("apparent_temperature", cur.get("temperature_2m", 0)))),
+                "code": int(cur.get("weather_code", 0)),
+                "isDay": bool(cur.get("is_day", 1)),
+            }
+            with _weather_lock:
+                _weather_cache["key"] = cache_key
+                _weather_cache["ts"] = now
+                _weather_cache["data"] = data
+            return data
+    except Exception as e:
+        with _weather_lock:
+            if _weather_cache["data"]:
+                return _weather_cache["data"]
+        return {"city": city, "temp": None, "feelsLike": None, "code": 0, "isDay": True, "error": str(e)}
 
 
 def get_installed_windows_apps():
@@ -754,6 +748,9 @@ class DeskDockHandler(BaseHTTPRequestHandler):
         if path == "/api/ping":
             self.send_bytes(200, b"pong", "text/plain")
             return
+        if path == "/api/phonedesk/weather":
+            self.send_json(200, get_real_weather())
+            return
         if path == "/api/phonedesk/apps":
             if not self.is_loopback():
                 self.send_json(403, {"error": "Rota disponivel apenas no computador"})
@@ -838,6 +835,28 @@ def udp_discovery_loop():
         except Exception:
             pass
 
+def adb_reverse_loop():
+    """Mantém o túnel adb reverse tcp:8770 ativo se houver celular via USB."""
+    adb_exe = shutil.which("adb")
+    if not adb_exe:
+        candidate = os.path.expandvars(r"%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe")
+        if os.path.isfile(candidate):
+            adb_exe = candidate
+    if not adb_exe:
+        return
+    while True:
+        try:
+            subprocess.run(
+                [adb_exe, "reverse", f"tcp:{PORT}", f"tcp:{PORT}"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=5,
+            )
+        except Exception:
+            pass
+        time.sleep(25)
+
+
 def main():
     print(f"=== DeskDock PC Agent v{VERSION} ===")
     ips = get_local_ips()
@@ -845,9 +864,11 @@ def main():
     for ip in ips:
         print(f" -> http://{ip}:{PORT}")
     
-    # Iniciar thread de descoberta UDP
+    # Iniciar thread de descoberta UDP e túnel USB ADB
     t_udp = threading.Thread(target=udp_discovery_loop, daemon=True)
     t_udp.start()
+    t_adb = threading.Thread(target=adb_reverse_loop, daemon=True)
+    t_adb.start()
 
     # Iniciar servidor HTTP multithreaded
     server = PhoneDeskServer(("0.0.0.0", PORT), DeskDockHandler)

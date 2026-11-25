@@ -8,14 +8,14 @@ Transforme qualquer smartphone (Android ou iOS) em um **Smart Desk Panel & Contr
 
 ### 1. 🕒 Modo Descanso (iOS StandBy)
 - **Relógio Gigante em Verde Menta** (Fonte 900 de alto impacto).
-- **Data Completa em Português** e indicador de expediente/alarme.
-- **Clima e Previsão em Tempo Real** com ícone vetorial solar de alto contraste.
+- **Data Completa em Português** e próximo compromisso real da agenda configurada.
+- **Clima em Tempo Real** (Open-Meteo) com ícones vetoriais SVG de alto contraste.
 - **OLED / AMOLED Ready:** Fundo preto absoluto (`#000000`) para economia de energia e contraste perfeito em qualquer ângulo de visão da mesa.
 
 ### 2. 🎛️ Stream Deck (Controles & Aplicativos)
-- **Botões Grandes (Squircles 72px):** Visual imediato a 60cm de distância da mesa.
-- **Ícones Oficiais em Vetor SVG:** Spotify, Google Chrome, WhatsApp, Outlook, TeamViewer, Windows Sandbox, ERP Sankhya, Antigravity, Explorer.
-- **Ações Instantâneas no PC:** Abre aplicativos, PWAs do Chrome, janelas do Explorer e bloqueia a estação de trabalho (`Win + L`).
+- **Botões Grandes (Squircles responsivos):** Visual imediato a 60cm de distância da mesa, alimentados dinamicamente pelos atalhos salvos nas configurações.
+- **Detecção Automática de Programas Instalados:** Na tela de configurações do computador (`http://localhost:8770/settings`), o botão **+ Programas instalados** lista os programas detectados no Windows para você escolher quais adicionar ao Deck.
+- **Ações Instantâneas no PC:** Abre aplicativos, PWAs, janelas do Explorer e bloqueia a estação de trabalho (`Win + L`).
 
 ### 3. ⌨️ Suporte Completo a Teclas de Atalho (Hotkeys & Macros)
 - Dispara qualquer atalho do teclado do Windows diretamente do painel do celular:
@@ -74,14 +74,13 @@ Enderecos disponiveis na rede local:
 
 ## 🛠️ Configuração dos Atalhos (`config.json`)
 
-Você pode personalizar os 12 botões através do painel web em `http://localhost:8770/settings` ou editando o arquivo `config.json`:
+Você pode personalizar os atalhos e páginas pelo painel web no computador (`http://localhost:8770/settings`), usando inclusive o botão **+ Programas instalados** para adicionar qualquer aplicativo do seu PC:
 
 ```json
 {
-  "id": "sankhya",
-  "label": "Sankhya ERP",
-  "action": "launch",
-  "target": "sankhya"
+  "id": "spotify",
+  "label": "Spotify",
+  "cmd": "shell:AppsFolder\\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify"
 }
 ```
 
