@@ -239,10 +239,14 @@ public sealed class DisplayConfig
     public bool VolumeKeys { get; set; } = true;
     /// <summary>landscape, portrait or auto (follow the phone). In portrait the widgets are arranged automatically.</summary>
     public string Orientation { get; set; } = "landscape";
-    /// <summary>default, amoled, midnight, warm or graphite.</summary>
-    public string Theme { get; set; } = "default";
-    /// <summary>Accent colour (background glow, page dots), e.g. "#2dd4bf".</summary>
+    /// <summary>default, amoled, midnight, warm, graphite, standby-oled, cobalt-desk, carbon-pro, amber-night, nordic-light or custom.</summary>
+    public string Theme { get; set; } = "standby-oled";
+    /// <summary>Accent colour (background glow, page dots), e.g. "#86efac".</summary>
     public string Accent { get; set; } = "#2dd4bf";
+    /// <summary>User-defined custom theme colors/typography/surface values when Theme == "custom" (or as live overrides).</summary>
+    public CustomThemeConfig? CustomTheme { get; set; }
+    /// <summary>Named custom theme presets saved by the user in PhoneDesk Studio.</summary>
+    public List<SavedThemePreset>? SavedThemes { get; set; }
     /// <summary>Tint the background with the album art's colour while music plays.</summary>
     public bool ArtTint { get; set; } = true;
     /// <summary>Screen brightness follows the room (the phone's light sensor).</summary>
@@ -293,6 +297,29 @@ public sealed class DisplayConfig
     public int MinDwellSec { get; set; } = 15;
     /// <summary>A rule keeps its page at most this many minutes, then the idle return may take over; 0 = as long as the rule lasts.</summary>
     public int HoldMaxMin { get; set; } = 30;
+}
+
+public sealed class CustomThemeConfig
+{
+    public string BgStart { get; set; } = "#000000";
+    public string BgEnd { get; set; } = "#000000";
+    public int BgAngle { get; set; } = 135;
+    public string Text { get; set; } = "#ffffff";
+    public string Muted { get; set; } = "#94a3b8";
+    public string Clock { get; set; } = "#86efac";
+    public string Accent { get; set; } = "#2dd4bf";
+    public string CardBg { get; set; } = "#ffffff";
+    public int CardOpacity { get; set; } = 6;
+    public string CardBorder { get; set; } = "#ffffff";
+    public int CardRadius { get; set; } = 18;
+    public string? CustomCss { get; set; }
+}
+
+public sealed class SavedThemePreset
+{
+    public string Id { get; set; } = "";
+    public string Name { get; set; } = "";
+    public CustomThemeConfig Theme { get; set; } = new();
 }
 
 public sealed class LanConfig

@@ -9,19 +9,56 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <title>PhoneDesk</title>
+  <style id="pdThemeVars">
+    :root {
+      --pd-bg: #000000;
+      --pd-text: #ffffff;
+      --pd-muted: #94a3b8;
+      --pd-soft: #cbd5e1;
+      --pd-clock: #86efac;
+      --pd-clock-glow: rgba(134, 239, 172, 0.24);
+      --pd-accent: #2dd4bf;
+      --pd-card-bg: rgba(255, 255, 255, 0.06);
+      --pd-card-border: rgba(255, 255, 255, 0.13);
+      --pd-divider: rgba(255, 255, 255, 0.14);
+      --pd-radius: 18px;
+      --pd-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+  </style>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
     html, body {
       width: 100%;
       height: 100dvh;
-      background: #000000;
-      color: #ffffff;
+      background: var(--pd-bg);
+      color: var(--pd-text);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
+      transition: background 0.25s ease, color 0.2s ease;
+    }
+
+    #pdWallpaper {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-position: center;
+      background-size: cover;
+      pointer-events: none;
+      display: none;
+    }
+    #pdWallpaperDim {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: #000000;
+      pointer-events: none;
+      display: none;
     }
 
     .track {
+      position: relative;
+      z-index: 1;
       display: flex;
       width: 500%;
       height: 100%;
@@ -41,16 +78,53 @@
       padding: clamp(10px, 2vh, 18px) clamp(14px, 2.6vw, 28px) clamp(28px, 5vh, 38px) clamp(14px, 2.6vw, 28px);
     }
 
-    /* Liquid Glass Cards (macOS / iOS) */
+    /* Liquid Glass Cards (Theme-driven) */
     .glass {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.085) 0%, rgba(255, 255, 255, 0.025) 100%);
+      background: var(--pd-card-bg);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.13);
-      border-radius: 18px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.16);
-      transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.2s ease;
+      border: 1px solid var(--pd-card-border);
+      border-radius: var(--pd-radius);
+      box-shadow: var(--pd-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.2s ease, background 0.2s ease;
     }
+
+    .standby-num {
+      color: var(--pd-clock) !important;
+      text-shadow: 0 0 26px var(--pd-clock-glow) !important;
+    }
+    .standby-divider {
+      border-top-color: var(--pd-divider) !important;
+      color: var(--pd-clock) !important;
+    }
+    .status-dot {
+      background: var(--pd-accent) !important;
+      box-shadow: 0 0 8px var(--pd-accent) !important;
+    }
+    .dot.active { background: var(--pd-accent) !important; }
+    .vol-fill { background: linear-gradient(90deg, var(--pd-accent), var(--pd-clock)) !important; }
+    .page-head-title { color: var(--pd-soft) !important; }
+    #fullDay, #wTemp, #mediaTitle, #cpuVal, #ramUsed, #diskFree, #pcUptime, #gpuMain, #gpuVram, #gCpuVal, #gRam, #netDown, #gPing, #gPingHost { color: var(--pd-text); }
+    #fullMonth, #wCity, #mediaArtist, #mediaPos, #mediaDur, #deckCountHint { color: var(--pd-muted); }
+
+    html[data-light="1"] .pager { background: rgba(255, 255, 255, 0.88); border-color: rgba(15, 23, 42, 0.16); }
+    html[data-light="1"] .dot { background: rgba(15, 23, 42, 0.25); }
+    html[data-light="1"] .btn-settings { background: rgba(15, 23, 42, 0.06); border-color: rgba(15, 23, 42, 0.16); color: var(--pd-text); }
+    html[data-light="1"] .bar-bg, html[data-light="1"] .vol-track { background: rgba(15, 23, 42, 0.12); border-color: rgba(15, 23, 42, 0.12); }
+    html[data-light="1"] .standby-num { text-shadow: none !important; }
+    html[data-light="1"] .deck-label { color: var(--pd-text) !important; text-shadow: none !important; }
+    html[data-light="1"] #fullDay, html[data-light="1"] #wTemp, html[data-light="1"] #mediaTitle,
+    html[data-light="1"] #audioVolPct, html[data-light="1"] #cpuVal, html[data-light="1"] #ramUsed,
+    html[data-light="1"] #diskFree, html[data-light="1"] #pcUptime, html[data-light="1"] #gpuMain,
+    html[data-light="1"] #gpuVram, html[data-light="1"] #gCpuVal, html[data-light="1"] #gRam,
+    html[data-light="1"] #netDown, html[data-light="1"] #gPing, html[data-light="1"] #gPingHost,
+    html[data-light="1"] #btnToggleMode, html[data-light="1"] .page button.tactile { color: var(--pd-text) !important; }
+    html[data-light="1"] #btnToggleMode { background: rgba(15, 23, 42, 0.06) !important; border-color: rgba(15, 23, 42, 0.16) !important; }
+    html[data-light="1"] #fullMonth, html[data-light="1"] #wCity, html[data-light="1"] #mediaArtist,
+    html[data-light="1"] #cpuModel, html[data-light="1"] #ramTotal, html[data-light="1"] #diskTotal,
+    html[data-light="1"] #netPing, html[data-light="1"] #gpuName, html[data-light="1"] #gCpuName,
+    html[data-light="1"] #gPingAvg { color: var(--pd-muted) !important; }
+    html[data-light="1"] #btnMute { color: #dc2626 !important; border-color: rgba(220, 38, 38, 0.35) !important; }
 
     .squircle {
       border-radius: 22%;
@@ -366,6 +440,8 @@
   </style>
 </head>
 <body>
+  <div id="pdWallpaper"></div>
+  <div id="pdWallpaperDim"></div>
   <button type="button" onclick="openSettingsOnPC()" class="btn-settings" title="Abrir Configurações no Monitor do Computador" aria-label="Configurações">
     <svg style="width: 15px; height: 15px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
   </button>
@@ -815,16 +891,122 @@
       }
     }
 
+    const IS_PREVIEW = new URLSearchParams(location.search).get('preview') === '1';
+
+    // Motor de Temas PhoneDesk (presets + tema customizado livre + Live Preview + papel de parede)
+    const PHONEDESK_THEMES = {
+      'standby-oled':  { bgStart: '#000000', bgEnd: '#000000', bgAngle: 135, text: '#ffffff', muted: '#94a3b8', clock: '#86efac', accent: '#2dd4bf', cardBg: '#ffffff', cardOpacity: 6,  cardBorder: '#ffffff', cardRadius: 18 },
+      'cobalt-desk':   { bgStart: '#050c1f', bgEnd: '#0b1e42', bgAngle: 135, text: '#f8fafc', muted: '#93c5fd', clock: '#38bdf8', accent: '#0ea5e9', cardBg: '#1e3a8a', cardOpacity: 24, cardBorder: '#60a5fa', cardRadius: 18 },
+      'carbon-pro':    { bgStart: '#11151d', bgEnd: '#1e2533', bgAngle: 145, text: '#f1f5f9', muted: '#94a3b8', clock: '#34d399', accent: '#10b981', cardBg: '#334155', cardOpacity: 28, cardBorder: '#94a3b8', cardRadius: 14 },
+      'amber-night':   { bgStart: '#120b07', bgEnd: '#26150b', bgAngle: 135, text: '#fef3c7', muted: '#d6a87c', clock: '#fbbf24', accent: '#f59e0b', cardBg: '#78350f', cardOpacity: 22, cardBorder: '#fbbf24', cardRadius: 18 },
+      'nordic-light':  { bgStart: '#f1f5f9', bgEnd: '#e2e8f0', bgAngle: 135, text: '#0f172a', muted: '#475569', clock: '#0284c7', accent: '#0284c7', cardBg: '#ffffff', cardOpacity: 88, cardBorder: '#cbd5e1', cardRadius: 16 },
+      'crimson-studio':{ bgStart: '#16070b', bgEnd: '#2d0c17', bgAngle: 135, text: '#fff1f2', muted: '#fda4af', clock: '#fb7185', accent: '#f43f5e', cardBg: '#881337', cardOpacity: 24, cardBorder: '#fb7185', cardRadius: 18 },
+      'forest-moss':   { bgStart: '#06130e', bgEnd: '#0d261c', bgAngle: 135, text: '#ecfdf5', muted: '#6ee7b7', clock: '#6ee7b7', accent: '#10b981', cardBg: '#065f46', cardOpacity: 24, cardBorder: '#34d399', cardRadius: 18 },
+      'sunset-slate':  { bgStart: '#0f172a', bgEnd: '#3b1d5e', bgAngle: 135, text: '#f8fafc', muted: '#cbd5e1', clock: '#f472b6', accent: '#38bdf8', cardBg: '#1e1b4b', cardOpacity: 32, cardBorder: '#c084fc', cardRadius: 20 }
+    };
+    const LEGACY_THEME_MAP = { default: 'standby-oled', amoled: 'standby-oled', midnight: 'cobalt-desk', graphite: 'carbon-pro', warm: 'amber-night' };
+    function hexToRgb(hex) {
+      const m = String(hex || '').trim().match(/^#?([0-9a-f]{6})$/i);
+      if (!m) return null;
+      const n = parseInt(m[1], 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+    function rgbaFromHex(hex, alpha, fallback) {
+      const rgb = hexToRgb(hex);
+      return rgb ? `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})` : fallback;
+    }
+    function isLightHex(hex) {
+      const rgb = hexToRgb(hex);
+      if (!rgb) return false;
+      const lum = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+      return lum > 0.62;
+    }
+    function applyPhoneDeskTheme(display, wallpaperRev) {
+      const d = display || {};
+      const rawName = String(d.theme || 'standby-oled').toLowerCase();
+      const mapped = LEGACY_THEME_MAP[rawName] || rawName;
+      let pal = mapped === 'custom' && d.customTheme
+        ? { ...PHONEDESK_THEMES['standby-oled'], ...d.customTheme }
+        : { ...(PHONEDESK_THEMES[mapped] || PHONEDESK_THEMES['standby-oled']) };
+      if (mapped !== 'custom' && d.accent && String(d.accent).toLowerCase() !== '#2dd4bf') {
+        pal.accent = d.accent;
+        if (mapped === 'standby-oled') pal.clock = d.accent;
+      }
+      const r = document.documentElement;
+      const bg = pal.bgStart === pal.bgEnd ? pal.bgStart : `linear-gradient(${Number(pal.bgAngle ?? 135)}deg, ${pal.bgStart} 0%, ${pal.bgEnd} 100%)`;
+      const op = Math.max(0.02, Math.min(0.95, Number(pal.cardOpacity ?? 6) / 100));
+      const radius = Math.max(8, Math.min(30, Number(pal.cardRadius ?? d.appearance?.radius ?? 18)));
+      const light = isLightHex(pal.bgStart) && (!wallpaperRev || Number(d.wallpaper?.dim ?? 45) < 50);
+      r.dataset.theme = mapped;
+      r.dataset.light = light ? '1' : '0';
+      r.style.setProperty('--pd-bg', bg);
+      r.style.setProperty('--pd-text', pal.text || (light ? '#0f172a' : '#ffffff'));
+      r.style.setProperty('--pd-muted', pal.muted || (light ? '#475569' : '#94a3b8'));
+      r.style.setProperty('--pd-soft', light ? (pal.text || '#0f172a') : '#cbd5e1');
+      r.style.setProperty('--pd-clock', pal.clock || '#86efac');
+      r.style.setProperty('--pd-clock-glow', rgbaFromHex(pal.clock || '#86efac', 0.24, 'rgba(134,239,172,0.24)'));
+      r.style.setProperty('--pd-accent', pal.accent || '#2dd4bf');
+      r.style.setProperty('--pd-card-bg', rgbaFromHex(pal.cardBg || '#ffffff', op, 'rgba(255,255,255,0.06)'));
+      r.style.setProperty('--pd-card-border', rgbaFromHex(pal.cardBorder || '#ffffff', light ? 0.65 : 0.24, 'rgba(255,255,255,0.13)'));
+      r.style.setProperty('--pd-divider', light ? 'rgba(15,23,42,0.14)' : 'rgba(255,255,255,0.14)');
+      r.style.setProperty('--pd-radius', radius + 'px');
+      r.style.setProperty('--pd-shadow', light ? '0 4px 20px rgba(15,23,42,0.08)' : '0 8px 32px rgba(0,0,0,0.5)');
+
+      let cssEl = document.getElementById('pdUserCss');
+      if (!cssEl) {
+        cssEl = document.createElement('style');
+        cssEl.id = 'pdUserCss';
+        document.head.appendChild(cssEl);
+      }
+      cssEl.textContent = pal.customCss || '';
+
+      const wp = document.getElementById('pdWallpaper');
+      const wd = document.getElementById('pdWallpaperDim');
+      if (wp && wd) {
+        if (wallpaperRev) {
+          wp.style.display = 'block';
+          wp.style.backgroundImage = `url('/api/wallpaper?v=${encodeURIComponent(wallpaperRev)}')`;
+          const blurPx = Math.max(0, Math.min(20, Number(d.wallpaper?.blur ?? 0)));
+          wp.style.filter = blurPx > 0 ? `blur(${blurPx}px)` : '';
+          wp.style.transform = blurPx > 0 ? 'scale(1.06)' : '';
+          wd.style.display = 'block';
+          wd.style.opacity = String(Math.max(0, Math.min(0.9, Number(d.wallpaper?.dim ?? 45) / 100)));
+        } else {
+          wp.style.display = 'none';
+          wd.style.display = 'none';
+        }
+      }
+    }
+
     async function loadConfigShortcuts() {
       try {
-        const r = await fetch('/api/config');
+        const r = await fetch('/api/config', { cache: 'no-store' });
         if (!r.ok) return;
         const raw = await r.json();
         const cfg = raw.config || raw;
+        applyPhoneDeskTheme(cfg.display, cfg.wallpaperRev);
         renderDeck(cfg.shortcuts || []);
       } catch (_) {}
     }
     loadConfigShortcuts();
+    if (!IS_PREVIEW) setInterval(loadConfigShortcuts, 10000);
+
+    // Live Preview handshake com PhoneDesk Studio (Settings)
+    window.addEventListener('message', (e) => {
+      if (e.origin !== location.origin || e.data?.type !== 'phonebox-preview') return;
+      const c = e.data.config || {};
+      applyPhoneDeskTheme(c.display, c.wallpaperRev);
+      if (Array.isArray(c.shortcuts)) renderDeck(c.shortcuts);
+      if (typeof e.data.page === 'number' && !Number.isNaN(e.data.page)) {
+        go(Math.max(0, Math.min(TOTAL_PAGES - 1, e.data.page)));
+      }
+    });
+    if (IS_PREVIEW && window.parent !== window) {
+      window.addEventListener('load', () => {
+        try { window.parent.postMessage({ type: 'phonebox-preview-ready' }, location.origin); } catch (_) {}
+      });
+      try { window.parent.postMessage({ type: 'phonebox-preview-ready' }, location.origin); } catch (_) {}
+    }
 
     async function runShortcut(id, label) {
       haptic();
@@ -1246,27 +1428,29 @@
         }
       } catch (_) {}
     }
-    requestWakeLock();
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') requestWakeLock();
-    });
-    window.addEventListener('pointerdown', requestWakeLock, { once: true, passive: true });
-    window.addEventListener('touchstart', requestWakeLock, { once: true, passive: true });
+    if (!IS_PREVIEW) {
+      requestWakeLock();
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') requestWakeLock();
+      });
+      window.addEventListener('pointerdown', requestWakeLock, { once: true, passive: true });
+      window.addEventListener('touchstart', requestWakeLock, { once: true, passive: true });
 
-    // Service Worker + auto-reload quando index.html for atualizado no PC
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then((reg) => reg.update()).catch(() => {});
+      // Service Worker + auto-reload quando index.html for atualizado no PC
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').then((reg) => reg.update()).catch(() => {});
+      }
+      let _appVer = null;
+      setInterval(async () => {
+        try {
+          const r = await fetch('/api/phonedesk/version', { cache: 'no-store' });
+          if (!r.ok) return;
+          const v = (await r.json()).version;
+          if (_appVer && v && v !== _appVer) location.reload();
+          _appVer = v;
+        } catch (_) {}
+      }, 15000);
     }
-    let _appVer = null;
-    setInterval(async () => {
-      try {
-        const r = await fetch('/api/phonedesk/version', { cache: 'no-store' });
-        if (!r.ok) return;
-        const v = (await r.json()).version;
-        if (_appVer && v && v !== _appVer) location.reload();
-        _appVer = v;
-      } catch (_) {}
-    }, 15000);
   </script>
 </body>
 </html>

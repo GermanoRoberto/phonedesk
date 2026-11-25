@@ -393,6 +393,7 @@ app.Use(async (ctx, next) =>
     ctx.Response.Headers.CacheControl = "no-store";
     // only the panel may be framed, and only by the settings page itself (the live preview)
     ctx.Response.Headers["X-Frame-Options"] = ctx.Request.Path.StartsWithSegments("/panel")
+        || ctx.Request.Path == "/index.html"
         || (onLanWeb && (ctx.Request.Path == "/" || ctx.Request.Path == "/settings" || ctx.Request.Path == "/settings.html"))
         ? "SAMEORIGIN" : "DENY";
     await next();

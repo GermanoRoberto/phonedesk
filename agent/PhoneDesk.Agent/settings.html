@@ -592,6 +592,47 @@ input[type=text], input[type=number], input[type=time], input[type=search], sele
 @media (max-width: 560px) {
   .pd-kpi-strip { grid-template-columns: 1fr; }
 }
+
+/* ---------------------------------------------------------------- Temas Studio & 5-Screen Preview Switcher */
+nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx='13.5'%20cy='6.5'%20r='.5'%20fill='black'/%3E%3Ccircle%20cx='17.5'%20cy='10.5'%20r='.5'%20fill='black'/%3E%3Ccircle%20cx='8.5'%20cy='7.5'%20r='.5'%20fill='black'/%3E%3Ccircle%20cx='6.5'%20cy='12.5'%20r='.5'%20fill='black'/%3E%3Cpath%20d='M12%202C6.5%202%202%206.5%202%2012s4.5%2010%2010%2010c.926%200%201.648-.746%201.648-1.688%200-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64%201.64%200%200%201%201.668-1.668h1.996c3.051%200%205.555-2.503%205.555-5.554C21.965%206.012%2017.461%202%2012%202z'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx='13.5'%20cy='6.5'%20r='.5'%20fill='black'/%3E%3Ccircle%20cx='17.5'%20cy='10.5'%20r='.5'%20fill='black'/%3E%3Ccircle%20cx='8.5'%20cy='7.5'%20r='.5'%20fill='black'/%3E%3Ccircle%20cx='6.5'%20cy='12.5'%20r='.5'%20fill='black'/%3E%3Cpath%20d='M12%202C6.5%202%202%206.5%202%2012s4.5%2010%2010%2010c.926%200%201.648-.746%201.648-1.688%200-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64%201.64%200%200%201%201.668-1.668h1.996c3.051%200%205.555-2.503%205.555-5.554C21.965%206.012%2017.461%202%2012%202z'/%3E%3C/svg%3E"); }
+.pd-screen-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.pd-screen-tab {
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--muted);
+  border-radius: 8px; padding: 5px 11px; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.pd-screen-tab:hover { color: var(--text); border-color: var(--line-strong); }
+.pd-screen-tab.on { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent); }
+.pd-theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 12px; }
+.pd-theme-card {
+  position: relative; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px;
+  background: var(--panel); cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 8px;
+  transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.pd-theme-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); border-color: var(--line-strong); }
+.pd-theme-card.on { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.pd-swatch {
+  height: 64px; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center;
+  justify-content: space-between; border: 1px solid rgba(15,23,42,.12); overflow: hidden;
+}
+.pd-swatch-clk { font-weight: 900; font-size: 20px; letter-spacing: -.03em; line-height: 1; }
+.pd-swatch-card { width: 46%; height: 100%; border-radius: 7px; border: 1px solid transparent; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 6px; }
+.pd-swatch-bar { height: 5px; border-radius: 99px; }
+.pd-theme-name { font-weight: 650; font-size: 13px; color: var(--text); display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.pd-theme-tag { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+.pd-theme-del {
+  position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 6px;
+  border: 1px solid var(--line); background: rgba(255,255,255,.92); color: var(--danger);
+  font-size: 12px; font-weight: 700; cursor: pointer; display: grid; place-items: center;
+}
+.pd-theme-builder { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 12px; }
+.pd-color-field {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+}
+.pd-color-field label { font-size: 12px; font-weight: 600; color: var(--text); margin: 0; }
+.pd-color-field input[type=color] { width: 40px; height: 30px; padding: 2px; border-radius: 7px; border: 1px solid var(--line-strong); background: var(--panel); cursor: pointer; }
+.pd-slider-field { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; }
+.pd-slider-field label { font-size: 12px; font-weight: 600; color: var(--text); display: flex; justify-content: space-between; }
 </style>
 </head>
 <body>
@@ -633,6 +674,7 @@ input[type=text], input[type=number], input[type=time], input[type=search], sele
       <nav id="nav">
         <a href="#pages" class="on" data-i18n="s.nav.pages">Pages</a>
         <a href="#shortcuts" data-i18n="s.nav.shortcuts">Shortcuts</a>
+        <a href="#themes">Temas</a>
         <a href="#rules" data-i18n="s.nav.rules">Rules</a>
         <a href="#webhooks" data-i18n="s.nav.webhooks">Webhooks</a>
         <a href="#general" data-i18n="s.nav.general">General</a>
@@ -695,7 +737,8 @@ input[type=text], input[type=number], input[type=time], input[type=search], sele
           <div id="peHead"></div>
           <div id="stage">
             <div class="stage-bar">
-              <div class="seg" id="stageSeg"><button data-v="layout" class="on" data-i18n="s.pages.layout">Layout</button><button data-v="live" data-i18n="s.pages.livePreview">Live preview</button></div>
+              <div class="seg" id="stageSeg"><button data-v="layout" data-i18n="s.pages.layout">Layout</button><button data-v="live" class="on" data-i18n="s.pages.livePreview">Live preview</button></div>
+              <div class="pd-screen-tabs" id="stageScreenTabs" hidden style="margin:0"></div>
               <span class="hint" id="stageHint"></span>
             </div>
             <div class="canvas-wrap"><div class="phone"><div class="canvas" id="canvas"></div><div class="preview" id="previewBox" hidden></div></div></div>
@@ -710,6 +753,51 @@ input[type=text], input[type=number], input[type=time], input[type=search], sele
       <p class="lead" data-i18n="s.shortcuts.lead">The keys shown by Shortcut grid and Big button widgets. Click a key to edit it, drag to reorder. The phone only sends the key's id; commands never leave this computer.</p>
       <div class="deck" id="deck"></div>
       <div class="card editor" id="editor"></div>
+    </section>
+
+    <section id="themes">
+      <h2>Temas do Painel</h2>
+      <p class="lead">Escolha um tema pronto ou personalize livremente fundo, cores, transparência dos cards, bordas e CSS com pré-visualização em tempo real do PhoneDesk.</p>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">
+          <h3 style="margin:0">Pré-visualização ao vivo do PhoneDesk</h3>
+          <div class="pd-screen-tabs" id="themeScreenTabs" style="margin:0"></div>
+        </div>
+        <div class="canvas-wrap">
+          <div class="phone">
+            <div class="preview" id="themePreviewBox"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Temas prontos</h3>
+        <div class="pd-theme-grid" id="themePresetGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:12px">
+          <h3 style="margin:0">Personalizar livremente</h3>
+          <span class="pd-badge" id="themeModeBadge">PERSONALIZADO</span>
+        </div>
+        <div class="pd-theme-builder" id="themeBuilder"></div>
+        <div class="field" style="margin-top:14px">
+          <label for="thCustomCss">CSS adicional opcional (aplicado sobre o painel)</label>
+          <textarea id="thCustomCss" rows="3" spellcheck="false" placeholder="/* Ex: .standby-num { letter-spacing: -0.06em; } */" style="font-family:Consolas,monospace;font-size:12.5px"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Meus temas salvos &amp; compartilhamento</h3>
+        <div class="row" style="margin-bottom:12px">
+          <input type="text" id="thSaveName" placeholder="Nome do seu tema (ex: Azul Escritório)" style="flex:1;min-width:220px">
+          <button type="button" class="btn primary" id="thSavePresetBtn">Salvar como novo tema</button>
+          <button type="button" class="btn" id="thExportBtn">Exportar tema (.json)</button>
+          <button type="button" class="btn" id="thImportBtn">Importar tema (.json)</button>
+        </div>
+        <div class="pd-theme-grid" id="savedThemesGrid"></div>
+      </div>
     </section>
 
     <section id="rules">
@@ -907,7 +995,7 @@ input[type=text], input[type=number], input[type=time], input[type=search], sele
           <div class="field" style="margin:0"><label data-i18n="lang.label">Language</label>
             <select data-bind="display.language" id="displayLangSel"></select></div>
           <div class="field" style="margin:0"><label data-i18n="s.display.theme">Theme</label>
-            <select data-bind="display.theme"><option value="default" data-i18n="s.display.theme.default">Default</option><option value="amoled" data-i18n="s.display.theme.amoled">AMOLED black</option><option value="midnight" data-i18n="s.display.theme.midnight">Midnight blue</option><option value="warm" data-i18n="s.display.theme.warm">Warm</option><option value="graphite" data-i18n="s.display.theme.graphite">Graphite</option></select></div>
+            <select data-bind="display.theme"><option value="standby-oled">OLED StandBy (Preto Absoluto)</option><option value="cobalt-desk">Cobalt Desk (Azul Executivo)</option><option value="carbon-pro">Carbon Pro (Grafite Metálico)</option><option value="amber-night">Amber Desk (Âmbar Noturno)</option><option value="nordic-light">Nordic Light (Claro Diurno)</option><option value="crimson-studio">Crimson Studio</option><option value="forest-moss">Forest Moss</option><option value="sunset-slate">Sunset Slate</option><option value="custom">Personalizado (Workspace › Temas)</option></select></div>
           <div class="field" style="margin:0"><label data-i18n="s.display.accent">Accent colour</label><input type="color" data-bind="display.accent" style="width:56px;height:36px;padding:2px"></div>
           <label class="check" style="margin-bottom:8px"><input type="checkbox" data-bind="display.artTint"> <span data-i18n="s.display.artTint">Tint the background with the album art</span></label>
         </div>
@@ -1642,10 +1730,11 @@ function renderPageEditor() {
 }
 
 // ---------------------------------------------------------------- live preview
-// The real panel (served by the agent at /panel/) in an iframe, fed the unsaved settings, so you see live data in the
-// layout you are editing. The iframe is created once and only hidden, so it does not reload while you edit.
-let stageMode = 'layout', previewFrame = null, previewReady = false, previewTimer = 0;
-try { stageMode = localStorage.getItem('pb-stage') === 'live' ? 'live' : 'layout'; } catch (_) {}
+// The real PhoneDesk 5-screen panel (/index.html) in an iframe, fed the unsaved settings live.
+const PD_SCREENS = ['1. StandBy', '2. Stream Deck', '3. Mídia & Áudio', '4. Hardware PC', '5. Agenda & Feeds'];
+let stageMode = 'live', previewFrame = null, previewReady = false, previewTimer = 0, pdStagePage = 0;
+var themePreviewFrame = null, themePreviewReady = false, pdThemePage = 0;
+try { const st = localStorage.getItem('pb-stage'); stageMode = st === 'layout' ? 'layout' : 'live'; } catch (_) {}
 
 function setStage(mode) {
   stageMode = mode;
@@ -1654,10 +1743,11 @@ function setStage(mode) {
   const live = mode === 'live';
   $('canvas').hidden = live;
   $('previewBox').hidden = !live;
+  if ($('stageScreenTabs')) $('stageScreenTabs').hidden = !live;
   $('pageEditor').classList.toggle('live', live);
   updateStageText();
   if (live && !previewFrame) {
-    previewFrame = h('iframe', { src: '../panel/?preview=1' });
+    previewFrame = h('iframe', { src: '/index.html?preview=1' });
     updateStageText();
     $('previewBox').appendChild(previewFrame);
     const fit = () => { previewFrame.style.transform = `scale(${$('previewBox').clientWidth / 780})`; };
@@ -1666,11 +1756,19 @@ function setStage(mode) {
   }
   if (live) queuePreview();
 }
+if ($('stageScreenTabs')) {
+  $('stageScreenTabs').replaceChildren(...PD_SCREENS.map((lbl, idx) =>
+    h('button', { type: 'button', class: 'pd-screen-tab' + (idx === pdStagePage ? ' on' : ''), onclick: (ev) => {
+      pdStagePage = idx;
+      for (const b of $('stageScreenTabs').children) b.classList.toggle('on', b === ev.currentTarget);
+      sendPreview();
+    } }, lbl)));
+}
 
 function updateStageText() {
   const translate = window.PhoneBoxI18n.tc;
   $('stageHint').textContent = stageMode === 'live'
-    ? translate('The real panel with your unsaved changes and live data: tap and swipe it like the phone. Switch back to Layout to move widgets.')
+    ? 'Pré-visualização real das 5 telas do PhoneDesk (deslize ou clique nas telas acima).'
     : '';
   if (previewFrame) previewFrame.title = translate('Live preview of the panel');
 }
@@ -1678,20 +1776,21 @@ function updateStageText() {
 function sendPreview() {
   if (!cfg) return;
   const config = JSON.parse(JSON.stringify(cfg));
-  // the settings file has no wallpaper revision (the agent adds it for the phone): the preview gets the picture shown
-  // here, so the darkening and blur being edited can be seen on it
   config.wallpaperRev = wallpaperShown;
   if (previewFrame && previewReady && stageMode === 'live')
-    previewFrame.contentWindow.postMessage({ type: 'phonebox-preview', config, page: selPage }, location.origin);
+    previewFrame.contentWindow.postMessage({ type: 'phonebox-preview', config, page: pdStagePage }, location.origin);
   if (appearancePreviewFrame && appearancePreviewReady)
     appearancePreviewFrame.contentWindow.postMessage({ type: 'phonebox-preview', config, page: Number($('appearancePreviewPage')?.value || 0) }, location.origin);
+  if (themePreviewFrame && themePreviewReady)
+    themePreviewFrame.contentWindow.postMessage({ type: 'phonebox-preview', config, page: pdThemePage }, location.origin);
 }
-function queuePreview() { clearTimeout(previewTimer); previewTimer = setTimeout(sendPreview, 120); }
+function queuePreview() { clearTimeout(previewTimer); previewTimer = setTimeout(sendPreview, 80); }
 
 window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || e.data?.type !== 'phonebox-preview-ready') return;
   if (e.source === previewFrame?.contentWindow) previewReady = true;
   if (e.source === appearancePreviewFrame?.contentWindow) appearancePreviewReady = true;
+  if (e.source === themePreviewFrame?.contentWindow) themePreviewReady = true;
   sendPreview();
 });
 for (const b of $('stageSeg').children) b.onclick = () => setStage(b.dataset.v);
@@ -3766,12 +3865,12 @@ function renderAppearanceSettings() {
   editor.open = true;
   const preview = h('div', { class: 'preview', hidden: true });
   const selector = h('select', { id: 'appearancePreviewPage', 'aria-label': t('s.appearance.previewPage'), onchange: queuePreview },
-    ...(cfg.pages || []).map((p, index) => p.enabled !== false ? h('option', { value: index }, p.title) : null));
+    ...PD_SCREENS.map((name, index) => h('option', { value: index }, name)));
   const toggle = h('button', { type: 'button', class: 'btn', onclick: () => {
     preview.hidden = !preview.hidden;
     toggle.textContent = preview.hidden ? t('s.appearance.showPreview') : t('s.appearance.hidePreview');
     if (!appearancePreviewFrame && !preview.hidden) {
-      appearancePreviewFrame = h('iframe', { src: '../panel/?preview=1', title: 'Live appearance preview' });
+      appearancePreviewFrame = h('iframe', { src: '/index.html?preview=1', title: 'Live appearance preview' });
       preview.append(appearancePreviewFrame);
       const frame = appearancePreviewFrame;
       appearancePreviewObserver = new ResizeObserver(() => { frame.style.transform = 'scale(' + preview.clientWidth / 780 + ')'; });
@@ -3880,6 +3979,10 @@ function bindForm() {
       if (p === 'charge.method') renderCharge();
       if (p === 'lan.enabled') renderLanStatus();
       if (p === 'photos.source' || p === 'photos.immichUrl' || p === 'photos.immichKey') renderPhotoSource();
+      if (p === 'display.theme' || p === 'display.accent') {
+        if (typeof renderThemes === 'function') renderThemes();
+        queuePreview();
+      }
       changed();
     };
   });
@@ -4005,7 +4108,10 @@ function fillDefaults() {
   cfg.pages = fitPages(cfg.pages); cfg.shortcuts ??= []; cfg.rules ??= []; cfg.display ??= {}; cfg.display.wallpaper ??= { dim: 45, blur: 0 }; cfg.night = { enabled: true, start: '00:30', end: '07:30', brightness: 0.02, ...cfg.night }; cfg.weather ??= {}; cfg.weather.unit ??= 'celsius'; cfg.weather.model ??= ''; cfg.photos ??= { source: 'folder', folder: '', subfolders: true, immichUrl: '', immichKey: '', immichAlbum: '', immichAlbumName: '' }; cfg.lan ??= { enabled: false, port: 8766 }; cfg.updates ??= { auto: false, repo: 'GermanoRoberto/phonedesk' }; cfg.claude ??= { phoneApprovals: true, timeoutSec: 90, onlyWhenAway: false, shareSessionTitles: false, shareConversation: false, watchWsl: false }; cfg.opencode ??= { phoneApprovals: false, timeoutSec: 90, onlyWhenAway: false, alwaysCountdownSec: 10, watchWsl: false, shareSessionTitles: false, sessions: false };
   cfg.codexBar ??= { providers: ['claude', 'codex', 'antigravity'], rotate: true, pageSize: 2, rotateInterval: 8 };
   for (const [k, v] of Object.entries({ language: 'auto', hour12: false, idleReturnSec: 90, switchCountdownSec: 3, touchGraceSec: 20, minDwellSec: 15, holdMaxMin: 30, keepAwake: true, openOnConnect: true,
-    showSeconds: true, vibrate: true, finishToast: true, finishSound: false, finishSoundVolume: 70, volumeKeys: true, artTint: true, nightWhenUnreachable: false, unreachableNightDelayMin: 5, proximityWake: true, orientation: 'landscape', theme: 'default', accent: '#2dd4bf' })) cfg.display[k] ??= v;
+    showSeconds: true, vibrate: true, finishToast: true, finishSound: false, finishSoundVolume: 70, volumeKeys: true, artTint: true, nightWhenUnreachable: false, unreachableNightDelayMin: 5, proximityWake: true, orientation: 'landscape', theme: 'standby-oled', accent: '#2dd4bf' })) cfg.display[k] ??= v;
+  const legacyTheme = { default: 'standby-oled', amoled: 'standby-oled', midnight: 'cobalt-desk', graphite: 'carbon-pro', warm: 'amber-night' };
+  if (legacyTheme[cfg.display.theme]) cfg.display.theme = legacyTheme[cfg.display.theme];
+  cfg.display.savedThemes ??= [];
   cfg.charge ??= { enabled: false, min: 50, max: 80, method: 'ha' };
   cfg.steam ??= { enabled: false };
 }
@@ -4020,7 +4126,7 @@ async function load() {
   // in English that has display.language = "vi" would otherwise render every editor in English and never rebuild them
   if (window.PhoneBoxI18n) applyLanguageUi(cfg.display?.language || 'auto');
   else localizeCatalog();
-  renderPages(); renderDeck(); renderRules(); renderCalendars(); renderFeeds(); renderCameras(); renderConsole(); renderNetAdapters(); renderCharge(); bindForm();
+  renderPages(); renderDeck(); if (typeof renderThemes === 'function') renderThemes(); renderRules(); renderCalendars(); renderFeeds(); renderCameras(); renderConsole(); renderNetAdapters(); renderCharge(); bindForm();
   // the editors fill in the sections and fields they own (feeds, cameras, an action's "enabled", ...), so the
   // baseline is taken after they ran: otherwise a freshly loaded page already counts as unsaved, and Revert can never
   // get back to a clean state
@@ -4059,7 +4165,7 @@ async function doSave() {
 }
 
 $('save').onclick = save;
-$('revert').onclick = () => { cfg = JSON.parse(saved); renderPages(); renderDeck(); renderRules(); renderCalendars(); renderFeeds(); renderCameras(); renderConsole(); renderNetAdapters(); renderPhones(); renderCharge(); bindForm(); changed(); };
+$('revert').onclick = () => { cfg = JSON.parse(saved); renderPages(); renderDeck(); if (typeof renderThemes === 'function') renderThemes(); renderRules(); renderCalendars(); renderFeeds(); renderCameras(); renderConsole(); renderNetAdapters(); renderPhones(); renderCharge(); bindForm(); changed(); };
 // Over USB this also wakes the phone and brings the panel to the front (adb); over Wi-Fi the phone switches to the
 // page selected in the editor through the live stream.
 $('openPhone').onclick = async () => {
@@ -4215,7 +4321,7 @@ $('applyJson').onclick = () => {
     cfg = c;
     fillDefaults();
     $('jsonErr').textContent = '';
-    renderPages(); renderDeck(); renderRules(); renderCalendars(); renderFeeds(); renderCameras(); renderConsole(); renderNetAdapters(); renderPhones(); renderCharge(); bindForm(); changed(); toast(t('s.jsonLoaded'));
+    renderPages(); renderDeck(); if (typeof renderThemes === 'function') renderThemes(); renderRules(); renderCalendars(); renderFeeds(); renderCameras(); renderConsole(); renderNetAdapters(); renderPhones(); renderCharge(); bindForm(); changed(); toast(t('s.jsonLoaded'));
   }
   catch (e) { $('jsonErr').textContent = e instanceof SyntaxError ? tc('Invalid settings JSON.') : e.message; }
 };
@@ -4249,6 +4355,8 @@ function route() {
   const activeNav = document.querySelector('nav a.on');
   if ($('pdSectionTitle') && activeNav) $('pdSectionTitle').textContent = activeNav.textContent.trim();
   if (id === 'webhooks') loadPushed();
+  if (id === 'themes' && typeof ensureThemePreview === 'function') ensureThemePreview();
+  requestAnimationFrame(() => window.scrollTo(0, 0));
   fitLeads();
 }
 window.addEventListener('hashchange', route);
@@ -4392,6 +4500,187 @@ setInterval(loadInfo, 5000);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
 })();
+</script>
+<script>
+// ---------------------------------------------------------------- Workspace Temas Studio
+const PD_PRESETS = [
+  { id: 'standby-oled',  name: 'OLED StandBy',   tag: 'Padrão', bgStart: '#000000', bgEnd: '#000000', bgAngle: 135, text: '#ffffff', muted: '#94a3b8', clock: '#86efac', accent: '#2dd4bf', cardBg: '#ffffff', cardOpacity: 6,  cardBorder: '#ffffff', cardRadius: 18 },
+  { id: 'cobalt-desk',   name: 'Cobalt Desk',    tag: 'Executivo', bgStart: '#050c1f', bgEnd: '#0b1e42', bgAngle: 135, text: '#f8fafc', muted: '#93c5fd', clock: '#38bdf8', accent: '#0ea5e9', cardBg: '#1e3a8a', cardOpacity: 24, cardBorder: '#60a5fa', cardRadius: 18 },
+  { id: 'carbon-pro',    name: 'Carbon Pro',     tag: 'Grafite', bgStart: '#11151d', bgEnd: '#1e2533', bgAngle: 145, text: '#f1f5f9', muted: '#94a3b8', clock: '#34d399', accent: '#10b981', cardBg: '#334155', cardOpacity: 28, cardBorder: '#94a3b8', cardRadius: 14 },
+  { id: 'amber-night',   name: 'Amber Desk',     tag: 'Noturno', bgStart: '#120b07', bgEnd: '#26150b', bgAngle: 135, text: '#fef3c7', muted: '#d6a87c', clock: '#fbbf24', accent: '#f59e0b', cardBg: '#78350f', cardOpacity: 22, cardBorder: '#fbbf24', cardRadius: 18 },
+  { id: 'nordic-light',  name: 'Nordic Light',   tag: 'Claro',   bgStart: '#f1f5f9', bgEnd: '#e2e8f0', bgAngle: 135, text: '#0f172a', muted: '#475569', clock: '#0284c7', accent: '#0284c7', cardBg: '#ffffff', cardOpacity: 88, cardBorder: '#cbd5e1', cardRadius: 16 },
+  { id: 'crimson-studio',name: 'Crimson Studio', tag: 'Rubi',    bgStart: '#16070b', bgEnd: '#2d0c17', bgAngle: 135, text: '#fff1f2', muted: '#fda4af', clock: '#fb7185', accent: '#f43f5e', cardBg: '#881337', cardOpacity: 24, cardBorder: '#fb7185', cardRadius: 18 },
+  { id: 'forest-moss',   name: 'Forest Moss',    tag: 'Verde',   bgStart: '#06130e', bgEnd: '#0d261c', bgAngle: 135, text: '#ecfdf5', muted: '#6ee7b7', clock: '#6ee7b7', accent: '#10b981', cardBg: '#065f46', cardOpacity: 24, cardBorder: '#34d399', cardRadius: 18 },
+  { id: 'sunset-slate',  name: 'Sunset Slate',   tag: 'Gradiente', bgStart: '#0f172a', bgEnd: '#3b1d5e', bgAngle: 135, text: '#f8fafc', muted: '#cbd5e1', clock: '#f472b6', accent: '#38bdf8', cardBg: '#1e1b4b', cardOpacity: 32, cardBorder: '#c084fc', cardRadius: 20 }
+];
+function activeThemeModel() {
+  const id = cfg?.display?.theme || 'standby-oled';
+  const preset = PD_PRESETS.find((p) => p.id === id) || PD_PRESETS[0];
+  if (id === 'custom' && cfg?.display?.customTheme) return { ...PD_PRESETS[0], ...cfg.display.customTheme };
+  return { ...preset };
+}
+function ensureThemePreview() {
+  const box = $('themePreviewBox');
+  if (!box) return;
+  if (!themePreviewFrame) {
+    themePreviewFrame = h('iframe', { src: '/index.html?preview=1', title: 'Pré-visualização de Tema do PhoneDesk' });
+    box.replaceChildren(themePreviewFrame);
+    const fit = () => { if (box.clientWidth > 0) themePreviewFrame.style.transform = `scale(${box.clientWidth / 780})`; };
+    new ResizeObserver(fit).observe(box);
+    fit();
+  } else {
+    themePreviewFrame.style.transform = `scale(${box.clientWidth / 780})`;
+  }
+  sendPreview();
+}
+function renderThemeCard(tObj, isActive, onClick, onDelete) {
+  const bg = tObj.bgStart === tObj.bgEnd ? tObj.bgStart : `linear-gradient(${tObj.bgAngle ?? 135}deg, ${tObj.bgStart}, ${tObj.bgEnd})`;
+  const op = Math.max(0.05, Math.min(0.95, Number(tObj.cardOpacity ?? 12) / 100));
+  const swCard = h('div', { class: 'pd-swatch-card', style: { background: tObj.cardBg, opacity: String(Math.max(0.35, op + 0.3)), borderColor: tObj.cardBorder } },
+    h('div', { class: 'pd-swatch-bar', style: { background: tObj.text, width: '78%' } }),
+    h('div', { class: 'pd-swatch-bar', style: { background: tObj.accent, width: '54%' } }));
+  const card = h('button', { type: 'button', class: 'pd-theme-card' + (isActive ? ' on' : ''), onclick: onClick },
+    h('div', { class: 'pd-swatch', style: { background: bg } },
+      h('span', { class: 'pd-swatch-clk', style: { color: tObj.clock } }, '09:41'),
+      swCard),
+    h('div', { class: 'pd-theme-name' },
+      h('span', {}, tObj.name),
+      tObj.tag ? h('span', { class: 'pd-theme-tag' }, tObj.tag) : null));
+  if (onDelete) {
+    card.append(h('span', { class: 'pd-theme-del', title: 'Remover tema salvo', onclick: (ev) => { ev.stopPropagation(); onDelete(); } }, '×'));
+  }
+  return card;
+}
+function renderThemes() {
+  if (!cfg) return;
+  cfg.display ??= {};
+  cfg.display.savedThemes ??= [];
+  if ($('themeScreenTabs')) {
+    $('themeScreenTabs').replaceChildren(...PD_SCREENS.map((lbl, idx) =>
+      h('button', { type: 'button', class: 'pd-screen-tab' + (idx === pdThemePage ? ' on' : ''), onclick: () => {
+        pdThemePage = idx;
+        renderThemes();
+        sendPreview();
+      } }, lbl)));
+  }
+  const activeId = cfg.display.theme || 'standby-oled';
+  const cur = activeThemeModel();
+  if ($('themePresetGrid')) {
+    $('themePresetGrid').replaceChildren(...PD_PRESETS.map((p) =>
+      renderThemeCard(p, activeId === p.id, () => {
+        cfg.display.theme = p.id;
+        cfg.display.accent = p.accent;
+        cfg.display.customTheme = { bgStart: p.bgStart, bgEnd: p.bgEnd, bgAngle: p.bgAngle, text: p.text, muted: p.muted, clock: p.clock, accent: p.accent, cardBg: p.cardBg, cardOpacity: p.cardOpacity, cardBorder: p.cardBorder, cardRadius: p.cardRadius, customCss: cfg.display.customTheme?.customCss || '' };
+        const sel = document.querySelector('[data-bind="display.theme"]');
+        if (sel) sel.value = p.id;
+        renderThemes();
+        changed();
+        queuePreview();
+      })));
+  }
+  if ($('themeModeBadge')) {
+    $('themeModeBadge').textContent = activeId === 'custom' ? 'PERSONALIZADO ATIVO' : ('BASE: ' + (PD_PRESETS.find((x) => x.id === activeId)?.name || activeId).toUpperCase());
+  }
+  const commitCustom = (patch) => {
+    const next = { ...activeThemeModel(), ...(cfg.display.customTheme || {}), ...patch };
+    cfg.display.customTheme = {
+      bgStart: next.bgStart, bgEnd: next.bgEnd, bgAngle: Number(next.bgAngle ?? 135),
+      text: next.text, muted: next.muted, clock: next.clock, accent: next.accent,
+      cardBg: next.cardBg, cardOpacity: Number(next.cardOpacity ?? 10), cardBorder: next.cardBorder,
+      cardRadius: Number(next.cardRadius ?? 18), customCss: next.customCss ?? ''
+    };
+    cfg.display.theme = 'custom';
+    cfg.display.accent = cfg.display.customTheme.accent;
+    const sel = document.querySelector('[data-bind="display.theme"]');
+    if (sel) sel.value = 'custom';
+    if ($('themeModeBadge')) $('themeModeBadge').textContent = 'PERSONALIZADO ATIVO';
+    document.querySelectorAll('#themePresetGrid .pd-theme-card').forEach((c) => c.classList.remove('on'));
+    changed();
+    queuePreview();
+  };
+  if ($('themeBuilder')) {
+    const colorRow = (key, label) => h('div', { class: 'pd-color-field' },
+      h('label', {}, label),
+      h('input', { type: 'color', value: cur[key] || '#000000', oninput: (e) => commitCustom({ [key]: e.target.value }) }));
+    const rangeRow = (key, label, min, max, unit) => {
+      const valSpan = h('span', {}, String(cur[key] ?? min) + unit);
+      return h('div', { class: 'pd-slider-field' },
+        h('label', {}, h('span', {}, label), valSpan),
+        h('input', { type: 'range', min: String(min), max: String(max), value: String(cur[key] ?? min), oninput: (e) => {
+          valSpan.textContent = e.target.value + unit;
+          commitCustom({ [key]: parseInt(e.target.value, 10) });
+        } }));
+    };
+    $('themeBuilder').replaceChildren(
+      colorRow('bgStart', 'Fundo inicial'),
+      colorRow('bgEnd', 'Fundo final'),
+      colorRow('clock', 'Cor do relógio'),
+      colorRow('accent', 'Cor de destaque'),
+      colorRow('text', 'Texto principal'),
+      colorRow('muted', 'Texto secundário'),
+      colorRow('cardBg', 'Fundo dos cards'),
+      colorRow('cardBorder', 'Borda dos cards'),
+      rangeRow('bgAngle', 'Ângulo gradiente', 0, 360, '°'),
+      rangeRow('cardOpacity', 'Transparência cards', 2, 95, '%'),
+      rangeRow('cardRadius', 'Arredondamento', 8, 28, 'px')
+    );
+  }
+  if ($('thCustomCss')) {
+    $('thCustomCss').value = cfg.display.customTheme?.customCss || '';
+    $('thCustomCss').oninput = (e) => commitCustom({ customCss: e.target.value });
+  }
+  if ($('savedThemesGrid')) {
+    const list = cfg.display.savedThemes || [];
+    $('savedThemesGrid').replaceChildren(...(list.length
+      ? list.map((s, idx) => renderThemeCard({ ...s.theme, name: s.name, tag: 'Salvo' }, false, () => {
+          cfg.display.customTheme = JSON.parse(JSON.stringify(s.theme));
+          cfg.display.theme = 'custom';
+          cfg.display.accent = s.theme.accent || cfg.display.accent;
+          renderThemes(); changed(); queuePreview(); toast('Tema aplicado: ' + s.name);
+        }, () => {
+          cfg.display.savedThemes.splice(idx, 1);
+          renderThemes(); changed();
+        }))
+      : [h('p', { class: 'hint', style: { margin: '0' } }, 'Nenhum tema personalizado salvo ainda. Ajuste as cores acima e salve com um nome para reutilizar depois.')]));
+  }
+  if ($('thSavePresetBtn')) {
+    $('thSavePresetBtn').onclick = () => {
+      const name = ($('thSaveName')?.value || '').trim();
+      if (!name) { toast('Digite um nome para o tema', true); $('thSaveName')?.focus(); return; }
+      const snap = activeThemeModel();
+      cfg.display.savedThemes = cfg.display.savedThemes || [];
+      cfg.display.savedThemes.push({
+        id: 'u-' + Date.now().toString(36),
+        name,
+        theme: { bgStart: snap.bgStart, bgEnd: snap.bgEnd, bgAngle: snap.bgAngle, text: snap.text, muted: snap.muted, clock: snap.clock, accent: snap.accent, cardBg: snap.cardBg, cardOpacity: snap.cardOpacity, cardBorder: snap.cardBorder, cardRadius: snap.cardRadius, customCss: cfg.display.customTheme?.customCss || '' }
+      });
+      $('thSaveName').value = '';
+      renderThemes(); changed(); toast('Tema salvo em Meus Temas: ' + name);
+    };
+  }
+  if ($('thExportBtn')) {
+    $('thExportBtn').onclick = () => {
+      const snap = activeThemeModel();
+      download('phonedesk-theme', { phonedeskTheme: 1, name: $('thSaveName')?.value.trim() || activeId, theme: snap });
+      toast('Tema exportado (.json)');
+    };
+  }
+  if ($('thImportBtn')) {
+    $('thImportBtn').onclick = async () => {
+      const txt = await pickFile();
+      if (!txt) return;
+      try {
+        const parsed = JSON.parse(txt);
+        const tData = parsed.theme || parsed;
+        if (!tData || typeof tData !== 'object' || !tData.bgStart) throw new Error('JSON inválido');
+        commitCustom(tData);
+        renderThemes();
+        toast('Tema importado! Clique em Salvar para aplicar no celular.');
+      } catch (e) { toast('Arquivo de tema inválido', true); }
+    };
+  }
+  if ((location.hash || '') === '#themes') ensureThemePreview();
+}
 </script>
 </body>
 </html>
