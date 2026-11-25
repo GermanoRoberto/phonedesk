@@ -522,6 +522,14 @@
     body.eco-dimmed {
       filter: brightness(0.22) contrast(0.95);
     }
+    body.eco-dimmed .pager,
+    body.eco-dimmed .btn-settings {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .pager, .btn-settings {
+      transition: opacity 0.5s ease;
+    }
   </style>
 </head>
 <body>
@@ -810,6 +818,7 @@
     let cur = 0;
 
     function go(idx) {
+      if (typeof isEcoMode !== 'undefined' && isEcoMode && idx !== 0) return;
       cur = Math.max(0, Math.min(TOTAL_PAGES - 1, idx));
       haptic();
       window.scrollTo(0, 0);
@@ -839,7 +848,7 @@
       touchStartY = e.touches[0].clientY;
     }, { passive: true });
     window.addEventListener('touchend', (e) => {
-      if (touchLock) return;
+      if (touchLock || (typeof isEcoMode !== 'undefined' && isEcoMode)) return;
       const dx = touchStartX - e.changedTouches[0].clientX;
       const dy = Math.abs(touchStartY - e.changedTouches[0].clientY);
       if (Math.abs(dx) > 48 && Math.abs(dx) > dy * 1.2) {
@@ -849,6 +858,7 @@
     }, { passive: true });
 
     window.addEventListener('keydown', (e) => {
+      if (typeof isEcoMode !== 'undefined' && isEcoMode) return;
       if (e.key === 'ArrowRight') go(cur + 1);
       else if (e.key === 'ArrowLeft') go(cur - 1);
     });
@@ -1437,9 +1447,9 @@
         if (window.PhoneDeskNative && window.PhoneDeskNative.setBrightness) {
           try { window.PhoneDeskNative.setBrightness(0.02); } catch (_) {}
         }
-        // Se estiver em outra tela, volta suavemente para a Tela 1 (Relógio Desk StandBy)
-        if (typeof curPage !== 'undefined' && curPage !== 0 && typeof goToPage === 'function') {
-          goToPage(0);
+        // Se estiver em outra tela, volta e trava na Tela 1 (Relógio Desk StandBy)
+        if (typeof cur !== 'undefined' && cur !== 0) {
+          go(0);
         }
       } else {
         document.body.classList.remove('eco-dimmed');
