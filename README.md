@@ -1,17 +1,17 @@
 # PhoneDesk
 
-Smart Desk Panel & Control Deck de código aberto para transformar qualquer smartphone ou tablet em um painel interativo de mesa (iOS StandBy + Stream Deck + Mídia & Volume + Hardware PC + Agenda & Feeds), com agente autônomo em **.NET 10** (baseado no projeto open-source **PhoneBox**) e interface web responsiva sem dependências externas.
+Smart Desk Panel & Control Deck de código aberto para transformar qualquer smartphone ou tablet em um painel interativo de mesa (StandBy Clock & Clima + Stream Deck + Mídia & Volume + Hardware PC + Agenda & Feeds), com agente autônomo em **.NET 10** e aplicativo Android nativo dedicado para imersão total de mesa sem dependências externas.
 
-> **Crédito & Origem:** O agente desktop (`agent/PhoneDesk.Agent`) foi construído sobre a base técnica do projeto open-source [PhoneBox](https://github.com/ersinkoc/phonebox), evoluído com a marca **PhoneDesk**, servidor web LAN nativo na porta `8770`, descoberta automática de aplicativos instalados no Windows (`+ Programas instalados`), e interface própria de 5 telas (`index.html`). Veja [THIRD-PARTY-NOTICES.txt](agent/PhoneDesk.Agent/THIRD-PARTY-NOTICES.txt).
+> **Crédito & Origem:** O agente desktop (`agent/PhoneDesk.Agent`) foi construído sobre a base técnica do projeto open-source [PhoneBox](https://github.com/ersinkoc/phonebox), evoluído com a marca **PhoneDesk**, servidor web LAN nativo na porta `8770`, descoberta automática de aplicativos instalados no Windows (`+ Programas instalados`), aplicativo Android nativo próprio (`android/app`) e interface própria de 5 telas (`index.html`). Veja [THIRD-PARTY-NOTICES.txt](agent/PhoneDesk.Agent/THIRD-PARTY-NOTICES.txt).
 
 ---
 
 ## ✨ Funcionalidades
 
-### 1. Tela 1 — StandBy iOS
-- **Relógio gigante verde-menta** (`#86efac`) e data completa em português.
+### 1. Tela 1 — StandBy Clock & Clima
+- **Relógio gigante digital** com tipografia nítida e data completa em português.
 - **Clima real** (Open-Meteo, endpoint nativo `/api/phonedesk/weather`) com ícones vetoriais SVG (zero emojis).
-- **Próximo compromisso real** da agenda configurada (`.ics`), indicado pelo ponto verde brilhante.
+- **Próximo compromisso real** da agenda configurada (`.ics`), indicado pelo ponto de status em tempo real.
 
 ### 2. Tela 2 — Stream Deck
 - Squircles em Liquid Glass carregados dinamicamente da configuração salva (`/api/config`).
@@ -37,42 +37,51 @@ Smart Desk Panel & Control Deck de código aberto para transformar qualquer smar
 
 ---
 
+## 📱 Aplicativo Android Nativo (`PhoneDesk.apk`)
+
+O projeto inclui o cliente Android nativo dedicado localizado em `android/app`:
+- **Modo Imersivo Puro:** `IMMERSIVE_STICKY` em orientação horizontal travada (`sensorLandscape`), sem barra de navegação, abas ou barra de endereços de navegador.
+- **Always-On Desk Panel:** `FLAG_KEEP_SCREEN_ON` para manter a tela sempre ativa no suporte da mesa.
+- **Conexão Híbrida:** Conecta tanto via Wi-Fi na rede local (`http://<IP-DO-PC>:8770/`) quanto via túnel USB reverso ADB (`http://127.0.0.1:8770/`), com reconexão automática e tolerância a falhas.
+
+---
+
 ## 🚀 Como Compilar e Executar
 
 ### Requisitos
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (ou execute com `dotnet run`).
+- Android SDK (opcional, para compilar o APK nativo via `android/app`).
 
-### Rodar em desenvolvimento
+### Rodar o Agente Windows em desenvolvimento
 ```bash
 dotnet run --project agent/PhoneDesk.Agent/PhoneDesk.Agent.csproj -f net10.0-windows10.0.19041.0
 ```
 
-### Compilar em Release
+### Compilar o Agente Windows em Release
 ```bash
 dotnet build agent/PhoneDesk.Agent/PhoneDesk.Agent.csproj -c Release -f net10.0-windows10.0.19041.0
 ```
 
 Ao iniciar, o `PhoneDeskAgent`:
-- Abre o painel web na LAN em `http://0.0.0.0:8770/` (para abrir no navegador ou WebView Kiosk do celular/tablet).
+- Abre o painel web na LAN em `http://0.0.0.0:8770/`.
 - Serve **PhoneDesk Settings** apenas localmente em `http://localhost:8770/settings` e `http://127.0.0.1:8765/`.
-- Armazena suas configurações pessoais em `%APPDATA%\PhoneDesk\config.json` (migrando automaticamente `%APPDATA%\PhoneBox\config.json` na primeira execução, se existir).
+- Armazena suas configurações pessoais em `%APPDATA%\PhoneDesk\config.json`.
 
 ---
 
-## 🏗️ Estrutura para Contribuições e Melhorias
+## 🏗️ Estrutura do Repositório
 
 ```text
 ├── agent/PhoneDesk.Agent/   # Código-fonte completo do agente (.NET 10 / C# + PhoneDesk Settings HTML)
+├── android/                 # Aplicativo Android nativo (Java/WebView imersivo para PhoneDesk)
 ├── panel/                   # Módulos base do preview ao vivo das páginas e i18n
-├── index.html               # Interface web principal de 5 telas do PhoneDesk (Liquid Glass / StandBy)
-├── sw.js                    # Service Worker (network-first) para PWA / Kiosk
+├── index.html               # Interface web principal de 5 telas do PhoneDesk (Liquid Glass)
+├── sw.js                    # Service Worker (network-first) para PWA
 ├── manifest.json            # Manifesto PWA
 ├── icon.svg                 # Ícone SVG do PhoneDesk
 ├── config.json              # Exemplo genérico de configuração inicial (sem dados pessoais)
 └── README.md
 ```
-
-Qualquer pessoa pode clonar, alterar os endpoints em `agent/PhoneDesk.Agent/Program.cs`, personalizar `agent/PhoneDesk.Agent/settings.html` ou evoluir a interface em `index.html` e recompilar com um único comando `dotnet build`.
 
 ---
 
