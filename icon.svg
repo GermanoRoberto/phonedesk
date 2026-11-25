@@ -1,10 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="128" fill="#090d16"/>
-  <rect x="32" y="32" width="448" height="448" rx="96" fill="#131c2e" stroke="#2563eb" stroke-width="8"/>
-  <circle cx="256" cy="200" r="90" fill="none" stroke="#38bdf8" stroke-width="24" stroke-dasharray="16 8"/>
-  <polygon points="256,150 290,230 222,230" fill="#38bdf8"/>
-  <rect x="140" y="340" width="232" height="32" rx="16" fill="#0284c7"/>
-  <circle cx="180" cy="410" r="14" fill="#10b981"/>
-  <circle cx="256" cy="410" r="14" fill="#38bdf8"/>
-  <circle cx="332" cy="410" r="14" fill="#818cf8"/>
+  <defs>
+    <linearGradient id="pdBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="55%" stop-color="#0369a1"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="pdScreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#1e293b" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+  <!-- Squircle background -->
+  <rect x="20" y="20" width="472" height="472" rx="112" fill="url(#pdBg)"/>
+  <rect x="20" y="20" width="472" height="472" rx="112" fill="none" stroke="#38bdf8" stroke-opacity="0.28" stroke-width="6"/>
+  <!-- Landscape desk panel bezel -->
+  <rect x="78" y="128" width="356" height="222" rx="34" fill="url(#pdScreen)" stroke="#e0f2fe" stroke-opacity="0.32" stroke-width="6"/>
+  <!-- Minimalist desk dock stand -->
+  <path d="M188 378 H324" stroke="#e0f2fe" stroke-width="18" stroke-linecap="round" stroke-opacity="0.9"/>
+  <path d="M256 350 V376" stroke="#bae6fd" stroke-width="16" stroke-linecap="round"/>
+  <!-- Crisp 2x2 tactile deck grid inside panel -->
+  <rect x="114" y="164" width="128" height="68" rx="16" fill="#ffffff"/>
+  <rect x="256" y="164" width="142" height="68" rx="16" fill="#38bdf8"/>
+  <rect x="114" y="246" width="170" height="68" rx="16" fill="#0284c7"/>
+  <rect x="298" y="246" width="100" height="68" rx="16" fill="#e0f2fe" fill-opacity="0.22" stroke="#7dd3fc" stroke-opacity="0.45" stroke-width="4"/>
+  <!-- Live emerald telemetry status dot -->
+  <circle cx="348" cy="280" r="14" fill="#10b981"/>
+  <circle cx="348" cy="280" r="22" fill="#10b981" fill-opacity="0.25"/>
 </svg>

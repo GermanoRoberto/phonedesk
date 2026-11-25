@@ -39,7 +39,7 @@ public sealed class ApprovalStore(PushStore events, ILogger<ApprovalStore> log)
     /// <summary>When the phone last polled the agent; approvals are only offered to a phone that is actually there.</summary>
     public static long PhoneLastSeen;
 
-    public static bool PhoneConnected => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - Interlocked.Read(ref PhoneLastSeen) < 5000;
+    public static bool PhoneConnected => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - Interlocked.Read(ref PhoneLastSeen) < 10000;
 
     /// <summary>The requests the phone can still answer; one past its expiry is left out even before it is cleaned up.</summary>
     public IReadOnlyList<Approval> Snapshot()

@@ -370,11 +370,28 @@ app.Use(async (ctx, next) =>
             ctx.Connection.LocalPort == usb.Port ? "USB" : ctx.Connection.LocalPort == Port ? "local" : "Wi-Fi", ctx.Request.Headers["X-PhoneBox-WebView"].ToString());
         if (problem is not null) app.Logger.LogWarning("WebView: {Problem}", problem);
     }
+    var onLanWeb = lanWebActive && ctx.Connection.LocalPort == lanCfg.WebPort;
+    if (onLanWeb)
+    {
+        var remote = ctx.Connection.RemoteIpAddress;
+        if (remote is not null && remote.IsIPv4MappedToIPv6) remote = remote.MapToIPv4();
+        if (remote is not null && !IPAddress.IsLoopback(remote) && Program.IsLanWebHeartbeatPath(ctx.Request.Path))
+        {
+            Interlocked.Exchange(ref ApprovalStore.PhoneLastSeen, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+            if (!ctx.Request.Headers.ContainsKey("X-PhoneBox-Device"))
+            {
+                var digits = new string(remote.ToString().Where(char.IsAsciiLetterOrDigit).ToArray());
+                var lanId = "lan" + digits;
+                if (lanId.Length > 32) lanId = lanId[..32];
+                var lanModel = Program.ModelFromUserAgent(ctx.Request.Headers.UserAgent.ToString(), remote);
+                PhoneRegistry.Touch(lanId, lanModel, "Wi-Fi");
+            }
+        }
+    }
     if (ctx.Request.Headers.TryGetValue("X-PhoneBox-App", out var appVersion) && appVersion.ToString().Length is > 0 and < 32)
         UpdateService.AppVersion = appVersion.ToString();
     ctx.Response.Headers.CacheControl = "no-store";
     // only the panel may be framed, and only by the settings page itself (the live preview)
-    var onLanWeb = lanWebActive && ctx.Connection.LocalPort == lanCfg.WebPort;
     ctx.Response.Headers["X-Frame-Options"] = ctx.Request.Path.StartsWithSegments("/panel")
         || (onLanWeb && (ctx.Request.Path == "/" || ctx.Request.Path == "/settings" || ctx.Request.Path == "/settings.html"))
         ? "SAMEORIGIN" : "DENY";
@@ -492,7 +509,7 @@ app.MapGet("/panel/{*file}", (string? file, HttpRequest req) =>
     if (string.IsNullOrEmpty(file) && !req.Path.Value!.EndsWith('/')) return Results.Redirect("/panel/" + req.QueryString);
     return Program.ServePanelAsset(file);
 });
-app.MapGet("/favicon.ico", () => AppPaths.Resource("phonebox.ico") is { } s ? Results.Stream(s, "image/x-icon") : Results.NotFound());
+app.MapGet("/favicon.ico", () => AppPaths.Resource("phonedesk.ico") is { } s ? Results.Stream(s, "image/x-icon") : Results.NotFound());
 
 // PhoneDesk web panel helpers + loopback-only Windows installed-app discovery
 app.MapGet("/api/phonedesk/weather", async (ConfigStore cfg, WeatherService weather, CancellationToken ct) =>
@@ -706,21 +723,27 @@ app.MapPost("/api/shortcuts/test", async (HttpRequest req, ConfigStore cfg, Push
     return err is null ? Results.Ok() : Results.BadRequest(new { error = err });
 });
 
-app.MapGet("/api/info", (AdbReverse adb, ConfigStore cfg) => Results.Json(new
+app.MapGet("/api/info", (AdbReverse adb, ConfigStore cfg) =>
 {
-    version = AppPaths.Version,
-    os = AppPaths.Os,
-    configPath = cfg.Path,
-    logPath = AppPaths.LogPath,
-    adb = AdbReverse.FindAdb(cfg.Get().AdbPath),
-    // USB (adb) or a live stream from the phone in the last few seconds, which covers Wi-Fi / Tailscale too
-    connected = adb.Connected || ApprovalStore.PhoneConnected,
-    via = adb.Connected ? "USB" : ApprovalStore.PhoneConnected ? "Wi-Fi" : null,
-    devices = adb.AllDevices,
-    appMissing = adb.MissingApp,
-    usbProblem = adb.UsbProblem,
-    webviewProblem = WebViewDoctor.DiagnoseRecent(PhoneRegistry.All(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
-}));
+    var nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    var recentPhone = PhoneRegistry.All().OrderByDescending(p => p.LastSeen).FirstOrDefault(p => nowMs - p.LastSeen < 15000);
+    return Results.Json(new
+    {
+        version = AppPaths.Version,
+        os = AppPaths.Os,
+        configPath = cfg.Path,
+        logPath = AppPaths.LogPath,
+        adb = AdbReverse.FindAdb(cfg.Get().AdbPath),
+        // USB (adb) or a live stream from the phone in the last few seconds, which covers Wi-Fi / Tailscale too
+        connected = adb.Connected || ApprovalStore.PhoneConnected,
+        via = adb.Connected ? "USB" : ApprovalStore.PhoneConnected ? "Wi-Fi" : null,
+        phoneModel = recentPhone?.Model,
+        devices = adb.AllDevices,
+        appMissing = adb.MissingApp,
+        usbProblem = adb.UsbProblem,
+        webviewProblem = WebViewDoctor.DiagnoseRecent(PhoneRegistry.All(), nowMs),
+    });
+});
 
 // Phone mic status for the settings page and scripts (local port only: not a phone path, see Lan.AllowedOverLan).
 app.MapGet("/api/phone-mic", (PhoneMic mic) => Results.Json(new { mic = mic.Snapshot() }));
@@ -1686,6 +1709,27 @@ public partial class Program
     /// What the phone may see of a failed shortcut: an error can carry configured command text, so only the agent's own
     /// fixed hint (it tells the user what to do) goes through as it is; anything else becomes a generic message.
     /// </summary>
+    internal static bool IsLanWebHeartbeatPath(PathString path) =>
+        path == "/api/state" || path == "/api/config" || path == "/api/media"
+        || path == "/api/controls/state" || path == "/api/calendar" || path == "/api/feeds"
+        || path == "/api/phonedesk/weather" || path == "/api/phonedesk/version"
+        || path == "/api/volume" || path.StartsWithSegments("/api/run");
+
+    internal static string ModelFromUserAgent(string? ua, IPAddress remote)
+    {
+        if (!string.IsNullOrWhiteSpace(ua))
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(ua, @"Android[^;)]*;\s*([^;)]+?)\s*(?:Build/|[;)])", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (m.Success)
+            {
+                var token = m.Groups[1].Value.Trim();
+                if (!string.IsNullOrWhiteSpace(token) && !token.Equals("K", StringComparison.OrdinalIgnoreCase))
+                    return token.Length > 40 ? token[..40] : token;
+            }
+        }
+        return $"Web Panel ({remote})";
+    }
+
     internal static List<object> ScanInstalledWindowsApps()
     {
         if (!OperatingSystem.IsWindows()) return [];

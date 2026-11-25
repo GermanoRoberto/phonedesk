@@ -22,7 +22,7 @@
     <OutputType>WinExe</OutputType>
     <UseWindowsForms>true</UseWindowsForms>
     <SatelliteResourceLanguages>en;tr;de;fr;es;it;pt;pt-BR;nl;pl;ru;el;vi;zh-Hans;ja;ko;id;th;uk;hi;cs;ar;zh-Hant</SatelliteResourceLanguages>
-    <ApplicationIcon>phonebox.ico</ApplicationIcon>
+    <ApplicationIcon>phonedesk.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
@@ -58,7 +58,7 @@
     <EmbeddedResource Include="config.default.json" LogicalName="config.default.json" />
     <EmbeddedResource Include="config.default.linux.json" LogicalName="config.default.linux.json" />
     <EmbeddedResource Include="config.default.macos.json" LogicalName="config.default.macos.json" />
-    <EmbeddedResource Include="phonebox.ico" LogicalName="phonebox.ico" />
+    <EmbeddedResource Include="phonedesk.ico" LogicalName="phonedesk.ico" />
     <EmbeddedResource Include="settings.html" LogicalName="settings.html" />
     <EmbeddedResource Include="widgets.json" LogicalName="widgets.json" />
     <EmbeddedResource Include="templates.json" LogicalName="templates.json" />
