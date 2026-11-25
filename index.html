@@ -117,25 +117,73 @@
       --pd-soft: #0f172a !important;
       --pd-card-bg: #ffffff !important;
       --pd-card-border: #cbd5e1 !important;
+      --pd-divider: rgba(15, 23, 42, 0.12) !important;
+      --pd-shadow: 0 4px 20px rgba(15, 23, 42, 0.08) !important;
     }
-    html[data-light="1"] .pager { background: rgba(255, 255, 255, 0.88); border-color: rgba(15, 23, 42, 0.16); }
+    html[data-light="1"] body {
+      color: #0f172a !important;
+    }
+    html[data-light="1"] .glass {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07) !important;
+    }
+    html[data-light="1"] .pager { background: rgba(255, 255, 255, 0.92); border-color: rgba(15, 23, 42, 0.16); }
     html[data-light="1"] .dot { background: rgba(15, 23, 42, 0.25); }
-    html[data-light="1"] .btn-settings { background: rgba(15, 23, 42, 0.06); border-color: rgba(15, 23, 42, 0.16); color: var(--pd-text); }
+    html[data-light="1"] .btn-settings,
+    html[data-light="1"] .btn-fullscreen { background: rgba(15, 23, 42, 0.06); border-color: rgba(15, 23, 42, 0.16); color: var(--pd-text); }
     html[data-light="1"] .bar-bg, html[data-light="1"] .vol-track { background: rgba(15, 23, 42, 0.12); border-color: rgba(15, 23, 42, 0.12); }
     html[data-light="1"] .standby-num { text-shadow: none !important; }
     html[data-light="1"] .deck-label { color: var(--pd-text) !important; text-shadow: none !important; }
+
+    /* Universal high-contrast text and labels in light theme */
+    html[data-light="1"] .page-head-title,
+    html[data-light="1"] .page-head span:first-child {
+      color: #0f172a !important;
+    }
     html[data-light="1"] #fullDay, html[data-light="1"] #wTemp, html[data-light="1"] #mediaTitle,
     html[data-light="1"] #audioVolPct, html[data-light="1"] #cpuVal, html[data-light="1"] #ramUsed,
     html[data-light="1"] #diskFree, html[data-light="1"] #pcUptime, html[data-light="1"] #gpuMain,
     html[data-light="1"] #gpuVram, html[data-light="1"] #gCpuVal, html[data-light="1"] #gRam,
     html[data-light="1"] #netDown, html[data-light="1"] #gPing, html[data-light="1"] #gPingHost,
-    html[data-light="1"] #btnToggleMode, html[data-light="1"] .page button.tactile { color: var(--pd-text) !important; }
+    html[data-light="1"] #btnToggleMode, html[data-light="1"] .page button.tactile { color: #0f172a !important; }
     html[data-light="1"] #btnToggleMode { background: rgba(15, 23, 42, 0.06) !important; border-color: rgba(15, 23, 42, 0.16) !important; }
     html[data-light="1"] #fullMonth, html[data-light="1"] #wCity, html[data-light="1"] #mediaArtist,
     html[data-light="1"] #cpuModel, html[data-light="1"] #ramTotal, html[data-light="1"] #diskTotal,
     html[data-light="1"] #netPing, html[data-light="1"] #gpuName, html[data-light="1"] #gCpuName,
-    html[data-light="1"] #gPingAvg { color: var(--pd-muted) !important; }
+    html[data-light="1"] #gPingAvg, html[data-light="1"] #mediaPos, html[data-light="1"] #mediaDur,
+    html[data-light="1"] #deckCountHint { color: #475569 !important; }
     html[data-light="1"] #btnMute { color: #dc2626 !important; border-color: rgba(220, 38, 38, 0.35) !important; }
+    html[data-light="1"] #standbyStatus { border-top-color: rgba(15, 23, 42, 0.12) !important; }
+    html[data-light="1"] #standbyStatusText { color: #475569 !important; }
+
+    /* Override inline whites/lights on cards and buttons */
+    html[data-light="1"] [style*="color: #ffffff"],
+    html[data-light="1"] [style*="color:#ffffff"],
+    html[data-light="1"] [style*="color: #cbd5e1"],
+    html[data-light="1"] [style*="color:#cbd5e1"],
+    html[data-light="1"] [style*="color: #f8fafc"],
+    html[data-light="1"] [style*="color:#f8fafc"] {
+      color: #0f172a !important;
+    }
+    html[data-light="1"] [style*="color: #94a3b8"],
+    html[data-light="1"] [style*="color:#94a3b8"],
+    html[data-light="1"] [style*="color: #64748b"],
+    html[data-light="1"] [style*="color:#64748b"] {
+      color: #475569 !important;
+    }
+    html[data-light="1"] svg[style*="color: #cbd5e1"],
+    html[data-light="1"] svg[style*="color:#cbd5e1"],
+    html[data-light="1"] svg[style*="color: #ffffff"],
+    html[data-light="1"] svg[style*="color:#ffffff"] {
+      color: #334155 !important;
+    }
+    html[data-light="1"] [style*="rgba(255,255,255,0.08)"],
+    html[data-light="1"] [style*="rgba(255, 255, 255, 0.08)"],
+    html[data-light="1"] [style*="rgba(255,255,255,0.14)"],
+    html[data-light="1"] [style*="rgba(255, 255, 255, 0.14)"] {
+      border-color: rgba(15, 23, 42, 0.12) !important;
+    }
 
     .squircle {
       border-radius: 22%;
@@ -357,6 +405,26 @@
       width: 16px;
       background: #ffffff;
     }
+
+    .btn-fullscreen {
+      position: fixed;
+      top: 8px;
+      right: 44px;
+      z-index: 120;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: transform 0.12s ease, background 0.15s ease;
+    }
+    .btn-fullscreen:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.18); }
 
     .btn-settings {
       position: fixed;
