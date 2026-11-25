@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http.Json;
 using System.Runtime.InteropServices;
@@ -11,18 +11,18 @@ public sealed record UpdateStatus(string AgentVersion, string? AppVersion, strin
     bool AgentUpdate, bool AppUpdate, long? LastCheck, string State, string? Error);
 
 /// <summary>
-/// Keeps the agent and the phone app up to date from GitHub releases (PhoneBox-&lt;v&gt;.apk and
-/// PhoneBoxAgent-&lt;v&gt;-&lt;rid&gt;.zip, rid = win-x64, linux-x64, linux-arm64, osx-arm64 or osx-x64):
+/// Keeps the agent and the phone app up to date from GitHub releases (PhoneDesk-&lt;v&gt;.apk and
+/// PhoneDeskAgent-&lt;v&gt;-&lt;rid&gt;.zip, rid = win-x64, linux-x64, linux-arm64, osx-arm64 or osx-x64):
 ///  - phone: installed with "adb install -r" while the phone is on USB (no prompt on the phone). Android refuses
 ///    an APK signed with a different key, and the agent never uninstalls to force it.
 ///  - agent: files are swapped in place (running files are renamed to *.old, which Windows allows) and the agent
 ///    restarts itself. Only when running from the installed location, never from a build folder. An agent running
-///    from PhoneBox.app (the macOS disk image, PhoneBox-&lt;v&gt;-&lt;rid&gt;.dmg) replaces the whole app from the new image.
+///    from PhoneBox.app (the macOS disk image, PhoneDesk-&lt;v&gt;-&lt;rid&gt;.dmg) replaces the whole app from the new image.
 /// </summary>
 public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicationLifetime life, ILogger<UpdateService> log) : BackgroundService
 {
     private static readonly string InstallDir = AppPaths.InstallDir;
-    private static readonly string ExeName = OperatingSystem.IsWindows() ? "PhoneBoxAgent.exe" : "PhoneBoxAgent";
+    private static readonly string ExeName = OperatingSystem.IsWindows() ? "PhoneDeskAgent.exe" : "PhoneDeskAgent";
     private static readonly string Downloads = Path.Combine(AppPaths.LocalDir, "updates");
     internal string DownloadsDir { get; init; } = Downloads;
     private readonly HttpClient _http = new() { Timeout = TimeSpan.FromMinutes(5) };
@@ -36,7 +36,7 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
     private volatile string[] _phoneRetry = [];
     private volatile string? _phoneRetryFor;
 
-    /// <summary>Phone app version, reported by the app on every request (X-PhoneBox-App header).</summary>
+    /// <summary>Phone app version, reported by the app on every request (X-PhoneDesk-App header).</summary>
     public static volatile string? AppVersion;
 
     public static bool RunningInstalled => SameFolder(AppContext.BaseDirectory, InstallDir);
@@ -207,7 +207,7 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
             _state = "installing the phone app";
             if (_latest is null) { await CheckCoreAsync(ct); _state = "installing the phone app"; } // not CheckAsync: this method already holds the gate
             if (_latest?.Apk is null) return "could not find the phone app in the GitHub releases";
-            var apk = await VerifiedDownloadAsync(_latest.Apk, $"PhoneBox-{_latest.Version}.apk", ct);
+            var apk = await VerifiedDownloadAsync(_latest.Apk, $"PhoneDesk-{_latest.Version}.apk", ct);
             var adbExe = AdbReverse.FindAdb(cfg.Get().AdbPath) ?? throw new InvalidOperationException("adb not found");
             var failed = new List<string>();
             foreach (var serial in targets)
@@ -239,7 +239,7 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
         // decided before the download: a phone that already has the new app can report it while the APK downloads,
         // and must not turn this into a retry that skips the phones that never got it
         var appCurrent = AppVersion is not null && !Newer(_latest!.Version, AppVersion);
-        var apk = await VerifiedDownloadAsync(_latest!.Apk!, $"PhoneBox-{_latest.Version}.apk", ct);
+        var apk = await VerifiedDownloadAsync(_latest!.Apk!, $"PhoneDesk-{_latest.Version}.apk", ct);
         var adbExe = AdbReverse.FindAdb(cfg.Get().AdbPath) ?? throw new InvalidOperationException("adb not found");
         var connected = adb.Devices.Split(", ", StringSplitOptions.RemoveEmptyEntries);
         var retry = _phoneRetryFor == _latest.Version ? _phoneRetry : [];
@@ -284,7 +284,7 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
     }
 
     // Next to PhoneBox.app, so the swap is a rename on one volume.
-    private const string BundleStaging = ".PhoneBox-update.app", BundleOld = ".PhoneBox-old.app";
+    private const string BundleStaging = ".PhoneDesk-update.app", BundleOld = ".PhoneDesk-old.app";
 
     /// <summary>
     /// PhoneBox.app (macOS disk image): download the release's .dmg (checked against SHA256SUMS like every asset), copy
@@ -319,7 +319,7 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
         {
             throw new InvalidOperationException($"{parent} is not writable, so PhoneBox.app cannot update itself there; move it to ~/Applications or install the new version by hand");
         }
-        var dmg = await VerifiedDownloadAsync(_latest!.AgentDmg!, $"PhoneBox-{_latest.Version}-{AppPaths.Rid}.dmg", ct, requireSums: true);
+        var dmg = await VerifiedDownloadAsync(_latest!.AgentDmg!, $"PhoneDesk-{_latest.Version}-{AppPaths.Rid}.dmg", ct, requireSums: true);
         try
         {
             await ExtractAppAsync(dmg, staging, ct);
@@ -450,7 +450,7 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
     private async Task UpdateAgentAsync(CancellationToken ct)
     {
         _state = "updating agent";
-        var zip = await VerifiedDownloadAsync(_latest!.AgentZip!, $"PhoneBoxAgent-{_latest.Version}.zip", ct);
+        var zip = await VerifiedDownloadAsync(_latest!.AgentZip!, $"PhoneDeskAgent-{_latest.Version}.zip", ct);
         var staging = Path.Combine(DownloadsDir, "agent-" + _latest.Version);
         if (Directory.Exists(staging)) Directory.Delete(staging, true);
         ZipFile.ExtractToDirectory(zip, staging);
@@ -583,7 +583,7 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
     /// </summary>
     internal static readonly string[] FrameworkDependentFiles =
     [
-        "PhoneBoxAgent.dll", "PhoneBoxAgent.deps.json", "PhoneBoxAgent.runtimeconfig.json",
+        "PhoneDeskAgent.dll", "PhoneBoxAgent.deps.json", "PhoneBoxAgent.runtimeconfig.json",
         "NAudio.dll", "NAudio.Core.dll", "NAudio.Midi.dll", "NAudio.Wasapi.dll", "NAudio.WinMM.dll",
         "WinRT.Runtime.dll", "Microsoft.Windows.SDK.NET.dll", "System.Numerics.Tensors.dll",
     ];
@@ -620,7 +620,7 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
 
     /// <summary>
     /// The phone app, this machine's agent zip and disk image and the checksum file of a GitHub release
-    /// (PhoneBox-&lt;v&gt;.apk, PhoneBoxAgent-&lt;v&gt;-&lt;rid&gt;.zip, PhoneBox-&lt;v&gt;-&lt;rid&gt;.dmg, SHA256SUMS-&lt;v&gt;.txt, as release.yml names them).
+    /// (PhoneDesk-&lt;v&gt;.apk, PhoneDeskAgent-&lt;v&gt;-&lt;rid&gt;.zip, PhoneDesk-&lt;v&gt;-&lt;rid&gt;.dmg, SHA256SUMS-&lt;v&gt;.txt, as release.yml names them).
     /// </summary>
     internal static Release SelectAssets(JsonElement release, string rid)
     {
@@ -629,9 +629,9 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
         {
             var name = a.GetProperty("name").GetString() ?? "";
             var url = a.GetProperty("browser_download_url").GetString();
-            if (name.StartsWith("PhoneBox-", StringComparison.OrdinalIgnoreCase) && name.EndsWith(".apk", StringComparison.OrdinalIgnoreCase)) apk = url;
-            if (name.StartsWith("PhoneBoxAgent-", StringComparison.OrdinalIgnoreCase) && name.EndsWith($"-{rid}.zip", StringComparison.OrdinalIgnoreCase)) zip = url;
-            if (name.StartsWith("PhoneBox-", StringComparison.OrdinalIgnoreCase) && name.EndsWith($"-{rid}.dmg", StringComparison.OrdinalIgnoreCase)) dmg = url;
+            if (name.StartsWith("PhoneDesk-", StringComparison.OrdinalIgnoreCase) && name.EndsWith(".apk", StringComparison.OrdinalIgnoreCase)) apk = url;
+            if (name.StartsWith("PhoneDeskAgent-", StringComparison.OrdinalIgnoreCase) && name.EndsWith($"-{rid}.zip", StringComparison.OrdinalIgnoreCase)) zip = url;
+            if (name.StartsWith("PhoneDesk-", StringComparison.OrdinalIgnoreCase) && name.EndsWith($"-{rid}.dmg", StringComparison.OrdinalIgnoreCase)) dmg = url;
             if (name.StartsWith("SHA256SUMS-", StringComparison.OrdinalIgnoreCase) && name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)) sums = url;
         }
         var tag = release.GetProperty("tag_name").GetString() ?? "";

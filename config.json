@@ -1,48 +1,123 @@
-{
-  "device_name": "PhoneDesk Panel",
-  "telemetry_mode": "workstation",
+﻿{
+  "deviceName": "PhoneDesk",
+  "telemetryMode": "workstation",
   "weather": {
     "city": "Juiz de Fora",
     "lat": -21.7642,
     "lon": -43.3496,
-    "interval_min": 15,
     "unit": "celsius",
-    "model": "icon_seamless"
+    "model": "",
+    "intervalMin": 15
+  },
+  "ping": {
+    "host": "1.1.1.1",
+    "adapters": []
+  },
+  "night": {
+    "enabled": true,
+    "start": "00:30",
+    "end": "07:30",
+    "brightness": 0.01
+  },
+  "display": {
+    "appearance": { "style": "cards" },
+    "language": "auto",
+    "showSeconds": true,
+    "hour12": false,
+    "idleReturnSec": 90,
+    "vibrate": true,
+    "finishToast": true,
+    "finishSound": false,
+    "finishSoundVolume": 70,
+    "volumeKeys": true,
+    "orientation": "landscape",
+    "theme": "forest-moss",
+    "accent": "#10b981",
+    "customTheme": {
+      "bgStart": "#06130e",
+      "bgEnd": "#0d261c",
+      "bgAngle": 135,
+      "text": "#ecfdf5",
+      "muted": "#6ee7b7",
+      "clock": "#6ee7b7",
+      "accent": "#10b981",
+      "cardBg": "#065f46",
+      "cardOpacity": 24,
+      "cardBorder": "#34d399",
+      "cardRadius": 18,
+      "customCss": ""
+    },
+    "savedThemes": [],
+    "artTint": true,
+    "wallpaper": { "dim": 45, "blur": 0 }
   },
   "lan": {
     "enabled": true,
     "port": 8766,
     "webEnabled": true,
-    "webPort": 8770
+    "webPort": 8770,
+    "webRequireToken": false
   },
-  "shortcuts": [
+  "updates": {
+    "auto": true,
+    "repo": "GermanoRoberto/phonedesk"
+  },
+  "pages": [
     {
-      "id": "explorer",
-      "label": "Arquivos",
-      "icon": "folder",
-      "color": "#eab308",
-      "cmd": "explorer.exe"
+      "id": "home",
+      "title": "Home (Página Inicial)",
+      "icon": "🏠",
+      "enabled": true,
+      "widgets": [
+        { "id": "clock", "type": "clock", "x": 0, "y": 0, "w": 6, "h": 6, "options": { "status": true, "weather": true, "date": true } },
+        { "id": "weather", "type": "weather", "x": 6, "y": 0, "w": 6, "h": 6, "options": {} }
+      ]
     },
     {
-      "id": "browser",
-      "label": "Navegador",
-      "icon": "globe",
-      "color": "#f97316",
-      "cmd": "https://github.com"
+      "id": "deck",
+      "title": "Stream Deck",
+      "icon": "🎛️",
+      "enabled": true,
+      "widgets": []
     },
     {
-      "id": "terminal",
-      "label": "Terminal",
-      "icon": "terminal",
-      "color": "#475569",
-      "cmd": "wt.exe"
+      "id": "media",
+      "title": "Mídia & Áudio",
+      "icon": "🎵",
+      "enabled": true,
+      "widgets": []
     },
     {
-      "id": "lock_pc",
-      "label": "Bloquear PC",
-      "icon": "lock",
-      "color": "#ef4444",
-      "cmd": "builtin:lock"
+      "id": "hardware",
+      "title": "Hardware PC",
+      "icon": "⚡",
+      "enabled": true,
+      "widgets": []
+    },
+    {
+      "id": "feeds",
+      "title": "Agenda & Feeds",
+      "icon": "📰",
+      "enabled": true,
+      "widgets": []
     }
+  ],
+  "shortcuts": [
+    { "id": "browser",  "label": "Navegador",      "icon": "🌐", "color": "#0284c7", "cmd": "https://google.com" },
+    { "id": "explorer", "label": "Arquivos",       "icon": "📁", "color": "#eab308", "cmd": "explorer.exe" },
+    { "id": "terminal", "label": "Terminal / CMD", "icon": "⌨️", "color": "#334155", "cmd": "wt.exe" },
+    { "id": "calc",     "label": "Calculadora",    "icon": "🔢", "color": "#0d9488", "cmd": "calc.exe" },
+    { "id": "spotify",  "label": "Spotify",        "icon": "🎵", "color": "#16a34a", "cmd": "spotify:" },
+    { "id": "whatsapp", "label": "WhatsApp",       "icon": "💬", "color": "#22c55e", "cmd": "https://web.whatsapp.com" },
+    { "id": "notepad",  "label": "Bloco de Notas", "icon": "📝", "color": "#2563eb", "cmd": "notepad.exe" },
+    { "id": "taskmgr",  "label": "Tarefas",        "icon": "📊", "color": "#6366f1", "cmd": "taskmgr.exe" },
+    { "id": "settings", "label": "Configurações",  "icon": "⚙️", "color": "#475569", "cmd": "ms-settings:" },
+    { "id": "snip",     "label": "Captura de Tela","icon": "✂️", "color": "#f97316", "cmd": "ms-screenclip:" },
+    { "id": "mute",     "label": "Mudo Geral",     "icon": "🔇", "color": "#9333ea", "cmd": "builtin:mute" },
+    { "id": "lock",     "label": "Bloquear PC",    "icon": "🔒", "color": "#dc2626", "cmd": "builtin:lock" }
+  ],
+  "calendars": [],
+  "feeds": [
+    { "name": "G1 Tecnologia", "url": "https://g1.globo.com/rss/g1/tecnologia/", "category": "Tecnologia" }
   ]
 }

@@ -520,7 +520,7 @@ app.MapGet("/api/phonedesk/weather", async (ConfigStore cfg, WeatherService weat
     if (string.Equals(city, "JF", StringComparison.OrdinalIgnoreCase)) city = "Juiz de Fora";
     var (status, rawJson) = await weather.GetForecastAsync(wCfg, false, ct);
     if (status != 200)
-        return Results.Json(new { city, temp = (int?)null, feelsLike = (int?)null, code = 0, isDay = true });
+        return Results.Json(new { city, temp = (int?)null, feelsLike = (int?)null, code = 0, isDay = true, alert = (object?)null });
     try
     {
         using var doc = JsonDocument.Parse(rawJson);
@@ -529,11 +529,24 @@ app.MapGet("/api/phonedesk/weather", async (ConfigStore cfg, WeatherService weat
         var feels = cur.TryGetProperty("apparent_temperature", out var fl) ? (int)Math.Round(fl.GetDouble()) : temp;
         var code = cur.TryGetProperty("weather_code", out var wc) ? wc.GetInt32() : 0;
         var isDay = !cur.TryGetProperty("is_day", out var id) || id.GetInt32() != 0;
-        return Results.Json(new { city, temp, feelsLike = feels, code, isDay });
+        var humidity = cur.TryGetProperty("relative_humidity_2m", out var hm) ? hm.GetInt32() : 0;
+        var wind = cur.TryGetProperty("wind_gusts_10m", out var wg) ? (int)Math.Round(wg.GetDouble()) : 0;
+        object? alert = null;
+        if (doc.RootElement.TryGetProperty("alert", out var al) && al.ValueKind == JsonValueKind.Object)
+        {
+            alert = new
+            {
+                level = al.TryGetProperty("level", out var lv) ? lv.GetString() : "warning",
+                icon = al.TryGetProperty("icon", out var ic) ? ic.GetString() : "⚠️",
+                title = al.TryGetProperty("title", out var tt) ? tt.GetString() : "",
+                desc = al.TryGetProperty("desc", out var ds) ? ds.GetString() : ""
+            };
+        }
+        return Results.Json(new { city, temp, feelsLike = feels, code, isDay, humidity, wind, alert });
     }
     catch
     {
-        return Results.Json(new { city, temp = (int?)null, feelsLike = (int?)null, code = 0, isDay = true });
+        return Results.Json(new { city, temp = (int?)null, feelsLike = (int?)null, code = 0, isDay = true, alert = (object?)null });
     }
 });
 
