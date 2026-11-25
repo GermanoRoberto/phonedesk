@@ -1,18 +1,18 @@
+# Build outputs
+**/bin/
+**/obj/
+*.user
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.log
 
-# Upstream & Vendor
+# Upstream reference checkout & local scratch / tests
 upstream/
-*.apk
-
-# Scratch helper & local test suites
-update_ui.py
-upgrade_media_wakelock.py
-inject_phonedesk.py
 tests/
+*.apk
 
 # OS / Editor
 .DS_Store

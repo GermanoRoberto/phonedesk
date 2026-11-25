@@ -1,100 +1,80 @@
-# PhoneDesk 📱🖥️
+# PhoneDesk
 
-Transforme qualquer smartphone (Android ou iOS) em um **Smart Desk Panel & Control Deck** de alta fidelidade para o seu computador (Windows / Linux / macOS), combinando o design icônico do **iOS StandBy** com a versatilidade de um **Stream Deck com Liquid Glass**.
+Smart Desk Panel & Control Deck de código aberto para transformar qualquer smartphone ou tablet em um painel interativo de mesa (iOS StandBy + Stream Deck + Mídia & Volume + Hardware PC + Agenda & Feeds), com agente autônomo em **.NET 10** (baseado no projeto open-source **PhoneBox**) e interface web responsiva sem dependências externas.
 
----
-
-## ✨ Funcionalidades Principais
-
-### 1. 🕒 Modo Descanso (iOS StandBy)
-- **Relógio Gigante em Verde Menta** (Fonte 900 de alto impacto).
-- **Data Completa em Português** e próximo compromisso real da agenda configurada.
-- **Clima em Tempo Real** (Open-Meteo) com ícones vetoriais SVG de alto contraste.
-- **OLED / AMOLED Ready:** Fundo preto absoluto (`#000000`) para economia de energia e contraste perfeito em qualquer ângulo de visão da mesa.
-
-### 2. 🎛️ Stream Deck (Controles & Aplicativos)
-- **Botões Grandes (Squircles responsivos):** Visual imediato a 60cm de distância da mesa, alimentados dinamicamente pelos atalhos salvos nas configurações.
-- **Detecção Automática de Programas Instalados:** Na tela de configurações do computador (`http://localhost:8770/settings`), o botão **+ Programas instalados** lista os programas detectados no Windows para você escolher quais adicionar ao Deck.
-- **Ações Instantâneas no PC:** Abre aplicativos, PWAs, janelas do Explorer e bloqueia a estação de trabalho (`Win + L`).
-
-### 3. ⌨️ Suporte Completo a Teclas de Atalho (Hotkeys & Macros)
-- Dispara qualquer atalho do teclado do Windows diretamente do painel do celular:
-  - `Win + D` (Mostrar Área de Trabalho)
-  - `Alt + Tab`
-  - `Ctrl + Shift + Esc` (Gerenciador de Tarefas)
-  - Combinações customizadas e teclas de função (`F1`–`F12`).
-
-### 4. 🎵 Central de Mídia & Áudio Gigante
-- **Grandes Botões Táteis:** Play/Pause, Próxima Faixa, Faixa Anterior.
-- **Controle de Volume Master:** Botões grandes para `VOL +`, `VOL -` e `MUDO`.
-- **Abertura Rápida:** Botão dedicado para abrir o Spotify no computador com 1 toque.
-
-### 5. 💻 Telemetria Útil do Computador (Sem Poluição de IP)
-- **Métricas Reais:** Monitoramento de CPU (%), Memória RAM em GB, Espaço Livre no SSD (`C:`) e Uptime real do Windows.
-- **Perfis Alternáveis:**
-  - **Modo Corporativo / Workstation (Padrão):** Métricas limpas de trabalho, sem poluição de dados gamers desnecessários.
-  - **Modo Gamer (Opcional):** Ativa telemetria de GPU, FPS e temperatura de placa de vídeo.
-
-### 6. ⚙️ Painel de Configurações no Navegador do Computador
-- Ao tocar na engrenagem no celular, ele **abre automaticamente o painel de configurações na tela do computador** (`http://localhost:8770/settings`).
-- Configure seus botões, atalhos, cidade do clima e modo de telemetria confortavelmente com mouse e teclado.
-
-### 7. ☀️ Tela Sempre Ligada (Screen Wake Lock Nativo)
-- Integração nativa com a **HTML5 Screen Wake Lock API**, garantindo que a tela do aparelho nunca apague ou diminua a iluminação durante o expediente, mesmo se desconectado da tomada.
+> **Crédito & Origem:** O agente desktop (`agent/PhoneDesk.Agent`) foi construído sobre a base técnica do projeto open-source [PhoneBox](https://github.com/ersinkoc/phonebox), evoluído com a marca **PhoneDesk**, servidor web LAN nativo na porta `8770`, descoberta automática de aplicativos instalados no Windows (`+ Programas instalados`), e interface própria de 5 telas (`index.html`). Veja [THIRD-PARTY-NOTICES.txt](agent/PhoneDesk.Agent/THIRD-PARTY-NOTICES.txt).
 
 ---
 
-## 🚀 Como Iniciar
+## ✨ Funcionalidades
 
-### 1. Iniciar o Agente no Computador
-O agente é **100% autocontido** e utiliza apenas a biblioteca padrão do Python 3 (sem necessidade de `pip install`):
+### 1. Tela 1 — StandBy iOS
+- **Relógio gigante verde-menta** (`#86efac`) e data completa em português.
+- **Clima real** (Open-Meteo, endpoint nativo `/api/phonedesk/weather`) com ícones vetoriais SVG (zero emojis).
+- **Próximo compromisso real** da agenda configurada (`.ics`), indicado pelo ponto verde brilhante.
 
+### 2. Tela 2 — Stream Deck
+- Squircles em Liquid Glass carregados dinamicamente da configuração salva (`/api/config`).
+- Disparo real de aplicativos, URLs, atalhos de teclado e ações do sistema (`POST /api/run/{id}`).
+
+### 3. Tela 3 — Mídia & Volume do Windows
+- Controle real de reprodução via Windows SMTC (`Play/Pause`, `Anterior`, `Próxima`), capa do álbum ampliada (`/api/art`), artista/faixa/álbum e barra de progresso em tempo real.
+- Controle real de áudio master via CoreAudio / WASAPI (`VOL −`, `VOL +`, `MUDO` e slider tátil com nome do dispositivo ativo).
+
+### 4. Tela 4 — Hardware do PC
+- Telemetria real de CPU, RAM, Disco, Ping e Uptime.
+- Perfil **Workstation** padrão (sem dados gamers desnecessários) e perfil **Gamer** opcional com GPU/VRAM e taxas de rede reais.
+
+### 5. Tela 5 — Agenda & Feeds RSS
+- Próximos eventos de calendários `.ics` (`/api/calendar`).
+- Manchetes de feeds RSS/Atom (`/api/feeds`) com abertura no navegador do computador ao tocar.
+
+### 6. Configurações no Navegador do PC (`PhoneDesk Settings`)
+- Acesse no navegador do computador:
+  - `http://localhost:8770/settings` (ou `http://127.0.0.1:8765/`)
+- O acesso às configurações é **bloqueado (`403`)** a partir de outros dispositivos na rede LAN, funcionando apenas localmente no PC.
+- Inclui **editor visual completo** (páginas, atalhos, regras, calendários, feeds, aparência, clima) e o seletor **`+ Programas instalados`** para adicionar programas detectados no Windows em um clique.
+
+---
+
+## 🚀 Como Compilar e Executar
+
+### Requisitos
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (ou execute com `dotnet run`).
+
+### Rodar em desenvolvimento
 ```bash
-python phonedesk_agent.py
+dotnet run --project agent/PhoneDesk.Agent/PhoneDesk.Agent.csproj -f net10.0-windows10.0.19041.0
 ```
 
-O servidor iniciará automaticamente na porta `8770` e exibirá o IP da máquina na rede local:
-```
-=== DeskDock PC Agent v1.0.0 ===
-Enderecos disponiveis na rede local:
- -> http://192.168.2.144:8770
-[DeskDock] Servidor ativo em 0.0.0.0:8770
+### Compilar em Release
+```bash
+dotnet build agent/PhoneDesk.Agent/PhoneDesk.Agent.csproj -c Release -f net10.0-windows10.0.19041.0
 ```
 
-### 2. Conectar o Smartphone
-1. Certifique-se de que o celular está na mesma rede Wi-Fi do computador.
-2. No navegador do smartphone (Chrome / Edge / Kiosk), acesse o endereço IP exibido pelo agente (ex: `http://192.168.2.144:8770/`).
-3. Deslize horizontalmente para alternar entre as telas:
-   - **Tela 1:** StandBy iOS
-   - **Tela 2:** Stream Deck de Aplicativos
-   - **Tela 3:** Central de Mídia & Áudio
-   - **Tela 4:** Telemetria de Hardware
+Ao iniciar, o `PhoneDeskAgent`:
+- Abre o painel web na LAN em `http://0.0.0.0:8770/` (para abrir no navegador ou WebView Kiosk do celular/tablet).
+- Serve **PhoneDesk Settings** apenas localmente em `http://localhost:8770/settings` e `http://127.0.0.1:8765/`.
+- Armazena suas configurações pessoais em `%APPDATA%\PhoneDesk\config.json` (migrando automaticamente `%APPDATA%\PhoneBox\config.json` na primeira execução, se existir).
 
 ---
 
-## 🛠️ Configuração dos Atalhos (`config.json`)
+## 🏗️ Estrutura para Contribuições e Melhorias
 
-Você pode personalizar os atalhos e páginas pelo painel web no computador (`http://localhost:8770/settings`), usando inclusive o botão **+ Programas instalados** para adicionar qualquer aplicativo do seu PC:
-
-```json
-{
-  "id": "spotify",
-  "label": "Spotify",
-  "cmd": "shell:AppsFolder\\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify"
-}
+```text
+├── agent/PhoneDesk.Agent/   # Código-fonte completo do agente (.NET 10 / C# + PhoneDesk Settings HTML)
+├── panel/                   # Módulos base do preview ao vivo das páginas e i18n
+├── index.html               # Interface web principal de 5 telas do PhoneDesk (Liquid Glass / StandBy)
+├── sw.js                    # Service Worker (network-first) para PWA / Kiosk
+├── manifest.json            # Manifesto PWA
+├── icon.svg                 # Ícone SVG do PhoneDesk
+├── config.json              # Exemplo genérico de configuração inicial (sem dados pessoais)
+└── README.md
 ```
 
-Para atalhos de teclado:
-```json
-{
-  "id": "desktop",
-  "label": "Área de Trabalho",
-  "action": "hotkey",
-  "command": "win+d"
-}
-```
+Qualquer pessoa pode clonar, alterar os endpoints em `agent/PhoneDesk.Agent/Program.cs`, personalizar `agent/PhoneDesk.Agent/settings.html` ou evoluir a interface em `index.html` e recompilar com um único comando `dotnet build`.
 
 ---
 
 ## 📄 Licença
-Distribuído sob a licença MIT. Desenvolvido para máxima produtividade na mesa de trabalho.
+MIT License (veja [agent/PhoneDesk.Agent/THIRD-PARTY-NOTICES.txt](agent/PhoneDesk.Agent/THIRD-PARTY-NOTICES.txt) para créditos de código aberto e bibliotecas de terceiros).

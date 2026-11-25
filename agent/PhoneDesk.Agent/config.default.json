@@ -1,0 +1,72 @@
+{
+  // PhoneDesk settings. Edit from the tray icon > Settings (http://localhost:8770/settings or http://127.0.0.1:8765).
+  // Manual edits are picked up on the next request; no restart needed.
+
+  "deviceSerial": null,
+  "adbPath": null,
+
+  // Weather location (Open-Meteo, no API key required) and temperature unit: "celsius" or "fahrenheit"
+  "weather": { "city": "Juiz de Fora", "lat": -21.7642, "lon": -43.3496, "unit": "celsius", "model": "" },
+
+  "ping": { "host": "1.1.1.1", "adapters": [] },
+  "claude": { "shareSessionTitles": false, "shareConversation": false, "watchWsl": false },
+  "discord": { "enabled": false, "clientId": null, "clientSecret": null, "allowControl": false, "screenShare": false, "chat": false },
+  "cursor": { "sessions": false, "watchWsl": false, "phoneApprovals": false },
+  "antigravity": { "sessions": false, "shareSessionTitles": false },
+  "codexBar": { "codexLiveQuota": false },
+  "opencode": { "phoneApprovals": false, "sessions": false, "timeoutSec": 90, "alwaysCountdownSec": 10, "watchWsl": false, "shareSessionTitles": false },
+  "console": { "profiles": [] },
+  "phoneMic": { "enabled": false, "source": "mic-camcorder", "endpoint": "CABLE Input", "latencyMs": 50, "maxBufferMs": 150, "gain": 1, "serverPath": null, "startMuted": false },
+  "steam": { "enabled": false, "steamId": null, "apiKey": null },
+
+  "night": { "enabled": true, "start": "00:30", "end": "07:30", "brightness": 0.02 },
+
+  "display": {
+    "showSeconds": true,
+    "idleReturnSec": 90,
+    "vibrate": true,
+    "finishToast": true,
+    "finishSound": false,
+    "finishSoundVolume": 70,
+    "volumeKeys": true,
+    "pixelShift": false,
+    "controlsTop": false,
+    "pageBar": "dots",
+    "pageBarSide": "bottom",
+    "idleDimMin": 0,
+    "nightWhenUnreachable": false,
+    "unreachableNightDelayMin": 5,
+    "openOnConnect": false,
+    "wakeOnUnlock": false,
+    "lockPhoneWithShortcut": false,
+    "language": "auto",
+    "wallpaper": { "dim": 45, "blur": 0 }
+  },
+
+  "lan": {
+    "enabled": false,
+    "port": 8766,
+    "webEnabled": true,
+    "webPort": 8770,
+    "webRequireToken": false
+  },
+
+  "controls": { "plexUrl": null, "plexToken": null, "plexPlayerUrl": "http://127.0.0.1:32500" },
+  "photos": { "source": "folder", "folder": "", "subfolders": true, "immichUrl": "", "immichKey": "", "immichAlbum": "", "immichAlbumName": "" },
+  "cameras": { "ffmpeg": "", "sources": [] },
+
+  "pages": [
+    { "template": "home" },
+    { "template": "system" },
+    { "template": "deck" },
+    { "template": "music" },
+    { "template": "feeds" }
+  ],
+
+  "shortcuts": [
+    { "id": "explorer", "label": "Arquivos",    "icon": "\ud83d\udcc1", "color": "#eab308", "cmd": "explorer.exe" },
+    { "id": "browser",  "label": "Navegador",   "icon": "\ud83c\udf10", "color": "#0ea5e9", "cmd": "https://github.com" },
+    { "id": "terminal", "label": "Terminal",    "icon": "\u2328\ufe0f", "color": "#475569", "cmd": "wt.exe" },
+    { "id": "lock",     "label": "Bloquear PC", "icon": "\ud83d\udd12", "color": "#ef4444", "cmd": "builtin:lock" }
+  ]
+}
