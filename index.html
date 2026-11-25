@@ -553,11 +553,14 @@
           </div>
         </div>
 
-        <div class="standby-divider" id="standbyStatus">
+        <!-- Alerta de Clima (logo abaixo da temperatura) -->
+        <div id="weatherAlert" style="display: none; align-items: center; justify-content: flex-end; gap: 8px; font-size: clamp(12px, 1.8vw, 15px); font-weight: 700; margin-top: 8px; width: 100%; text-align: right;"></div>
+
+        <!-- Compromissos da Agenda (abaixo do alerta, oculto se não houver compromissos) -->
+        <div class="standby-divider" id="standbyStatus" style="display: none; margin-top: 8px;">
           <span class="status-dot"></span>
-          <span id="standbyStatusText" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carregando agenda...</span>
+          <span id="standbyStatusText" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
         </div>
-        <div id="weatherAlert" style="display: none; align-items: center; justify-content: flex-end; gap: 8px; font-size: clamp(12px, 1.8vw, 15px); font-weight: 700; color: #ef4444; margin-top: 6px; width: 100%; text-align: right;"></div>
       </div>
     </div>
 
@@ -913,8 +916,11 @@
           const al = document.getElementById('weatherAlert');
           if (al) {
             if (w.alert && w.alert.title) {
+              const lvl = (w.alert.level || 'danger').toLowerCase();
+              const color = lvl === 'warning' ? '#f59e0b' : lvl === 'info' ? '#38bdf8' : '#ef4444';
+              const glow = lvl === 'warning' ? 'rgba(245, 158, 11, 0.9)' : lvl === 'info' ? 'rgba(56, 189, 248, 0.9)' : 'rgba(239, 68, 68, 0.9)';
               al.style.display = 'flex';
-              al.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.9); flex-shrink: 0;"></span><span id="weatherAlertText" style="color: #ef4444; font-weight: 700;">${w.alert.title}</span>`;
+              al.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: ${color}; box-shadow: 0 0 10px ${glow}; flex-shrink: 0;"></span><span id="weatherAlertText" style="color: ${color}; font-weight: 700;">${w.alert.title}</span>`;
             } else {
               al.style.display = 'none';
             }
@@ -1468,16 +1474,19 @@
         const now = Date.now();
         const events = (d.events || []).filter((e) => (e.end || e.start) >= now).sort((a, b) => a.start - b.start);
 
-        // Atualiza linha do StandBy (Tela 1) — Mostra o compromisso mais próximo futuro
+        // Atualiza linha do StandBy (Tela 1) — Mostra apenas se houver compromisso real
         const statusEl = document.getElementById('standbyStatusText');
+        const statusBox = document.getElementById('standbyStatus');
         if (events.length) {
           const next = events[0];
           const rel = getEventRelative(next.start, next.allDay);
           const isOngoing = !next.allDay && next.start <= now && (next.end || next.start) > now;
           const prefix = isOngoing ? 'Agora' : rel.label;
           statusEl.textContent = `${prefix} • ${next.title}`;
+          if (statusBox) statusBox.style.display = 'flex';
         } else {
-          statusEl.textContent = 'Sem compromissos agendados';
+          statusEl.textContent = '';
+          if (statusBox) statusBox.style.display = 'none';
         }
 
         // Atualiza coluna Agenda (Tela 5) — Lista os compromissos futuros com destaque ao mais próximo
