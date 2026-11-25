@@ -1005,9 +1005,33 @@
         const sq = document.createElement('div');
         sq.className = 'squircle deck-icon-box';
         sq.style.background = th.bg;
-        sq.innerHTML = th.fill
-          ? `<svg viewBox="0 0 24 24" fill="#ffffff">${th.svg}</svg>`
-          : `<svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${th.svg}</svg>`;
+        sq.style.position = 'relative';
+        sq.style.display = 'flex';
+        sq.style.alignItems = 'center';
+        sq.style.justifyContent = 'center';
+        sq.style.overflow = 'hidden';
+
+        const svgWrap = document.createElement('div');
+        svgWrap.style.cssText = 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;';
+        svgWrap.innerHTML = th.fill
+          ? `<svg viewBox="0 0 24 24" fill="#ffffff" style="width: 50%; height: 50%;">${th.svg}</svg>`
+          : `<svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 50%; height: 50%;">${th.svg}</svg>`;
+        sq.appendChild(svgWrap);
+
+        if (sc.id) {
+          const img = document.createElement('img');
+          img.src = `/api/shortcuts/icon?id=${encodeURIComponent(sc.id)}&v=${Date.now()}`;
+          img.alt = sc.label || '';
+          img.style.cssText = 'position: absolute; width: 62%; height: 62%; object-fit: contain; pointer-events: none; display: none;';
+          img.onload = () => {
+            svgWrap.style.display = 'none';
+            img.style.display = 'block';
+          };
+          img.onerror = () => {
+            img.remove();
+          };
+          sq.appendChild(img);
+        }
 
         const lbl = document.createElement('span');
         lbl.className = 'deck-label';

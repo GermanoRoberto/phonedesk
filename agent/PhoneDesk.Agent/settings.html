@@ -3270,6 +3270,25 @@ function dragSort(el, arr, done) {
   });
 }
 
+function makeKeyIcon(s) {
+  const wrap = h('span', { class: 'ki', style: { position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' } }, rich(s.icon || '•'));
+  if (s.id) {
+    const img = h('img', {
+      src: `/api/shortcuts/icon?id=${encodeURIComponent(s.id)}&v=${Date.now()}`,
+      alt: '',
+      style: { position: 'absolute', width: '32px', height: '32px', objectFit: 'contain', pointerEvents: 'none', display: 'none' },
+      onload: () => {
+        wrap.textContent = '';
+        wrap.appendChild(img);
+        img.style.display = 'block';
+      },
+      onerror: () => { img.remove(); }
+    });
+    wrap.appendChild(img);
+  }
+  return wrap;
+}
+
 // ---------------------------------------------------------------- shortcuts
 function renderDeck() {
   const deck = $('deck');
@@ -3278,7 +3297,7 @@ function renderDeck() {
   cfg.shortcuts.forEach((s, i) => {
     const k = h('div', { class: 'key' + (i === selKey ? ' sel' : ''), draggable: 'true', 'data-i': i, style: { '--k': s.color || '#6b7280' },
       onclick: () => { selKey = i; renderDeck(); } },
-      h('span', { class: 'ki' }, rich(s.icon || '•')), h('span', { class: 'kl' }, s.label || '(untitled)'));
+      makeKeyIcon(s), h('span', { class: 'kl' }, s.label || '(untitled)'));
     k.style.setProperty('--k', s.color || '#6b7280');
     dragSort(k, cfg.shortcuts, (from, to) => { selKey = to; renderDeck(); changed(); });
     deck.append(k);
@@ -3543,7 +3562,7 @@ function renderDeckKeysOnly() {
     const k = keys[i];
     if (!k) return;
     k.style.setProperty('--k', s.color || '#6b7280');
-    k.querySelector('.ki').replaceChildren(rich(s.icon || '•'));
+    k.querySelector('.ki')?.replaceWith(makeKeyIcon(s));
     k.querySelector('.kl').textContent = s.label || '(untitled)';
   });
 }
