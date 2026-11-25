@@ -1416,6 +1416,50 @@
       return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
     }
 
+    function getEventRelative(ms, allDay) {
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const evDate = new Date(ms);
+      const evDayStart = new Date(evDate.getFullYear(), evDate.getMonth(), evDate.getDate()).getTime();
+      const diffDays = Math.round((evDayStart - todayStart) / 86400000);
+      const timeStr = allDay ? 'Dia todo' : fmtTime(ms);
+
+      const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const dayName = weekdays[evDate.getDay()];
+      const dateStr = `${String(evDate.getDate()).padStart(2, '0')}/${String(evDate.getMonth() + 1).padStart(2, '0')}`;
+
+      if (diffDays === 0) {
+        return {
+          label: allDay ? 'Hoje' : `Hoje às ${timeStr}`,
+          tag: 'HOJE',
+          timeStr,
+          diffDays
+        };
+      }
+      if (diffDays === 1) {
+        return {
+          label: allDay ? 'Amanhã' : `Amanhã às ${timeStr}`,
+          tag: 'AMANHÃ',
+          timeStr,
+          diffDays
+        };
+      }
+      if (diffDays > 1 && diffDays < 7) {
+        return {
+          label: allDay ? `${dayName}, ${dateStr}` : `${dayName}, ${dateStr} às ${timeStr}`,
+          tag: `${dayName.toUpperCase()}, ${dateStr}`,
+          timeStr,
+          diffDays
+        };
+      }
+      return {
+        label: allDay ? dateStr : `${dateStr} às ${timeStr}`,
+        tag: dateStr,
+        timeStr,
+        diffDays
+      };
+    }
+
     async function fetchCalendar() {
       try {
         const r = await fetch('/api/calendar');
@@ -1424,17 +1468,19 @@
         const now = Date.now();
         const events = (d.events || []).filter((e) => (e.end || e.start) >= now).sort((a, b) => a.start - b.start);
 
-        // Atualiza linha do StandBy (Tela 1) — ponto verde + texto real apenas
+        // Atualiza linha do StandBy (Tela 1) — Mostra o compromisso mais próximo futuro
         const statusEl = document.getElementById('standbyStatusText');
         if (events.length) {
           const next = events[0];
-          const prefix = next.allDay ? 'Hoje' : fmtTime(next.start);
-          statusEl.textContent = `${prefix} ${next.title}`;
+          const rel = getEventRelative(next.start, next.allDay);
+          const isOngoing = !next.allDay && next.start <= now && (next.end || next.start) > now;
+          const prefix = isOngoing ? 'Agora' : rel.label;
+          statusEl.textContent = `${prefix} • ${next.title}`;
         } else {
-          statusEl.textContent = 'Sem compromissos hoje';
+          statusEl.textContent = 'Sem compromissos agendados';
         }
 
-        // Atualiza coluna Agenda (Tela 5)
+        // Atualiza coluna Agenda (Tela 5) — Lista os compromissos futuros com destaque ao mais próximo
         document.getElementById('calCount').textContent = `${events.length} evento${events.length === 1 ? '' : 's'}`;
         const list = document.getElementById('agendaList');
         list.textContent = '';
@@ -1445,20 +1491,37 @@
           list.appendChild(empty);
           return;
         }
-        for (const ev of events.slice(0, 10)) {
+        for (let i = 0; i < Math.min(events.length, 25); i++) {
+          const ev = events[i];
+          const isNext = (i === 0);
+          const rel = getEventRelative(ev.start, ev.allDay);
           const row = document.createElement('div');
-          row.style.cssText = 'padding:8px 10px;border-radius:10px;background:var(--pd-item-bg);border:1px solid var(--pd-item-border);';
+          row.style.cssText = 'padding:9px 11px;border-radius:10px;background:var(--pd-item-bg);border:1px solid ' + (isNext ? 'var(--pd-accent)' : 'var(--pd-item-border)') + ';position:relative;transition:border-color .2s;';
+
           const meta = document.createElement('div');
-          meta.style.cssText = 'font-size:10px;font-weight:800;color:var(--pd-accent);';
-          meta.textContent = ev.allDay ? `${fmtDateShort(ev.start)} • Dia todo` : `${fmtDateShort(ev.start)} • ${fmtTime(ev.start)}`;
+          meta.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:10px;font-weight:800;';
+
+          const dateTag = document.createElement('span');
+          dateTag.style.cssText = 'color:var(--pd-accent);letter-spacing:0.3px;';
+          dateTag.textContent = `${rel.tag} • ${rel.timeStr}`;
+          meta.appendChild(dateTag);
+
+          if (isNext) {
+            const nextBadge = document.createElement('span');
+            nextBadge.style.cssText = 'font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,0.18);color:var(--pd-accent);letter-spacing:0.5px;';
+            nextBadge.textContent = 'PRÓXIMO';
+            meta.appendChild(nextBadge);
+          }
+
           const title = document.createElement('div');
-          title.style.cssText = 'font-size:12px;font-weight:700;color:var(--pd-text);margin-top:2px;';
+          title.style.cssText = 'font-size:12px;font-weight:700;color:var(--pd-text);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
           title.textContent = ev.title;
+
           row.appendChild(meta);
           row.appendChild(title);
           if (ev.location) {
             const loc = document.createElement('div');
-            loc.style.cssText = 'font-size:10px;color:var(--pd-muted);margin-top:2px;';
+            loc.style.cssText = 'font-size:10px;color:var(--pd-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
             loc.textContent = ev.location;
             row.appendChild(loc);
           }

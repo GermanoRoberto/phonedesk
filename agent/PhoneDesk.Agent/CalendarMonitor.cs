@@ -59,7 +59,19 @@ public sealed class CalendarMonitor(ConfigStore config, ILogger<CalendarMonitor>
             {
                 var url = src.Url.Trim();
                 if (url.StartsWith("webcal://", StringComparison.OrdinalIgnoreCase)) url = "https://" + url[9..];
-                var text = await Http.GetStringAsync(url, ct);
+                string text;
+                if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                {
+                    text = await Http.GetStringAsync(url, ct);
+                }
+                else if (File.Exists(url))
+                {
+                    text = await File.ReadAllTextAsync(url, ct);
+                }
+                else
+                {
+                    continue;
+                }
                 var fresh = Ics.Parse(text, from, to).Select(e => e with { Calendar = name, Color = src.Color ?? "#60a5fa" }).ToList();
                 _lastGood[src.Url] = fresh;
                 events.AddRange(fresh);
