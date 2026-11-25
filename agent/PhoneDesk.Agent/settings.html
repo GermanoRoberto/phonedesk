@@ -3367,7 +3367,7 @@ function renderEditor() {
 
   preset.appendChild(h('option', { value: '' }, 'Escolha um programa ou comando…'));
   if (window.pdInstalledApps && window.pdInstalledApps.length > 0) {
-    const appGroup = h('optgroup', { label: `⚡ Programas Instalados no PC (${window.pdInstalledApps.length})` });
+    const appGroup = h('optgroup', { label: `Programas instalados (${window.pdInstalledApps.length})` });
     window.pdInstalledApps.forEach(a => {
       appGroup.appendChild(h('option', { value: a.path }, a.name));
     });
@@ -3488,7 +3488,7 @@ function actionFields(s, upd, text, cmdIn, preset) {
             class: 'btn sm',
             style: { display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: '600', background: 'var(--panel-2)', borderColor: 'var(--line-strong)' },
             onclick: () => openAppsPicker(s, cmdIn, upd)
-          }, icon('search', 'm'), '⚡ Escolher dos Programas Instalados no PC')
+          }, icon('search', 'm'), 'Escolher dos programas instalados')
         ),
         h('span', { class: 'hint' }, osName === 'windows' ? t('s.js.commandHintWindows') : t('s.js.commandHint'))),
       text('args', t('s.k.arguments'), osName === 'windows' ? t('s.k.argsPlaceholderWindows') : t('s.k.argsPlaceholderUnix')),
@@ -4501,7 +4501,7 @@ setInterval(loadInfo, 5000);
     box.appendChild(head);
     box.appendChild(list);
     document.body.appendChild(box);
-    list.textContent = 'Carregando programas do Windows...';
+    list.textContent = 'Carregando programas instalados...';
 
     function setupList(apps) {
       window.pdInstalledApps = apps;
