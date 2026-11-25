@@ -907,7 +907,8 @@
         const w = await res.json();
         if (w.temp !== null && w.temp !== undefined) {
           document.getElementById('wTemp').textContent = `${w.temp}°`;
-          document.getElementById('wCity').textContent = `${w.city || 'Juiz de Fora'} • Sensação ${w.feelsLike}°`;
+          const minMaxStr = (w.minTemp !== null && w.minTemp !== undefined && w.maxTemp !== null && w.maxTemp !== undefined) ? ` • ${w.minTemp}° a ${w.maxTemp}°` : '';
+          document.getElementById('wCity').textContent = `${w.city || 'Juiz de Fora'}${minMaxStr} • Sensação ${w.feelsLike}°`;
           document.getElementById('wIcon').innerHTML = weatherSvg(Number(w.code || 0), w.isDay !== false);
           const al = document.getElementById('weatherAlert');
           if (al) {

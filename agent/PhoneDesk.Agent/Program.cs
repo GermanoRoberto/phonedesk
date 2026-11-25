@@ -531,6 +531,15 @@ app.MapGet("/api/phonedesk/weather", async (ConfigStore cfg, WeatherService weat
         var isDay = !cur.TryGetProperty("is_day", out var id) || id.GetInt32() != 0;
         var humidity = cur.TryGetProperty("relative_humidity_2m", out var hm) ? hm.GetInt32() : 0;
         var wind = cur.TryGetProperty("wind_gusts_10m", out var wg) ? (int)Math.Round(wg.GetDouble()) : 0;
+        var minTemp = (int?)null;
+        var maxTemp = (int?)null;
+        if (doc.RootElement.TryGetProperty("daily", out var dy))
+        {
+            if (dy.TryGetProperty("temperature_2m_min", out var dMin) && dMin.GetArrayLength() > 0)
+                minTemp = (int)Math.Round(dMin[0].GetDouble());
+            if (dy.TryGetProperty("temperature_2m_max", out var dMax) && dMax.GetArrayLength() > 0)
+                maxTemp = (int)Math.Round(dMax[0].GetDouble());
+        }
         object? alert = null;
         if (doc.RootElement.TryGetProperty("alert", out var al) && al.ValueKind == JsonValueKind.Object)
         {
@@ -542,7 +551,7 @@ app.MapGet("/api/phonedesk/weather", async (ConfigStore cfg, WeatherService weat
                 desc = al.TryGetProperty("desc", out var ds) ? ds.GetString() : ""
             };
         }
-        return Results.Json(new { city, temp, feelsLike = feels, code, isDay, humidity, wind, alert });
+        return Results.Json(new { city, temp, feelsLike = feels, minTemp, maxTemp, code, isDay, humidity, wind, alert });
     }
     catch
     {

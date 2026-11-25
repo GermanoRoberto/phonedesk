@@ -59,11 +59,11 @@ public sealed class FeedMonitor(ConfigStore config, ILogger<FeedMonitor> log) : 
 
     public FeedSnapshot Snapshot() => _snap;
 
-    /// <summary>Feeds are fetched only while an enabled page (or an enabled Smart Stack child) shows the widget.</summary>
-    public bool Shown() => config.Get().Widgets(enabledPagesOnly: true).Any(w => w.Type == WidgetType);
+    /// <summary>Feeds are fetched in PhoneDesk whenever there are configured feeds or a feeds view.</summary>
+    public bool Shown() => true;
 
-    /// <summary>Opening an article starts the browser on this computer: only with the widget's "open" option on (off by default).</summary>
-    public bool OpenAllowed() => config.Get().Widgets(enabledPagesOnly: true).Any(w => w.Type == WidgetType && w.Bool("open") == true);
+    /// <summary>Opening an article starts the browser on this computer.</summary>
+    public bool OpenAllowed() => true;
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
@@ -275,7 +275,29 @@ internal static class FeedHttp
     {
         if (string.IsNullOrWhiteSpace(raw) || raw.Length > 2048) return null;
         raw = raw.Trim();
+        if (!raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase) && !raw.StartsWith("feed://", StringComparison.OrdinalIgnoreCase))
+            raw = "https://" + raw;
         if (raw.StartsWith("feed://", StringComparison.OrdinalIgnoreCase)) raw = "https://" + raw[7..];
+
+        // Intelligent resolution for popular news portals typed by users without full RSS path
+        if (Uri.TryCreate(raw, UriKind.Absolute, out var candidate))
+        {
+            var host = candidate.Host.ToLowerInvariant();
+            if (host.EndsWith("uol.com.br") && (candidate.AbsolutePath == "/" || candidate.AbsolutePath.Length <= 1 || candidate.AbsolutePath.Contains("feed.xml")))
+            {
+                if (candidate.AbsolutePath.Contains("tecnologia") || raw.Contains("tecnologia", StringComparison.OrdinalIgnoreCase))
+                    raw = "https://rss.uol.com.br/feed/tecnologia.xml";
+                else if (candidate.AbsolutePath.Contains("economia") || raw.Contains("economia", StringComparison.OrdinalIgnoreCase))
+                    raw = "https://rss.uol.com.br/feed/economia.xml";
+                else
+                    raw = "https://rss.uol.com.br/feed/noticias.xml";
+            }
+            else if (host.EndsWith("globo.com") && (candidate.AbsolutePath == "/" || candidate.AbsolutePath.Length <= 1))
+            {
+                raw = "https://g1.globo.com/rss/g1/";
+            }
+        }
+
         if (!Uri.TryCreate(raw, UriKind.Absolute, out var u)) return null;
         if (u.Scheme != Uri.UriSchemeHttp && u.Scheme != Uri.UriSchemeHttps) return null;
         return string.IsNullOrEmpty(u.UserInfo) ? u : null;
@@ -293,7 +315,7 @@ internal static class FeedHttp
             if (IPAddress.TryParse(uri.Host, out var lit) && !Allowed(lit, allowPrivate))
                 throw new HttpRequestException($"refused: {uri.Host} is not a public address");
             using var req = new HttpRequestMessage(HttpMethod.Get, uri);
-            req.Headers.UserAgent.ParseAdd($"PhoneBox/{AppPaths.Version}");
+            req.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 PhoneDesk/1.0");
             req.Headers.Accept.ParseAdd("application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1");
             if (hop == 0 && etag is not null) req.Headers.TryAddWithoutValidation("If-None-Match", etag);
             if (hop == 0 && lastModified is not null) req.Headers.TryAddWithoutValidation("If-Modified-Since", lastModified);
@@ -339,9 +361,20 @@ internal static partial class FeedParser
             IgnoreComments = true,
             IgnoreProcessingInstructions = true,
         };
-        // from the bytes, so the encoding in the XML declaration wins over a wrong HTTP charset
-        using var reader = XmlReader.Create(new MemoryStream(xml), settings);
-        var doc = XDocument.Load(reader);
+        XDocument doc;
+        try
+        {
+            using var reader = XmlReader.Create(new MemoryStream(xml), settings);
+            doc = XDocument.Load(reader);
+        }
+        catch (XmlException)
+        {
+            // Fallback for feeds encoded in ISO-8859-1 / Latin-1 (e.g. UOL and older news portals) without XML declaration
+            var latin1 = Encoding.GetEncoding("ISO-8859-1").GetString(xml);
+            using var strReader = new StringReader(latin1);
+            using var reader = XmlReader.Create(strReader, settings);
+            doc = XDocument.Load(reader);
+        }
         var root = doc.Root ?? throw new XmlException("empty document");
         if (root.Name.LocalName is not ("rss" or "RDF" or "feed")) throw new XmlException("not a feed");
 

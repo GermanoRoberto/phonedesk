@@ -78,6 +78,9 @@ public sealed class WeatherService
 
             // Intelligent Meteorological Alert Detection (El Niño, Severe Storms, Heatwaves)
             var cur = node["current"]?.AsObject();
+            var daily = node["daily"]?.AsObject();
+            var hourly = node["hourly"]?.AsObject();
+
             var temp = cur?["temperature_2m"]?.GetValue<double>() ?? 25.0;
             var feels = cur?["apparent_temperature"]?.GetValue<double>() ?? temp;
             var code = cur?["weather_code"]?.GetValue<int>() ?? 0;
@@ -85,18 +88,40 @@ public sealed class WeatherService
             var precip = cur?["precipitation"]?.GetValue<double>() ?? 0.0;
             var humidity = cur?["relative_humidity_2m"]?.GetValue<int>() ?? 60;
 
+            var precipProbMax = 0;
+            if (daily?["precipitation_probability_max"] is JsonArray pa && pa.Count > 0)
+                precipProbMax = pa[0]?.GetValue<int>() ?? 0;
+
+            var dailyCode = 0;
+            if (daily?["weather_code"] is JsonArray dCodes && dCodes.Count > 0)
+                dailyCode = dCodes[0]?.GetValue<int>() ?? 0;
+
+            var hasStormToday = code is 80 or 81 or 82 or 95 or 96 or 99 || dailyCode is 80 or 81 or 82 or 95 or 96 or 99;
+            if (!hasStormToday && hourly?["weather_code"] is JsonArray ha)
+            {
+                for (var i = 0; i < Math.Min(ha.Count, 24); i++)
+                {
+                    var hc = ha[i]?.GetValue<int>() ?? 0;
+                    if (hc is 80 or 81 or 82 or 95 or 96 or 99)
+                    {
+                        hasStormToday = true;
+                        break;
+                    }
+                }
+            }
+
             JsonObject? alertObj = null;
-            if (code is 95 or 96 or 99 || windGusts >= 55)
+            if (hasStormToday || (precipProbMax >= 70 && (windGusts >= 28 || code >= 50)) || windGusts >= 45)
             {
                 alertObj = new JsonObject
                 {
                     ["level"] = "danger",
-                    ["icon"] = "⛈️",
-                    ["title"] = "Alerta de Tempestade & Rajadas",
-                    ["desc"] = $"Ventos de até {Math.Round(windGusts)} km/h e temporais previstos."
+                    ["icon"] = "⚠️",
+                    ["title"] = "Alerta de Tempestade Severa",
+                    ["desc"] = "Risco de temporal com pancadas fortes de chuva e rajadas de vento na região."
                 };
             }
-            else if (precip >= 10 || code is 65 or 82)
+            else if (precip >= 10 || code is 65 or 82 || precipProbMax >= 80)
             {
                 alertObj = new JsonObject
                 {

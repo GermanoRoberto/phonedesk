@@ -90,15 +90,17 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .pt-ico { font-size: 16px; }
 .pt-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pt-n { font-size: 11px; color: var(--muted); background: var(--panel-2); border-radius: 6px; padding: 0 6px; }
-.canvas-wrap { display: flex; justify-content: center; }
-.stage-bar { display: flex; align-items: center; gap: 12px; margin: 0 0 8px; flex-wrap: wrap; }
+.canvas-wrap { display: flex; justify-content: center; margin-top: 6px; margin-bottom: 24px; }
+.stage-bar { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; flex-wrap: wrap; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
 .seg button { border: 0; background: var(--panel); padding: 6px 13px; cursor: pointer; font: inherit; font-size: 13px; color: var(--text); }
 .seg button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
 #pageEditor.live .layout-hint { display: none; }
+#stage { margin-bottom: 24px; }
+#peRest { margin-top: 20px; }
 .preview { position: relative; aspect-ratio: 780 / 360; overflow: hidden; border-radius: 10px; background: #000; }
 .preview iframe { position: absolute; left: 0; top: 0; width: 780px; height: 360px; border: 0; transform-origin: 0 0; }
-.phone { width: 100%; max-width: 860px; padding: 14px 18px; border-radius: 28px; background: #06080b; border: 1px solid #22262e; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+.phone { width: 100%; max-width: 860px; padding: 14px 18px; border-radius: 28px; background: #06080b; border: 1px solid #22262e; box-shadow: 0 10px 30px rgba(0,0,0,.25); margin-bottom: 8px; }
 /* Match the panel's saved grid coordinates regardless of the interface language. */
 [dir="rtl"] .canvas, [dir="rtl"] .mini { direction: ltr; }
 [dir="rtl"] .canvas > *, [dir="rtl"] .mini > * { direction: rtl; }
@@ -115,7 +117,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 @container (max-height: 52px) { .wb small { display: none; } }
 @container (max-height: 36px) { .wb b { display: none; } }
 .rz { position: absolute; right: 0; bottom: 0; width: 16px; height: 16px; cursor: nwse-resize; background: linear-gradient(135deg, transparent 50%, var(--accent) 50%); border-bottom-right-radius: 8px; opacity: .7; }
-.ed-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.ed-cols { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(340px, 1.2fr); gap: 20px; align-items: start; margin-top: 16px; }
 .palette { display: grid; grid-template-columns: 1fr; gap: 2px; max-height: 620px; overflow-y: auto; }
 .pal-cat { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 10px 0 2px 8px; }
 .pal-cat:first-child { margin-top: 0; }
@@ -898,8 +900,18 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <h3 data-i18n="s.feeds.title">News feeds</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.feeds.hint">RSS or Atom feeds for the News feeds widget. This computer fetches each one at most every 15 minutes, only while a page shows a News feeds widget; the addresses stay here.</p>
         <div id="feedList"></div>
-        <button class="btn sm" id="feedAdd" data-i18n="s.feeds.add">＋ Add a feed</button>
-        <button class="btn sm" id="feedImport" style="margin-left:6px" data-i18n="s.feeds.import">＋ Import feeds (OPML / bulk)</button>
+        <div class="row" style="gap:8px; margin-top:8px;">
+          <button class="btn sm" id="feedAdd" data-i18n="s.feeds.add">＋ Add a feed</button>
+          <button class="btn sm" id="feedImport" data-i18n="s.feeds.import">＋ Import feeds (OPML / bulk)</button>
+        </div>
+        <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+          <span class="hint" style="font-weight:600; font-size:12px; margin-right:4px;">Predefinições rápidas:</span>
+          <button class="btn sm" type="button" onclick="addFeedPreset('G1 Tecnologia', 'https://g1.globo.com/rss/g1/tecnologia/', 'Tecnologia')">+ G1 Tecnologia</button>
+          <button class="btn sm" type="button" onclick="addFeedPreset('UOL Notícias', 'https://rss.uol.com.br/feed/noticias.xml', 'Notícias')">+ UOL Notícias</button>
+          <button class="btn sm" type="button" onclick="addFeedPreset('TecMundo', 'https://rss.tecmundo.com.br/feed', 'Tecnologia')">+ TecMundo</button>
+          <button class="btn sm" type="button" onclick="addFeedPreset('CNN Brasil', 'https://www.cnnbrasil.com.br/feed/', 'Notícias')">+ CNN Brasil</button>
+          <button class="btn sm" type="button" onclick="addFeedPreset('Hacker News', 'https://news.ycombinator.com/rss', 'Tech')">+ Hacker News</button>
+        </div>
       </div>
 
       <div class="card">
@@ -2967,6 +2979,12 @@ $('feedAdd').onclick = () => {
   cfg.feeds ??= [];
   cfg.feeds.push({ name: '', url: '', category: '' });
   renderFeeds(); changed();
+};
+window.addFeedPreset = function(name, url, category) {
+  cfg.feeds ??= [];
+  if (cfg.feeds.some(f => f.url === url)) { toast(name + ' já está na lista!', 'info'); return; }
+  cfg.feeds.push({ name, url, category });
+  renderFeeds(); changed(); toast(name + ' adicionado!');
 };
 $('feedImport').onclick = openFeedImportModal;
 // ---------------------------------------------------------------- cameras
