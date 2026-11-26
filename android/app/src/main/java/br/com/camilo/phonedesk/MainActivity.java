@@ -17,9 +17,9 @@ import android.content.pm.ActivityInfo;
 
 public class MainActivity extends Activity {
     private WebView webView;
-    private static final String TARGET_LAN_URL = "http://192.168.101.72:8770/";
     private static final String TARGET_USB_URL = "http://127.0.0.1:8770/";
-    private boolean useUsb = false;
+    private static final String TARGET_LAN_URL = "http://192.168.101.97:8770/";
+    private boolean useUsb = true;
     private boolean isRetrying = false;
     private boolean hasLoadedPage = false;
 
@@ -123,7 +123,24 @@ public class MainActivity extends Activity {
         setContentView(root);
         hideSystemUI();
 
-        webView.loadUrl(TARGET_LAN_URL);
+        String startUrl = TARGET_USB_URL;
+        if (getIntent() != null) {
+            if (getIntent().hasExtra("url")) startUrl = getIntent().getStringExtra("url");
+            else if (getIntent().getData() != null) startUrl = getIntent().getData().toString();
+        }
+        webView.loadUrl(startUrl);
+    }
+
+    @Override
+    protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent != null && webView != null) {
+            String u = null;
+            if (intent.hasExtra("url")) u = intent.getStringExtra("url");
+            else if (intent.getData() != null) u = intent.getData().toString();
+            if (u != null && !u.isEmpty()) webView.loadUrl(u);
+        }
     }
 
     private void handleLoadError() {

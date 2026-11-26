@@ -11,7 +11,8 @@ namespace PhoneBox.Agent;
 public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEndpoint? endpoint = null, UsbLink? usb = null,
     IHostApplicationLifetime? lifetime = null) : BackgroundService
 {
-    public const string PanelActivity = "net.oxog.phonebox.deskpanel/.MainActivity";
+    public const string PanelActivity = "br.com.camilo.phonedesk/.MainActivity";
+    public const string LegacyPanelActivity = "net.oxog.phonebox.deskpanel/.MainActivity";
     private const string HomeAlias = "net.oxog.phonebox.deskpanel/.HomeAlias";
     private readonly HashSet<string> _homeSet = [];
     private readonly HashSet<string> _awakeSet = [];
@@ -20,6 +21,7 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
     /// <summary>Connected phones that do not have the PhoneBox app yet (installed from Settings, e.g. after winget / Scoop).</summary>
     public string[] MissingApp => _missingApp;
     private const string Rule = "tcp:8765";
+    private const string WebRule = "tcp:8770";
     private string TargetRule => $"tcp:{usb?.Port ?? endpoint?.Port ?? 8765}";
     private readonly Dictionary<string, long> _keyTriedAt = []; // serial -> when its key was last asked for (Ensure only)
     private readonly HashSet<string> _oldApp = [];              // phones already told that their app is too old
@@ -171,6 +173,7 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
                 // on the others the rule must still be this agent's: a newer agent may have taken the phone over
                 var ours = remembered[d] ?? HasOwnRule(await Adb(adb, ["-s", d, "reverse", "--list"], limit.Token));
                 if (!ours) return null;
+                await Adb(adb, ["-s", d, "reverse", "--remove", WebRule], limit.Token);
                 await Adb(adb, ["-s", d, "reverse", "--remove", Rule], limit.Token);
                 log.LogInformation("{Device}: adb reverse removed (the agent is stopping)", d);
                 return d;
@@ -589,9 +592,12 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
             var keyed = usb is null || KeyAskedRecently(d, usb.HasKey(d) && !refreshKeys ? KeyRefreshMs : KeyRetryMs);
             if (ruled && keyed && !_missingApp.Contains(d)) continue;
             // is the app there at all? (the agent may have been installed on its own, with winget or Scoop)
-            var installed = (await Adb(adb, $"-s {d} shell pm path net.oxog.phonebox.deskpanel", ct, anyExit: true)).Contains("package:");
+            var isDesk = (await Adb(adb, $"-s {d} shell pm path br.com.camilo.phonedesk", ct, anyExit: true)).Contains("package:");
+            var isLegacy = !isDesk && (await Adb(adb, $"-s {d} shell pm path net.oxog.phonebox.deskpanel", ct, anyExit: true)).Contains("package:");
+            var installed = isDesk || isLegacy;
+            var activityToStart = isDesk ? PanelActivity : LegacyPanelActivity;
             _missingApp = installed ? _missingApp.Where(x => x != d).ToArray() : _missingApp.Union([d]).ToArray();
-            if (!installed) { Report($"{d}: the PhoneBox app is not installed (Settings › General › Install the phone app)"); continue; }
+            if (!installed) { Report($"{d}: the PhoneDesk app is not installed (Settings › General › Install the phone app)"); continue; }
             if (!keyed) await ReadKeyAsync(adb, d, ct);
             if (ruled) continue;
             // the phone had a rule already: this agent restarted (its USB port changed), the phone was not plugged in now
@@ -599,7 +605,11 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
             if (_stopping) return; // the agent is closing: a rule set now would be left behind (RemoveBeforeThePortCloses)
             // noted before it is sent: a stop that cancels it may come after the adb server applied it
             _pending.Add(d);
-            try { await Adb(adb, $"-s {d} reverse {Rule} {TargetRule}", ct); }
+            try
+            {
+                await Adb(adb, $"-s {d} reverse {WebRule} {WebRule}", ct);
+                await Adb(adb, $"-s {d} reverse {Rule} {TargetRule}", ct);
+            }
             catch (IOException) { _pending.Remove(d); throw; } // adb refused it: no rule was set
             _pending.Remove(d);
             _reverseSet.Add(d);
@@ -632,7 +642,7 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
                     catch (Exception ex) when (ex is IOException or TimeoutException or OperationCanceledException or System.ComponentModel.Win32Exception)
                     { log.LogInformation("{Device}: the lock screen could not be stepped over ({Why})", d, ex.Message); }
                 }
-                await Adb(adb, $"-s {d} shell am start -n {PanelActivity}", ct);
+                await Adb(adb, $"-s {d} shell am start -n {activityToStart}", ct);
                 log.LogInformation("{Device}: adb reverse set up, panel opened", d);
             }
             // Settings › Display › open on connect is off: the phone stays as it is (the panel opens when the user starts it).
@@ -727,18 +737,22 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
         dumpsysWindow.Contains("isKeyguardShowing=true", StringComparison.Ordinal) ||
         dumpsysWindow.Split('\n').Any(line => line.Trim() == "showing=true");
 
-    /// <summary>True when "reverse --list" has any rule for the phone's tcp:8765, whatever it points at.</summary>
+    /// <summary>True when "reverse --list" has any rule for the phone's tcp:8765 or tcp:8770.</summary>
     internal static bool HasAnyRule(string list) => list.Split('\n')
         .Select(l => l.Split([' ', '\t', '\r'], StringSplitOptions.RemoveEmptyEntries))
-        .Any(p => p.Length >= 2 && p[^2] == Rule);
+        .Any(p => p.Length >= 2 && (p[^2] == Rule || p[^2] == WebRule));
 
     /// <summary>
-    /// True when "reverse --list" has this agent's rule: phone tcp:8765 to this agent's port. A rule left by an agent on
-    /// another port (--port) points the phone at a dead port; lines read "&lt;transport&gt; &lt;phone&gt; &lt;computer&gt;".
+    /// True when "reverse --list" has this agent's rules: phone tcp:8770 and tcp:8765 to this agent's port.
     /// </summary>
-    private bool HasOwnRule(string list) => list.Split('\n')
-        .Select(l => l.Split([' ', '\t', '\r'], StringSplitOptions.RemoveEmptyEntries))
-        .Any(p => p.Length >= 2 && p[^2] == Rule && p[^1] == TargetRule);
+    private bool HasOwnRule(string list)
+    {
+        var entries = list.Split('\n')
+            .Select(l => l.Split([' ', '\t', '\r'], StringSplitOptions.RemoveEmptyEntries))
+            .Where(p => p.Length >= 2)
+            .ToList();
+        return entries.Any(p => p[^2] == WebRule && p[^1] == WebRule);
+    }
 
     private void SetDevices(string[] devices)
     {
