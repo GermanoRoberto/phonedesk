@@ -64,7 +64,7 @@ public sealed class Tray : IHostedService
         _invoker = host;
         _ctx = new ApplicationContext();
 
-        using var iconStream = AppPaths.Resource("phonedesk.ico");
+        using var iconStream = AppPaths.Resource("nuvradock.ico");
         var status = new ToolStripMenuItem { Enabled = false };
         var autostart = new ToolStripMenuItem();
         autostart.Click += (_, _) => { ToggleAutostart(UiCulture()); autostart.Checked = File.Exists(AppPaths.StartupShortcut); };

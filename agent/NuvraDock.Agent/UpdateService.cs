@@ -22,10 +22,11 @@ public sealed record UpdateStatus(string AgentVersion, string? AppVersion, strin
 public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicationLifetime life, ILogger<UpdateService> log) : BackgroundService
 {
     private static readonly string InstallDir = AppPaths.InstallDir;
-    private static readonly string ExeName = OperatingSystem.IsWindows() ? "PhoneDeskAgent.exe" : "PhoneDeskAgent";
+    private static readonly string ExeName = OperatingSystem.IsWindows() ? "NuvraDockAgent.exe" : "NuvraDockAgent";
     private static readonly string Downloads = Path.Combine(AppPaths.LocalDir, "updates");
     internal string DownloadsDir { get; init; } = Downloads;
     private readonly HttpClient _http = new() { Timeout = TimeSpan.FromMinutes(5) };
+    private readonly HttpClient _probeHttp = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(20) };
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     private Release? _latest;
@@ -93,8 +94,9 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
-        _http.DefaultRequestHeaders.UserAgent.ParseAdd("PhoneBox/" + AppPaths.Version);
+        _http.DefaultRequestHeaders.UserAgent.ParseAdd("NuvraDock/" + AppPaths.Version);
         _http.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+        _probeHttp.DefaultRequestHeaders.UserAgent.ParseAdd("NuvraDock/" + AppPaths.Version);
         CleanupOldFiles();
         if (RunningInBundle) CleanupBundleLeftovers(BundleDir(AppContext.BaseDirectory)!);
         if (RunningInstalled) RemoveFrameworkDependentLeftovers(InstallDir, SingleFile);
@@ -105,8 +107,10 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
             if (DateTime.UtcNow >= nextCheck)
             {
                 await CheckAsync(ct);
-                // a failed check (GitHub answering 504 now and then) is retried soon instead of in 6 hours
-                nextCheck = DateTime.UtcNow + (_error?.StartsWith("Update check failed") == true ? TimeSpan.FromMinutes(15) : TimeSpan.FromHours(6));
+                var jitter = TimeSpan.FromMinutes(Random.Shared.Next(0, 60));
+                var failed = _error?.StartsWith("Update check failed") == true;
+                var rateLimited = _error?.Contains("403") == true || _error?.Contains("429") == true;
+                nextCheck = DateTime.UtcNow + (rateLimited ? TimeSpan.FromHours(6) : failed ? TimeSpan.FromHours(1) : TimeSpan.FromHours(24) + jitter);
             }
             if (cfg.Get().Updates.Auto) await ApplyAsync(ct, automatic: true);
             await Task.Delay(TimeSpan.FromMinutes(1), ct);
@@ -127,12 +131,59 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
         {
             _state = "checking";
             var repo = cfg.Get().Updates.Repo;
-            using var doc = JsonDocument.Parse(await ApiStringAsync($"https://api.github.com/repos/{repo}/releases/latest", ct));
-            var r = doc.RootElement;
-            foreach (var a in r.GetProperty("assets").EnumerateArray())
+            // Probe GitHub's web redirect first — no 60 req/hr REST API rate limit, scales to any number of machines.
+            var probedTag = await ProbeLatestReleaseTagAsync(repo, ct);
+            if (probedTag is { NoRelease: true })
+            {
+                _latest = new Release(AppPaths.Version, $"https://github.com/{repo}/releases", null, null, null, null);
+                _lastCheck = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                _error = null;
+                _state = "idle";
+                return;
+            }
+            if (probedTag is { Tag: { Length: > 0 } tag })
+            {
+                var ver = tag.TrimStart('v', 'V');
+                var releaseUrl = $"https://github.com/{repo}/releases/tag/{tag}";
+                if (!Newer(ver, AppPaths.Version))
+                {
+                    _latest = new Release(ver, releaseUrl, null, null, null, null);
+                    _lastCheck = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    _error = null;
+                    _state = "idle";
+                    return;
+                }
+                // Only fetch the JSON release metadata when a newer version actually exists; fall back to direct URLs on 403/429.
+                try
+                {
+                    using var doc = JsonDocument.Parse(await ApiStringAsync($"https://api.github.com/repos/{repo}/releases/latest", ct));
+                    var r = doc.RootElement;
+                    foreach (var a in r.GetProperty("assets").EnumerateArray())
+                        if (a.GetProperty("browser_download_url").GetString() is { } url && a.TryGetProperty("url", out var api) && api.GetString() is { } apiUrl)
+                            _apiUrls[url] = apiUrl;
+                    _latest = SelectAssets(r, AppPaths.Rid);
+                }
+                catch (Exception ex) when (Transient(ex, ct))
+                {
+                    var dlBase = $"https://github.com/{repo}/releases/download/{tag}";
+                    _latest = new Release(ver, releaseUrl,
+                        $"{dlBase}/NuvraDock-{ver}.apk",
+                        $"{dlBase}/NuvraDockAgent-{ver}-{AppPaths.Rid}.zip",
+                        $"{dlBase}/SHA256SUMS-{ver}.txt",
+                        $"{dlBase}/NuvraDock-{ver}-{AppPaths.Rid}.dmg");
+                }
+                _lastCheck = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                _error = null;
+                _state = "idle";
+                return;
+            }
+
+            using var fallbackDoc = JsonDocument.Parse(await ApiStringAsync($"https://api.github.com/repos/{repo}/releases/latest", ct));
+            var fr = fallbackDoc.RootElement;
+            foreach (var a in fr.GetProperty("assets").EnumerateArray())
                 if (a.GetProperty("browser_download_url").GetString() is { } url && a.TryGetProperty("url", out var api) && api.GetString() is { } apiUrl)
                     _apiUrls[url] = apiUrl;
-            _latest = SelectAssets(r, AppPaths.Rid);
+            _latest = SelectAssets(fr, AppPaths.Rid);
             _lastCheck = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             _error = null;
             _state = "idle";
@@ -143,6 +194,31 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
             _error = "Update check failed: " + ex.Message;
             _state = "idle";
         }
+    }
+
+    private sealed record TagProbe(string? Tag, bool NoRelease);
+
+    private async Task<TagProbe?> ProbeLatestReleaseTagAsync(string repo, CancellationToken ct)
+    {
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Head, $"https://github.com/{repo}/releases/latest");
+            using var res = await _probeHttp.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+            if ((int)res.StatusCode == 404) return new TagProbe(null, NoRelease: true);
+            var loc = res.Headers.Location?.ToString();
+            if (string.IsNullOrEmpty(loc)) return null;
+            const string marker = "/releases/tag/";
+            var idx = loc.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+            if (idx >= 0)
+            {
+                var tag = Uri.UnescapeDataString(loc[(idx + marker.Length)..].TrimEnd('/'));
+                return new TagProbe(tag, NoRelease: false);
+            }
+            if (loc.TrimEnd('/').EndsWith("/releases", StringComparison.OrdinalIgnoreCase))
+                return new TagProbe(null, NoRelease: true);
+            return null;
+        }
+        catch (Exception) when (!ct.IsCancellationRequested) { return null; }
     }
 
     /// <summary>Installs whatever is newer: the phone app first (needs USB), then the agent (restarts it).</summary>
@@ -629,9 +705,9 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
         {
             var name = a.GetProperty("name").GetString() ?? "";
             var url = a.GetProperty("browser_download_url").GetString();
-            if (name.StartsWith("PhoneDesk-", StringComparison.OrdinalIgnoreCase) && name.EndsWith(".apk", StringComparison.OrdinalIgnoreCase)) apk = url;
-            if (name.StartsWith("PhoneDeskAgent-", StringComparison.OrdinalIgnoreCase) && name.EndsWith($"-{rid}.zip", StringComparison.OrdinalIgnoreCase)) zip = url;
-            if (name.StartsWith("PhoneDesk-", StringComparison.OrdinalIgnoreCase) && name.EndsWith($"-{rid}.dmg", StringComparison.OrdinalIgnoreCase)) dmg = url;
+            if ((name.StartsWith("NuvraDock-", StringComparison.OrdinalIgnoreCase) || name.StartsWith("PhoneDesk-", StringComparison.OrdinalIgnoreCase)) && name.EndsWith(".apk", StringComparison.OrdinalIgnoreCase)) apk = url;
+            if ((name.StartsWith("NuvraDockAgent-", StringComparison.OrdinalIgnoreCase) || name.StartsWith("PhoneDeskAgent-", StringComparison.OrdinalIgnoreCase)) && name.EndsWith($"-{rid}.zip", StringComparison.OrdinalIgnoreCase)) zip = url;
+            if ((name.StartsWith("NuvraDock-", StringComparison.OrdinalIgnoreCase) || name.StartsWith("PhoneDesk-", StringComparison.OrdinalIgnoreCase)) && name.EndsWith($"-{rid}.dmg", StringComparison.OrdinalIgnoreCase)) dmg = url;
             if (name.StartsWith("SHA256SUMS-", StringComparison.OrdinalIgnoreCase) && name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)) sums = url;
         }
         var tag = release.GetProperty("tag_name").GetString() ?? "";
@@ -662,7 +738,7 @@ public sealed class UpdateService(ConfigStore cfg, AdbReverse adb, IHostApplicat
     /// <summary>"dumpsys package" for the app; empty when the phone does not answer (the install then goes ahead).</summary>
     private static async Task<string> InstalledDumpAsync(string adbExe, string serial, CancellationToken ct)
     {
-        try { return await Run(adbExe, ["-s", serial, "shell", "dumpsys", "package", "net.oxog.phonebox.deskpanel"], ct, TimeSpan.FromSeconds(20)); }
+        try { return await Run(adbExe, ["-s", serial, "shell", "dumpsys", "package", "com.nuvradock.app"], ct, TimeSpan.FromSeconds(20)); }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested) { return ""; }
     }
 

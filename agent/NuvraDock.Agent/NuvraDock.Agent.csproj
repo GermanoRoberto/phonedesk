@@ -8,12 +8,12 @@
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>PhoneDeskAgent</AssemblyName>
+    <AssemblyName>NuvraDockAgent</AssemblyName>
     <RootNamespace>PhoneBox.Agent</RootNamespace>
-    <Product>PhoneDesk</Product>
-    <Company>PhoneDesk</Company>
-    <Description>PhoneDesk desktop agent: open-source Smart Desk Panel and Control Deck based on PhoneBox.</Description>
-    <Version>1.0.0</Version>
+    <Product>Nuvra Dock</Product>
+    <Company>Nuvra Dock</Company>
+    <Description>Nuvra Dock desktop agent: Smart Desk Panel and Control Deck.</Description>
+    <Version>1.0.1</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
@@ -22,7 +22,7 @@
     <OutputType>WinExe</OutputType>
     <UseWindowsForms>true</UseWindowsForms>
     <SatelliteResourceLanguages>en;tr;de;fr;es;it;pt;pt-BR;nl;pl;ru;el;vi;zh-Hans;ja;ko;id;th;uk;hi;cs;ar;zh-Hant</SatelliteResourceLanguages>
-    <ApplicationIcon>phonedesk.ico</ApplicationIcon>
+    <ApplicationIcon>nuvradock.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
@@ -58,7 +58,7 @@
     <EmbeddedResource Include="config.default.json" LogicalName="config.default.json" />
     <EmbeddedResource Include="config.default.linux.json" LogicalName="config.default.linux.json" />
     <EmbeddedResource Include="config.default.macos.json" LogicalName="config.default.macos.json" />
-    <EmbeddedResource Include="phonedesk.ico" LogicalName="phonedesk.ico" />
+    <EmbeddedResource Include="nuvradock.ico" LogicalName="nuvradock.ico" />
     <EmbeddedResource Include="settings.html" LogicalName="settings.html" />
     <EmbeddedResource Include="widgets.json" LogicalName="widgets.json" />
     <EmbeddedResource Include="templates.json" LogicalName="templates.json" />

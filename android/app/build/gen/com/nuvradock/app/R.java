@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package br.com.camilo.phonedesk;
+package com.nuvradock.app;
 
 public final class R {
   public static final class color {
@@ -19,6 +19,6 @@ public final class R {
     public static final int app_name=0x7f030000;
   }
   public static final class style {
-    public static final int Theme_PhoneDesk_Fullscreen=0x7f040000;
+    public static final int Theme_NuvraDock_Fullscreen=0x7f040000;
   }
 }

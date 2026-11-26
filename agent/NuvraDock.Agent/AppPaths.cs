@@ -5,7 +5,7 @@ namespace PhoneBox.Agent;
 /// <summary>File locations. The install folder is replaced on update; settings and logs are kept.</summary>
 public static class AppPaths
 {
-    public const string AppName = "PhoneDesk";
+    public const string AppName = "NuvraDock";
 
     private static string Home => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile, Environment.SpecialFolderOption.DoNotVerify);
     private static string Xdg(string variable, string fallback) =>
@@ -46,19 +46,27 @@ public static class AppPaths
         Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0]
         ?? "0.0.0";
 
-    /// <summary>Writes the default settings file on first run (migrating legacy PhoneBox config if present).</summary>
+    /// <summary>Writes the default settings file on first run (migrating legacy PhoneDesk or PhoneBox config if present).</summary>
     public static void EnsureConfig()
     {
         if (File.Exists(ConfigPath)) return;
         Directory.CreateDirectory(ConfigDir);
-        var legacyDir = Path.Combine(
-            OperatingSystem.IsWindows() ? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+        var parentRoot = OperatingSystem.IsWindows() ? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
             : OperatingSystem.IsMacOS() ? Path.Combine(Home, "Library", "Application Support")
-            : Xdg("XDG_CONFIG_HOME", ".config"), "PhoneBox");
-        var legacyConfig = Path.Combine(legacyDir, "config.json");
-        if (File.Exists(legacyConfig))
+            : Xdg("XDG_CONFIG_HOME", ".config");
+        foreach (var legacyApp in new[] { "PhoneDesk", "PhoneBox" })
         {
-            CopyPrivate(legacyConfig, ConfigPath);
+            var legacyDir = Path.Combine(parentRoot, legacyApp);
+            var legacyConfig = Path.Combine(legacyDir, "config.json");
+            if (!File.Exists(legacyConfig)) continue;
+            var migratedJson = File.ReadAllText(legacyConfig).Replace("/PhoneDesk/", "/NuvraDock/").Replace("\\PhoneDesk\\", "\\NuvraDock\\");
+            WriteAllTextPrivate(ConfigPath, migratedJson);
+            foreach (var aux in new[] { "wifi-adb-devices.json", "wifi-phone-ip.txt" })
+            {
+                var auxSrc = Path.Combine(legacyDir, aux);
+                var auxDst = Path.Combine(ConfigDir, aux);
+                if (File.Exists(auxSrc) && !File.Exists(auxDst)) CopyPrivate(auxSrc, auxDst);
+            }
             return;
         }
         var name = OperatingSystem.IsMacOS() ? "config.default.macos.json" : OperatingSystem.IsLinux() ? "config.default.linux.json" : "config.default.json";

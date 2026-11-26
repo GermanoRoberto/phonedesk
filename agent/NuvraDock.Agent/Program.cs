@@ -333,7 +333,7 @@ app.Use(async (ctx, next) =>
                 if (ctx.Request.Path == "/settings" || ctx.Request.Path == "/settings.html" || ctx.Request.Path == "/config")
                 {
                     ctx.Response.ContentType = "text/html; charset=utf-8";
-                    await ctx.Response.WriteAsync("<h3>As configuracoes do PhoneDesk abrem no navegador do computador.</h3>");
+                    await ctx.Response.WriteAsync("<h3>As configuracoes do Nuvra Dock abrem no navegador do computador.</h3>");
                 }
                 return;
             }
@@ -510,7 +510,7 @@ app.MapGet("/panel/{*file}", (string? file, HttpRequest req) =>
     if (string.IsNullOrEmpty(file) && !req.Path.Value!.EndsWith('/')) return Results.Redirect("/panel/" + req.QueryString);
     return Program.ServePanelAsset(file);
 });
-app.MapGet("/favicon.ico", () => AppPaths.Resource("phonedesk.ico") is { } s ? Results.Stream(s, "image/x-icon") : Results.NotFound());
+app.MapGet("/favicon.ico", () => AppPaths.Resource("nuvradock.ico") is { } s ? Results.Stream(s, "image/x-icon") : Results.NotFound());
 
 // PhoneDesk web panel helpers + loopback-only Windows installed-app discovery
 app.MapGet("/api/phonedesk/weather", async (ConfigStore cfg, WeatherService weather, CancellationToken ct) =>
@@ -757,9 +757,11 @@ app.MapGet("/api/info", (AdbReverse adb, ConfigStore cfg) =>
         configPath = cfg.Path,
         logPath = AppPaths.LogPath,
         adb = AdbReverse.FindAdb(cfg.Get().AdbPath),
-        // USB (adb) or a live stream from the phone in the last few seconds, which covers Wi-Fi / Tailscale too
+        // USB (physical cable) vs Wi-Fi (wireless ADB like ip:5555 / mDNS or LAN web stream)
         connected = adb.Connected || ApprovalStore.PhoneConnected,
-        via = adb.Connected ? "USB" : ApprovalStore.PhoneConnected ? "Wi-Fi" : null,
+        via = adb.DeviceList.Any(d => !d.Contains(':') && !d.Contains("._tcp", StringComparison.OrdinalIgnoreCase))
+            ? "USB"
+            : (adb.Connected || ApprovalStore.PhoneConnected) ? "Wi-Fi" : null,
         phoneModel = recentPhone?.Model,
         devices = adb.AllDevices,
         appMissing = adb.MissingApp,
@@ -1412,10 +1414,10 @@ app.MapDelete("/api/settings/shortcut-icon", (string id, HttpRequest req, Config
 
 app.Lifetime.ApplicationStarted.Register(() =>
 {
-    app.Logger.LogInformation("PhoneDesk agent {Version} ready on http://127.0.0.1:{Port}, phone USB port {UsbPort} (config: {Path})",
+    app.Logger.LogInformation("Nuvra Dock agent {Version} ready on http://127.0.0.1:{Port}, phone USB port {UsbPort} (config: {Path})",
         AppPaths.Version, Port, usb.Port, configPath);
     if (lanWebActive)
-        app.Logger.LogInformation("PhoneDesk LAN web ready on http://0.0.0.0:{WebPort}", lanCfg.WebPort);
+        app.Logger.LogInformation("Nuvra Dock LAN web ready on http://0.0.0.0:{WebPort}", lanCfg.WebPort);
 });
 
 // macOS, running as PhoneBox.app: the main thread belongs to the menu bar icon and the host runs beside it (MenuBarHost)

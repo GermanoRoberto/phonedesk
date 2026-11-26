@@ -1,6 +1,6 @@
 {
-  "name": "PhoneDesk Control Deck",
-  "short_name": "PhoneDesk",
+  "name": "Nuvra Dock",
+  "short_name": "Nuvra Dock",
   "description": "Smart Desk Control Deck & Standby Panel para Android",
   "start_url": "./index.html",
   "display": "standalone",

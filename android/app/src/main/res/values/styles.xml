@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.PhoneDesk.Fullscreen" parent="@android:style/Theme.NoTitleBar.Fullscreen">
+    <style name="Theme.NuvraDock.Fullscreen" parent="@android:style/Theme.NoTitleBar.Fullscreen">
         <item name="android:windowBackground">@color/black</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>

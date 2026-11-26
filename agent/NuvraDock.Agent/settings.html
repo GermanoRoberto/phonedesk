@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PhoneDesk Settings</title>
+<title>Nuvra Dock Studio</title>
 <link rel="icon" href="/favicon.ico">
 <style>
 :root {
@@ -660,7 +660,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <circle cx="348" cy="278" r="16" fill="#10b981"/>
       </svg>
       <div class="pd-brand-meta">
-        <div class="pd-brand-row"><h1>PhoneDesk</h1><span class="pd-badge">STUDIO</span></div>
+        <div class="pd-brand-row"><h1>Nuvra Dock</h1><span class="pd-badge">STUDIO</span></div>
         <span class="ver" id="ver">v1.0.0</span>
       </div>
     </div>
@@ -759,11 +759,11 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
 
     <section id="themes">
       <h2>Temas do Painel</h2>
-      <p class="lead">Escolha um tema pronto ou personalize livremente fundo, cores, transparência dos cards, bordas e CSS com pré-visualização em tempo real do PhoneDesk.</p>
+      <p class="lead">Escolha um tema pronto ou personalize livremente fundo, cores, transparência dos cards, bordas e CSS com pré-visualização em tempo real do Nuvra Dock.</p>
 
       <div class="card">
         <div class="row" style="justify-content:space-between;margin-bottom:10px">
-          <h3 style="margin:0">Pré-visualização ao vivo do PhoneDesk</h3>
+          <h3 style="margin:0">Pré-visualização ao vivo do Nuvra Dock</h3>
           <div class="pd-screen-tabs" id="themeScreenTabs" style="margin:0"></div>
         </div>
         <div class="canvas-wrap">
@@ -1197,7 +1197,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
       <div class="card">
         <h3 data-i18n="s.updates.title">Updates</h3>
         <div class="row" style="margin-bottom:8px"><label class="switch"><input type="checkbox" data-bind="updates.auto"><span></span></label> <span data-i18n="s.updates.auto">Install new releases automatically</span></div>
-        <p class="hint" style="margin:0 0 12px"><span data-i18n="s.upd.checksBefore">Checks</span> <span id="updRepo"></span> <span data-i18n="s.upd.checksAfter">on GitHub every 6 hours. The phone app is installed over USB without a prompt on the phone; the agent replaces its own files and restarts.</span></p>
+        <p class="hint" style="margin:0 0 12px"><span data-i18n="s.upd.checksBefore">Checks</span> <span id="updRepo"></span> <span data-i18n="s.upd.checksAfter">on GitHub once a day. The phone app is installed over ADB without a prompt on the phone; the agent replaces its own files and restarts.</span></p>
         <dl id="updInfo"></dl>
         <div class="row" style="margin-top:12px"><button class="btn" id="updCheck" data-i18n="s.updates.check">Check now</button><button class="btn primary" id="updApply" hidden data-i18n="s.updates.apply">Update now</button><span class="hint" id="updState"></span></div>
       </div>
@@ -1780,7 +1780,7 @@ if ($('stageScreenTabs')) {
 function updateStageText() {
   const translate = window.PhoneBoxI18n.tc;
   $('stageHint').textContent = stageMode === 'live'
-    ? 'Pré-visualização real das 5 telas do PhoneDesk (deslize ou clique nas telas acima).'
+    ? 'Pré-visualização real das 5 telas do Nuvra Dock (deslize ou clique nas telas acima).'
     : '';
   if (previewFrame) previewFrame.title = translate('Live preview of the panel');
 }
@@ -3993,7 +3993,7 @@ function renderAppearanceSettings() {
     editor, h('div', { class: 'row', style: { gap: '10px', marginBottom: '12px' } }, selector, toggle), preview);
 }
 
-const brand = (s) => (typeof s === 'string' ? s.replace(/PhoneBox/g, 'PhoneDesk') : s);
+const brand = (s) => (typeof s === 'string' ? s.replace(/PhoneBox|PhoneDesk/g, 'Nuvra Dock') : s);
 const t = (k, v) => brand(window.PhoneBoxI18n ? window.PhoneBoxI18n.t(k, v) : k);
 const tc = (s) => brand(window.PhoneBoxI18n?.tc ? window.PhoneBoxI18n.tc(s) : s);
 
@@ -4172,7 +4172,7 @@ async function loadInfo() {
     $('usbProblem').replaceChildren(...(i.usbProblem ? [icon('warn', 'm'), i.usbProblem] : []));
     $('webviewProblem').hidden = !i.webviewProblem;
     $('webviewProblem').replaceChildren(...(i.webviewProblem ? [icon('warn', 'm'), i.webviewProblem] : []));
-    if (i.appMissing?.length) $('appMissingText').textContent = `${i.appMissing.join(', ')} has no PhoneDesk app yet`;
+    if (i.appMissing?.length) $('appMissingText').textContent = `${i.appMissing.join(', ')} has no Nuvra Dock app yet`;
     const sel = $('serial');
     const cur = cfg.deviceSerial || '';
     const opts = [['', t('s.conn.allDevices')], ...i.devices.map((d) => [d, d])];
@@ -4283,7 +4283,7 @@ $('openPhone').onclick = async () => {
   let info = null;
   try { info = await (await fetch('/api/info')).json(); } catch (_) { }
   if (!info?.connected) { toast(t('s.noPhoneConnected'), true); return; }
-  if (info.via === 'USB') await fetch('/api/phone/open', { method: 'POST' });
+  if (info.via === 'USB' || (info.devices && info.devices.length > 0)) await fetch('/api/phone/open', { method: 'POST' });
   const p = cfg?.pages?.[selPage];
   // the phone only has the saved pages: a page that is new or hidden in unsaved edits is not there yet
   let onPhone = null;
@@ -4418,7 +4418,7 @@ $('modalClose').onclick = closeModal;
 $('lanPair').onclick = pairOverWifi;
 $('modal').onclick = (e) => { if (e.target.id === 'modal') closeModal(); };
 const whTry = (fn, ok) => async () => { try { await fn(); toast(tc(ok)); loadPushed(); } catch (e) { toast(e.message, true); } };
-$('whNotify').onclick = whTry(() => postJson('/api/notify', { title: 'PhoneDesk', text: tc('Hello from the settings page'), level: 'ok' }), 'Sent — look at the phone');
+$('whNotify').onclick = whTry(() => postJson('/api/notify', { title: 'Nuvra Dock', text: tc('Hello from the settings page'), level: 'ok' }), 'Sent — look at the phone');
 $('whPush').onclick = whTry(() => postJson('/api/push/demo', { value: Math.round(Math.random() * 100), unit: '%', sub: tc('sent ') + new Date().toLocaleTimeString() }), 'Pushed "demo"');
 $('whRefresh').onclick = whTry(() => postJson('/api/refresh'), 'The panel refreshes');
 $('whReload').onclick = whTry(() => postJson('/api/refresh?reload=1'), 'The panel reloads');
@@ -4669,7 +4669,7 @@ function ensureThemePreview() {
   const box = $('themePreviewBox');
   if (!box) return;
   if (!themePreviewFrame) {
-    themePreviewFrame = h('iframe', { src: '/index.html?preview=1', title: 'Pré-visualização de Tema do PhoneDesk' });
+    themePreviewFrame = h('iframe', { src: '/index.html?preview=1', title: 'Pré-visualização de Tema do Nuvra Dock' });
     box.replaceChildren(themePreviewFrame);
     const fit = () => { if (box.clientWidth > 0) themePreviewFrame.style.transform = `scale(${box.clientWidth / 780})`; };
     new ResizeObserver(fit).observe(box);

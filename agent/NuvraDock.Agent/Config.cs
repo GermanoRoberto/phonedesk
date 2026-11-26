@@ -334,7 +334,7 @@ public sealed class LanConfig
     /// <summary>Universal HTTP Web UI & API listener for smartphone/tablet browsers on the local LAN.</summary>
     public bool WebEnabled { get; set; } = true;
     public int WebPort { get; set; } = 8770;
-    public bool WebRequireToken { get; set; }
+    public bool WebRequireToken { get; set; } = true;
     public string? WebRoot { get; set; }
 }
 

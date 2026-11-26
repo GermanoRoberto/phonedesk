@@ -11,16 +11,27 @@ namespace PhoneBox.Agent;
 public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEndpoint? endpoint = null, UsbLink? usb = null,
     IHostApplicationLifetime? lifetime = null) : BackgroundService
 {
-    public const string PanelActivity = "net.oxog.phonebox.deskpanel/.MainActivity";
+    public const string PhoneDeskActivity = "com.nuvradock.app/.MainActivity";
+    public const string PanelActivity = "com.nuvradock.app/.MainActivity";
+    private const string LegacyPanelActivity = "net.oxog.phonebox.deskpanel/.MainActivity";
     private const string HomeAlias = "net.oxog.phonebox.deskpanel/.HomeAlias";
     private readonly HashSet<string> _homeSet = [];
     private readonly HashSet<string> _awakeSet = [];
+    private readonly HashSet<string> _wifiProvisioned = [];
+    private readonly Dictionary<string, string> _deviceActivity = [];
+    private long _lastWifiProbeMs;
+    private const int WifiAdbPort = 5555;
+    private const long WifiProbeIntervalMs = 15_000;
+    private string WifiDevicesPath => Path.Combine(Path.GetDirectoryName(cfg.Path) ?? AppPaths.ConfigDir, "wifi-adb-devices.json");
+    private string LegacyWifiIpPath => Path.Combine(Path.GetDirectoryName(cfg.Path) ?? AppPaths.ConfigDir, "wifi-phone-ip.txt");
     private volatile string[] _missingApp = [];
 
-    /// <summary>Connected phones that do not have the PhoneBox app yet (installed from Settings, e.g. after winget / Scoop).</summary>
+    /// <summary>Connected phones that do not have the PhoneDesk app yet.</summary>
     public string[] MissingApp => _missingApp;
     private const string Rule = "tcp:8765";
     private string TargetRule => $"tcp:{usb?.Port ?? endpoint?.Port ?? 8765}";
+    private string? WebRule => cfg.Get().Lan is { WebEnabled: true, WebPort: >= 1024 and <= 65535 } lan ? $"tcp:{lan.WebPort}" : null;
+    private string ActivityFor(string device) => _deviceActivity.TryGetValue(device, out var act) ? act : PhoneDeskActivity;
     private readonly Dictionary<string, long> _keyTriedAt = []; // serial -> when its key was last asked for (Ensure only)
     private readonly HashSet<string> _oldApp = [];              // phones already told that their app is too old
     private readonly HashSet<string> _reverseSet = [];          // phones whose reverse rule this agent set (read only for Android 5 and 6)
@@ -172,6 +183,8 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
                 var ours = remembered[d] ?? HasOwnRule(await Adb(adb, ["-s", d, "reverse", "--list"], limit.Token));
                 if (!ours) return null;
                 await Adb(adb, ["-s", d, "reverse", "--remove", Rule], limit.Token);
+                if (WebRule is { } webRule)
+                    try { await Adb(adb, ["-s", d, "reverse", "--remove", webRule], limit.Token); } catch { }
                 log.LogInformation("{Device}: adb reverse removed (the agent is stopping)", d);
                 return d;
             }
@@ -429,7 +442,7 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
         foreach (var d in _devices)
         {
             await Adb(adb, $"-s {d} shell input keyevent KEYCODE_WAKEUP", CancellationToken.None);
-            await Adb(adb, $"-s {d} shell am start -n {PanelActivity}", CancellationToken.None);
+            await Adb(adb, $"-s {d} shell am start -n {ActivityFor(d)}", CancellationToken.None);
         }
     }
 
@@ -450,7 +463,7 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
             await Adb(adb, $"-s {device} shell input keyevent KEYCODE_WAKEUP", ct);
             // A secure PIN/password keyguard still needs the user's unlock.
             await Adb(adb, $"-s {device} shell wm dismiss-keyguard", ct);
-            await Adb(adb, $"-s {device} shell am start -n {PanelActivity}", ct);
+            await Adb(adb, $"-s {device} shell am start -n {ActivityFor(device)}", ct);
         }
         log.LogInformation("{Device}: phone screen {State}", device, locked ? "asleep" : "awake");
     }
@@ -512,6 +525,7 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
         }
         if (_restarted) { _restarted = false; log.LogInformation("adb server answers again after the restart"); }
         _watchdog.Answered();
+        listed = await ReconcileWirelessAdbAsync(adb, listed, ct);
         var devices = listed
             .Split('\n').Skip(1)
             .Select(l => l.Trim().Split('\t'))
@@ -585,21 +599,57 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
                     _setHere.Remove(d);
                 }
             }
-            var ruled = listable ? HasOwnRule(list) : _reverseSet.Contains(d);
-            var keyed = usb is null || KeyAskedRecently(d, usb.HasKey(d) && !refreshKeys ? KeyRefreshMs : KeyRetryMs);
+            var webRule = WebRule;
+            var webRuled = webRule is null || !listable || HasWebRule(list, webRule);
+            var ruled = (listable ? HasOwnRule(list) : _reverseSet.Contains(d)) && webRuled;
+            var isPhoneDeskApp = _deviceActivity.TryGetValue(d, out var knownAct) && knownAct == PhoneDeskActivity;
+            var keyed = isPhoneDeskApp || usb is null || KeyAskedRecently(d, usb.HasKey(d) && !refreshKeys ? KeyRefreshMs : KeyRetryMs);
             if (ruled && keyed && !_missingApp.Contains(d)) continue;
-            // is the app there at all? (the agent may have been installed on its own, with winget or Scoop)
-            var installed = (await Adb(adb, $"-s {d} shell pm path net.oxog.phonebox.deskpanel", ct, anyExit: true)).Contains("package:");
+            // is PhoneDesk (or legacy PhoneBox) installed on the phone?
+            // Force migration to com.nuvradock.app whenever bundled NuvraDock.apk is available, removing legacy PhoneDesk packages
+            var hasPhoneDesk = (await Adb(adb, $"-s {d} shell pm path com.nuvradock.app", ct, anyExit: true)).Contains("package:");
+            var hasOldPhoneDesk = (await Adb(adb, $"-s {d} shell pm path com.phonedesk.app", ct, anyExit: true)).Contains("package:")
+                || (await Adb(adb, $"-s {d} shell pm path br.com.camilo.phonedesk", ct, anyExit: true)).Contains("package:");
+            var bundledApk = Path.Combine(AppContext.BaseDirectory, "NuvraDock.apk");
+            if ((!hasPhoneDesk || hasOldPhoneDesk) && File.Exists(bundledApk))
+            {
+                try
+                {
+                    if (!hasPhoneDesk)
+                    {
+                        var installOut = await Adb(adb, ["-s", d, "install", "-r", bundledApk], ct, anyExit: true);
+                        hasPhoneDesk = installOut.Contains("Success", StringComparison.OrdinalIgnoreCase);
+                        if (hasPhoneDesk) log.LogInformation("{Device}: migrated Android app to Nuvra Dock (com.nuvradock.app)", d);
+                    }
+                    if (hasPhoneDesk && hasOldPhoneDesk)
+                    {
+                        await Adb(adb, $"-s {d} uninstall com.phonedesk.app", ct, anyExit: true);
+                        await Adb(adb, $"-s {d} uninstall br.com.camilo.phonedesk", ct, anyExit: true);
+                        await Adb(adb, $"-s {d} shell am start -n {PhoneDeskActivity}", ct, anyExit: true);
+                        log.LogInformation("{Device}: removed legacy PhoneDesk Android package", d);
+                    }
+                }
+                catch (Exception ex) when (ex is IOException or TimeoutException) { }
+            }
+            var hasLegacy = !hasPhoneDesk && (await Adb(adb, $"-s {d} shell pm path net.oxog.phonebox.deskpanel", ct, anyExit: true)).Contains("package:");
+            var installed = hasPhoneDesk || hasLegacy;
+            if (hasPhoneDesk) _deviceActivity[d] = PhoneDeskActivity;
+            else if (hasLegacy) _deviceActivity[d] = LegacyPanelActivity;
             _missingApp = installed ? _missingApp.Where(x => x != d).ToArray() : _missingApp.Union([d]).ToArray();
-            if (!installed) { Report($"{d}: the PhoneBox app is not installed (Settings › General › Install the phone app)"); continue; }
-            if (!keyed) await ReadKeyAsync(adb, d, ct);
+            if (!installed) { Report($"{d}: the Nuvra Dock app is not installed"); continue; }
+            if (hasLegacy && !keyed) await ReadKeyAsync(adb, d, ct);
             if (ruled) continue;
             // the phone had a rule already: this agent restarted (its USB port changed), the phone was not plugged in now
             var moved = HasAnyRule(list);
             if (_stopping) return; // the agent is closing: a rule set now would be left behind (RemoveBeforeThePortCloses)
             // noted before it is sent: a stop that cancels it may come after the adb server applied it
             _pending.Add(d);
-            try { await Adb(adb, $"-s {d} reverse {Rule} {TargetRule}", ct); }
+            try
+            {
+                await Adb(adb, $"-s {d} reverse {Rule} {TargetRule}", ct);
+                if (webRule is not null)
+                    await Adb(adb, $"-s {d} reverse {webRule} {webRule}", ct);
+            }
             catch (IOException) { _pending.Remove(d); throw; } // adb refused it: no rule was set
             _pending.Remove(d);
             _reverseSet.Add(d);
@@ -632,7 +682,7 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
                     catch (Exception ex) when (ex is IOException or TimeoutException or OperationCanceledException or System.ComponentModel.Win32Exception)
                     { log.LogInformation("{Device}: the lock screen could not be stepped over ({Why})", d, ex.Message); }
                 }
-                await Adb(adb, $"-s {d} shell am start -n {PanelActivity}", ct);
+                await Adb(adb, $"-s {d} shell am start -n {ActivityFor(d)}", ct);
                 log.LogInformation("{Device}: adb reverse set up, panel opened", d);
             }
             // Settings › Display › open on connect is off: the phone stays as it is (the panel opens when the user starts it).
@@ -739,6 +789,187 @@ public sealed class AdbReverse(ConfigStore cfg, ILogger<AdbReverse> log, AgentEn
     private bool HasOwnRule(string list) => list.Split('\n')
         .Select(l => l.Split([' ', '\t', '\r'], StringSplitOptions.RemoveEmptyEntries))
         .Any(p => p.Length >= 2 && p[^2] == Rule && p[^1] == TargetRule);
+
+    private static bool HasWebRule(string list, string webRule) => list.Split('\n')
+        .Select(l => l.Split([' ', '\t', '\r'], StringSplitOptions.RemoveEmptyEntries))
+        .Any(p => p.Length >= 2 && p[^2] == webRule && p[^1] == webRule);
+
+    /// <summary>
+    /// Cross-platform automatic ADB-over-Wi-Fi provisioning and reconnection (Windows, macOS &amp; Linux) for ANY Android device:
+    /// - When any Android phone/tablet is attached over physical USB, detects its active Wi-Fi LAN IPv4 (wlan*, swlan*, etc.),
+    ///   saves serial → IP in wifi-adb-devices.json, and ensures adbd listens on TCP 5555 so the cable can be unplugged anytime.
+    /// - On PC boot / wake / Wi-Fi reconnect, probes every remembered Android device IP:5555 and runs "adb connect" automatically.
+    /// </summary>
+    private async Task<string> ReconcileWirelessAdbAsync(string adb, string listed, CancellationToken ct)
+    {
+        var lan = cfg.Get().Lan;
+        if (!lan.Enabled && !lan.WebEnabled) return listed;
+
+        var rows = listed.Split('\n').Skip(1)
+            .Select(l => l.Trim().Split('\t', StringSplitOptions.RemoveEmptyEntries))
+            .Where(p => p.Length >= 2)
+            .ToList();
+
+        var usbDevices = rows
+            .Where(p => p[1] == "device" && !p[0].Contains(':') && !p[0].StartsWith("emulator-", StringComparison.OrdinalIgnoreCase))
+            .Select(p => p[0])
+            .ToArray();
+
+        _wifiProvisioned.IntersectWith(usbDevices);
+        var savedMap = LoadWifiDevices();
+        var mapDirty = false;
+        var changed = false;
+
+        foreach (var usbSerial in usbDevices)
+        {
+            if (!_wifiProvisioned.Add(usbSerial)) continue;
+            try
+            {
+                var ipOut = await Adb(adb, $"-s {usbSerial} shell ip -f inet addr show", ct, anyExit: true);
+                var phoneIp = ExtractAndroidWifiIpv4(ipOut);
+                if (phoneIp is null) continue;
+
+                if (!savedMap.TryGetValue(usbSerial, out var prevIp) || prevIp != phoneIp)
+                {
+                    savedMap[usbSerial] = phoneIp;
+                    mapDirty = true;
+                }
+
+                var curPort = (await Adb(adb, $"-s {usbSerial} shell getprop service.adb.tcp.port", ct, anyExit: true)).Trim();
+                if (curPort != WifiAdbPort.ToString())
+                {
+                    await Adb(adb, $"-s {usbSerial} tcpip {WifiAdbPort}", ct, anyExit: true);
+                    await Task.Delay(1500, ct);
+                }
+                var target = $"{phoneIp}:{WifiAdbPort}";
+                if (!rows.Any(p => p[0] == target && p[1] == "device"))
+                {
+                    await Adb(adb, $"connect {target}", ct, anyExit: true);
+                    changed = true;
+                }
+            }
+            catch (Exception ex) when (ex is IOException or TimeoutException) { }
+        }
+
+        // Also learn any already-connected wireless IP:5555 device so existing wireless sessions survive PC reboots automatically
+        foreach (var row in rows.Where(p => p[1] == "device" && p[0].EndsWith($":{WifiAdbPort}", StringComparison.Ordinal)))
+        {
+            var hostPart = row[0][..^(WifiAdbPort.ToString().Length + 1)];
+            if (System.Net.IPAddress.TryParse(hostPart, out _) && !savedMap.Values.Contains(hostPart, StringComparer.Ordinal))
+            {
+                savedMap[$"wifi-{hostPart}"] = hostPart;
+                mapDirty = true;
+            }
+        }
+
+        if (mapDirty) SaveWifiDevices(savedMap);
+
+        var now = Clock();
+        if (!changed && savedMap.Count > 0 && now - _lastWifiProbeMs >= WifiProbeIntervalMs)
+        {
+            _lastWifiProbeMs = now;
+            foreach (var savedIp in savedMap.Values.Distinct(StringComparer.Ordinal))
+            {
+                if (!System.Net.IPAddress.TryParse(savedIp, out _)) continue;
+                var target = $"{savedIp}:{WifiAdbPort}";
+                var existing = rows.FirstOrDefault(p => p[0] == target);
+                if (existing is not null && existing[1] == "device") continue;
+
+                if (existing is not null)
+                    try { await Adb(adb, $"disconnect {target}", ct, anyExit: true); } catch { }
+
+                if (await TcpReachableAsync(savedIp, WifiAdbPort, 1500, ct))
+                {
+                    try
+                    {
+                        await Adb(adb, $"connect {target}", ct, anyExit: true);
+                        log.LogInformation("{Target}: reconnected automatically over Wi-Fi ADB", target);
+                        changed = true;
+                    }
+                    catch (Exception ex) when (ex is IOException or TimeoutException) { }
+                }
+            }
+        }
+
+        if (!changed) return listed;
+        try { return await Adb(adb, "devices", ct); }
+        catch (Exception ex) when (ex is IOException or TimeoutException) { return listed; }
+    }
+
+    internal static string? ExtractAndroidWifiIpv4(string ipAddrOutput)
+    {
+        string? currentIface = null;
+        string? fallbackPrivateIp = null;
+        foreach (var rawLine in ipAddrOutput.Split('\n'))
+        {
+            var line = rawLine.Trim();
+            var headerMatch = System.Text.RegularExpressions.Regex.Match(line, @"^\d+:\s+([A-Za-z0-9_.-]+):");
+            if (headerMatch.Success)
+            {
+                currentIface = headerMatch.Groups[1].Value;
+                continue;
+            }
+            if (currentIface is null || currentIface.Equals("lo", StringComparison.OrdinalIgnoreCase)
+                || currentIface.StartsWith("rmnet", StringComparison.OrdinalIgnoreCase)
+                || currentIface.StartsWith("ccmni", StringComparison.OrdinalIgnoreCase)
+                || currentIface.StartsWith("tun", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var inetMatch = System.Text.RegularExpressions.Regex.Match(line, @"^inet\s+(\d+\.\d+\.\d+\.\d+)/");
+            if (!inetMatch.Success || !System.Net.IPAddress.TryParse(inetMatch.Groups[1].Value, out var ip)) continue;
+            if (!Lan.IsPrivateLanRemote(ip) || System.Net.IPAddress.IsLoopback(ip)) continue;
+
+            if (currentIface.Contains("wlan", StringComparison.OrdinalIgnoreCase)
+                || currentIface.StartsWith("ap", StringComparison.OrdinalIgnoreCase)
+                || currentIface.StartsWith("wifi", StringComparison.OrdinalIgnoreCase))
+                return inetMatch.Groups[1].Value;
+
+            fallbackPrivateIp ??= inetMatch.Groups[1].Value;
+        }
+        return fallbackPrivateIp;
+    }
+
+    private Dictionary<string, string> LoadWifiDevices()
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            if (File.Exists(WifiDevicesPath))
+            {
+                var parsed = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(WifiDevicesPath));
+                if (parsed is not null)
+                    foreach (var kv in parsed)
+                        if (!string.IsNullOrWhiteSpace(kv.Value)) map[kv.Key] = kv.Value.Trim();
+            }
+            else if (File.Exists(LegacyWifiIpPath))
+            {
+                var legacy = File.ReadAllText(LegacyWifiIpPath).Trim();
+                if (!string.IsNullOrEmpty(legacy)) map["default"] = legacy;
+            }
+        }
+        catch { }
+        return map;
+    }
+
+    private void SaveWifiDevices(Dictionary<string, string> map)
+    {
+        try { AppPaths.WriteAllTextPrivate(WifiDevicesPath, System.Text.Json.JsonSerializer.Serialize(map)); }
+        catch { }
+    }
+
+    private static async Task<bool> TcpReachableAsync(string host, int port, int timeoutMs, CancellationToken ct)
+    {
+        try
+        {
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(timeoutMs);
+            using var client = new System.Net.Sockets.TcpClient();
+            await client.ConnectAsync(host, port, timeoutCts.Token);
+            return true;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch { return false; }
+    }
 
     private void SetDevices(string[] devices)
     {
