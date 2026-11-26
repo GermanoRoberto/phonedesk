@@ -19,3 +19,5 @@ tests/
 Thumbs.db
 .vscode/
 .idea/
+android/app/build/classes/
+android/app/build/*unaligned*
