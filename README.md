@@ -1,4 +1,4 @@
-# Nuvra Dock (v1.0.1) 📱🖥️🍎
+# Nuvra Dock (v1.0.2) 📱🖥️🍎
 
 > **Transforme qualquer smartphone ou tablet Android em um Smart Desk Panel & Control Deck interativo para Windows, macOS (Apple Silicon, Intel & Hackintosh) e Linux.**  
 > Execução 100% local na sua rede ou via USB/ADB (sem nuvem, sem assinaturas e sem intermediários).
@@ -9,6 +9,13 @@
 > Na primeira execução, o **Nuvra Dock** migra automaticamente suas configurações anteriores (`PhoneDesk`) e substitui o aplicativo antigo no celular via ADB sem perda de dados!
 
 ---
+
+## 🆕 Novidades da Release v1.0.2
+
+- **StandBy Puro (Tela Exclusiva):** modo dedicado fora do carrossel com relógio branco sobre preto absoluto, temperatura + ícone do dia no canto superior esquerdo e brilho ajustável (`70%` padrão, `10%–100%`), ativado automaticamente quando o computador fica inacessível ou no horário noturno.
+- **Nova Tela `🍅 Pomodoro & Foco`:** timer circular com presets (`25m`, `50m`, `5m`, `15m`), Play/Pause, Reset, contador de sessões do dia e cores 100% integradas ao tema ativo.
+- **Mídia & Áudio (Echo Show Spotlight):** capa do álbum em destaque, controles de reprodução ampliados, cápsula compacta de volume do sistema e cores 100% sincronizadas com o tema ativo.
+- **Nuvra Dock Studio Limpo:** painel de controle enxuto com 4 abas reais (**Páginas**, **Atalhos**, **Temas** e **Geral**), gerenciador direto das 6 telas do carrossel e pré-visualização ao vivo do **StandBy Puro**.
 
 ## 🆕 Novidades da Release v1.0.1
 
@@ -57,16 +64,22 @@ Diferente de projetos com layouts engessados e temas bloqueados, o **Nuvra Dock*
 ### 2. Stream Deck — Gaveta Universal de Programas (Windows & macOS)
 ![Stream Deck - Gaveta Padrão](docs/screenshots/02-stream-deck.png)
 
-### 3. Mídia & Controle de Volume
+### 3. Mídia & Controle de Volume (Echo Show Spotlight)
 ![Controle de Mídia e Volume](docs/screenshots/03-media-volume.png)
 
-### 4. Telemetria de Hardware em Tempo Real
+### 4. Pomodoro & Foco
+![Pomodoro e Foco](docs/screenshots/08-pomodoro.png)
+
+### 5. Telemetria de Hardware em Tempo Real
 ![Telemetria de Hardware](docs/screenshots/04-hardware.png)
 
-### 5. Agenda & Feeds RSS de Notícias
+### 6. Agenda & Feeds RSS de Notícias
 ![Agenda e Feeds RSS](docs/screenshots/05-agenda-feeds.png)
 
-### 6. Central de Controle (`Nuvra Dock Studio`)
+### 7. StandBy Puro (Exclusivo fora do carrossel)
+![StandBy Puro](docs/screenshots/09-standby-puro.png)
+
+### 8. Central de Controle (`Nuvra Dock Studio`)
 ![Nuvra Dock Studio no Computador](docs/screenshots/06-settings-pc.png)
 
 ---
