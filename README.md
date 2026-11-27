@@ -104,6 +104,30 @@ Diferente de projetos com layouts engessados e temas bloqueados, o **Nuvra Dock*
 3. Acesse o **Nuvra Dock Studio** no Mac em **`http://127.0.0.1:8765/`**.
 4. Conecte qualquer Android via **USB** uma vez — depois pode desconectar o cabo e deixar o aparelho direto no carregador que o `NuvraDockAgent` reconecta sozinho pelo Wi-Fi sempre que o Mac iniciar!
 
+## No Linux (Ubuntu, Debian, Fedora, Arch & ARM64)
+1. Instale as dependências do sistema (`adb` para o celular e `playerctl` para controles de mídia; o volume usa PipeWire `wpctl` ou PulseAudio `pactl` nativos):
+   ```bash
+   # Ubuntu / Debian / Linux Mint / Pop!_OS
+   sudo apt update && sudo apt install -y adb playerctl
+
+   # Fedora / RHEL
+   sudo dnf install -y android-tools playerctl
+
+   # Arch Linux / Manjaro / EndeavourOS
+   sudo pacman -S --needed android-tools playerctl
+   ```
+2. Compile e publique o binário nativo para a arquitetura da sua máquina (`.NET 10 SDK`):
+   ```bash
+   # Linux x64 (PC / Notebook)
+   dotnet publish agent/NuvraDock.Agent/NuvraDock.Agent.csproj -f net10.0 -r linux-x64 --self-contained -c Release -o ~/.local/share/NuvraDock/app
+
+   # Linux ARM64 (Raspberry Pi / ARM)
+   dotnet publish agent/NuvraDock.Agent/NuvraDock.Agent.csproj -f net10.0 -r linux-arm64 --self-contained -c Release -o ~/.local/share/NuvraDock/app
+   ```
+3. Copie os arquivos do painel web (`index.html`, `manifest.json`, `sw.js`, `icon.svg`, `widgets.json`, `templates.json`, `panel/`) para `~/.local/share/NuvraDock/app/www/` e `NuvraDock.apk` para `~/.local/share/NuvraDock/app/`.
+4. Execute `~/.local/share/NuvraDock/app/NuvraDockAgent` (ou configure um serviço `systemd --user` para iniciar automaticamente no login) e acesse o **Nuvra Dock Studio** em **`http://127.0.0.1:8765/`**.
+5. Conecte qualquer Android via **USB** uma única vez com Depuração USB ativa: o agente instala o `NuvraDock.apk` (`com.nuvradock.app`), remove versões antigas e provisiona o Wi-Fi ADB automaticamente.
+
 ---
 
 ## Licença
