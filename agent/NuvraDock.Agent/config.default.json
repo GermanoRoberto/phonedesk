@@ -1,5 +1,5 @@
 {
-  "deviceName": "PhoneDesk",
+  "deviceName": "Nuvra Dock",
   "telemetryMode": "workstation",
   "weather": {
     "city": "Juiz de Fora",
@@ -17,7 +17,7 @@
     "enabled": true,
     "start": "00:30",
     "end": "07:30",
-    "brightness": 0.01
+    "brightness": 0.7
   },
   "display": {
     "appearance": {
@@ -61,7 +61,7 @@
     "port": 8766,
     "webEnabled": true,
     "webPort": 8770,
-    "webRequireToken": false
+    "webRequireToken": true
   },
   "updates": {
     "auto": true,
@@ -70,33 +70,10 @@
   "pages": [
     {
       "id": "home",
-      "title": "Home (Página Inicial)",
+      "title": "Home",
       "icon": "🏠",
       "enabled": true,
-      "widgets": [
-        {
-          "id": "clock",
-          "type": "clock",
-          "x": 0,
-          "y": 0,
-          "w": 6,
-          "h": 6,
-          "options": {
-            "status": true,
-            "weather": true,
-            "date": true
-          }
-        },
-        {
-          "id": "weather",
-          "type": "weather",
-          "x": 6,
-          "y": 0,
-          "w": 6,
-          "h": 6,
-          "options": {}
-        }
-      ]
+      "widgets": []
     },
     {
       "id": "deck",
@@ -113,8 +90,15 @@
       "widgets": []
     },
     {
+      "id": "pomodoro",
+      "title": "Pomodoro & Foco",
+      "icon": "🍅",
+      "enabled": true,
+      "widgets": []
+    },
+    {
       "id": "hardware",
-      "title": "Hardware PC",
+      "title": "Hardware",
       "icon": "⚡",
       "enabled": true,
       "widgets": []

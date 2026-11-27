@@ -199,7 +199,8 @@ public sealed class NightConfig
     public bool Enabled { get; set; } = true;
     public string Start { get; set; } = "00:30";
     public string End { get; set; } = "07:30";
-    public double Brightness { get; set; } = 0.02;
+    /// <summary>StandBy Puro / night brightness (0.05–1). 70% stays readable in daylight on LCD phones.</summary>
+    public double Brightness { get; set; } = 0.70;
 }
 
 /// <summary>The wallpaper's look; the picture itself is <see cref="WallpaperStore"/>'s.</summary>
@@ -1022,7 +1023,7 @@ public sealed partial class ConfigStore(string path)
         if (string.IsNullOrWhiteSpace(c.Lan.WebhookToken)) c.Lan.WebhookToken = NewToken();
         c.Night.Brightness = Math.Clamp(c.Night.Brightness, 0.01, 1);
 
-        c.Pages = NormalizePages(c.Pages, out var originalPageIds);
+        c.Pages = NormalizePages(NuvraPages(c.Pages), out var originalPageIds);
         // an exact match first; a reference with stray spaces around it still finds the page it names
         string PageId(string id) =>
             originalPageIds.TryGetValue(id, out var exact) ? exact
@@ -1202,6 +1203,41 @@ public sealed partial class ConfigStore(string path)
             if (r.Page is { } page) r.Page = PageId(page);
         }
         return c;
+    }
+
+    /// <summary>The six screens the Nuvra Dock panel actually has, in their default order.</summary>
+    public static readonly (string Id, string Title, string Icon)[] NuvraScreens =
+    [
+        ("home", "Home", "🏠"),
+        ("deck", "Stream Deck", "🎛️"),
+        ("media", "Mídia & Áudio", "🎵"),
+        ("pomodoro", "Pomodoro & Foco", "🍅"),
+        ("hardware", "Hardware", "⚡"),
+        ("feeds", "Agenda & Feeds", "📰"),
+    ];
+
+    /// <summary>
+    /// Forces the page list onto the Nuvra Dock screens: keeps the order and on/off state the user chose for the known
+    /// screens, drops legacy PhoneBox widget pages the panel cannot show, and adds any missing screen at its default spot.
+    /// </summary>
+    private static List<PageConfig> NuvraPages(List<PageConfig>? input)
+    {
+        var result = new List<PageConfig>();
+        foreach (var p in input ?? [])
+        {
+            var id = p?.Id?.Trim();
+            if (p is null || id is null || result.Any(r => r.Id == id)) continue;
+            var screen = NuvraScreens.FirstOrDefault(s => s.Id == id);
+            if (screen.Id is null) continue;
+            result.Add(new PageConfig { Id = screen.Id, Title = screen.Title, Icon = screen.Icon, Enabled = p.Enabled, IdleSec = p.IdleSec, Widgets = [] });
+        }
+        for (var i = 0; i < NuvraScreens.Length; i++)
+        {
+            var s = NuvraScreens[i];
+            if (result.Any(r => r.Id == s.Id)) continue;
+            result.Insert(Math.Min(i, result.Count), new PageConfig { Id = s.Id, Title = s.Title, Icon = s.Icon, Enabled = true, Widgets = [] });
+        }
+        return result;
     }
 
     /// <summary>Expands templates, migrates the old fixed pages, keeps widgets on the grid and makes ids unique.</summary>

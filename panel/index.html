@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
-  <title>PhoneDesk</title>
+  <title>Nuvra Dock</title>
   <style id="pdThemeVars">
     :root {
       --pd-bg: #000000;
@@ -516,19 +516,247 @@
         grid-template-rows: repeat(2, minmax(0, 1fr));
       }
     }
-    body {
-      transition: filter 1.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    body.eco-dimmed {
-      filter: brightness(0.22) contrast(0.95);
-    }
-    body.eco-dimmed .pager,
-    body.eco-dimmed .btn-settings {
-      opacity: 0;
-      pointer-events: none;
-    }
     .pager, .btn-settings {
       transition: opacity 0.5s ease;
+    }
+
+    /* StandBy Puro: tela exclusiva (fora do carrossel), relógio branco sobre preto, clima no canto esquerdo */
+    #pureStandby {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      background: #000000;
+      color: #ffffff;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+    }
+    #pureStandby.on { display: flex; }
+    body.standby-on .track,
+    body.standby-on .pager,
+    body.standby-on .btn-settings,
+    body.standby-on .toast { visibility: hidden !important; pointer-events: none !important; }
+    .sb-weather {
+      position: absolute;
+      left: clamp(16px, 3.5vw, 32px);
+      top: clamp(12px, 3vh, 24px);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #sbIcon { width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    #sbTemp {
+      font-size: clamp(32px, 5vw, 42px);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+    }
+    .sb-clock { display: flex; align-items: baseline; font-variant-numeric: tabular-nums; }
+    .sb-clock span {
+      font-size: clamp(92px, 22vw, 154px);
+      line-height: 0.86;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: #ffffff;
+      text-shadow: 0 0 28px rgba(255, 255, 255, 0.16);
+    }
+    .sb-clock .sb-colon { opacity: 0.85; padding: 0 4px; animation: sbPulse 2s ease-in-out infinite; }
+    @keyframes sbPulse { 0%, 100% { opacity: 0.92; } 50% { opacity: 0.35; } }
+    #sbDate {
+      margin-top: clamp(12px, 3vh, 22px);
+      font-size: clamp(11px, 1.6vw, 14px);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.52);
+    }
+
+    /* Tela Pomodoro & Foco (100% guiada pelas variáveis do tema) */
+    .pomo-page {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(18px, 5vw, 56px);
+    }
+    .pomo-wall {
+      position: absolute;
+      top: clamp(10px, 2vh, 16px);
+      right: clamp(48px, 7vw, 64px);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--pd-muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .pomo-ring-wrap { position: relative; width: min(64vh, 40vw); height: min(64vh, 40vw); flex-shrink: 0; }
+    .pomo-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .pomo-track { fill: none; stroke: var(--pd-divider); stroke-width: 7; }
+    .pomo-fill {
+      fill: none;
+      stroke: var(--pd-accent);
+      stroke-width: 7;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.35s ease, stroke 0.25s ease;
+    }
+    .pomo-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .pomo-phase { font-size: clamp(10px, 1.5vw, 12px); font-weight: 800; letter-spacing: 0.16em; color: var(--pd-accent); }
+    .pomo-digits { font-size: clamp(40px, 8vw, 64px); font-weight: 900; line-height: 1; color: var(--pd-text); font-variant-numeric: tabular-nums; margin: 4px 0 6px; }
+    .pomo-cycle { font-size: clamp(11px, 1.5vw, 13px); color: var(--pd-muted); font-weight: 600; }
+    .pomo-side { flex: 1; max-width: 400px; display: flex; flex-direction: column; gap: clamp(10px, 2vh, 16px); }
+    .pomo-label { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pd-muted); margin-bottom: 8px; }
+    .pomo-presets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .pomo-page button { font-family: inherit; cursor: pointer; }
+    .pomo-pre {
+      padding: clamp(8px, 1.8vh, 12px) 4px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
+      background: var(--pd-card-bg);
+      border: 1px solid var(--pd-card-border);
+      color: var(--pd-text);
+    }
+    .pomo-pre.on { background: var(--pd-accent); border-color: var(--pd-accent); color: var(--pd-on-accent); }
+    .pomo-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+    .pomo-start {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: clamp(12px, 2.6vh, 16px);
+      border-radius: 16px;
+      border: none;
+      background: var(--pd-accent);
+      color: var(--pd-on-accent);
+      font-size: 15px;
+      font-weight: 800;
+      box-shadow: 0 6px 20px var(--pd-clock-glow);
+    }
+    .pomo-reset { padding: clamp(12px, 2.6vh, 16px) 8px; font-size: 13px; font-weight: 700; color: var(--pd-text); border-radius: 16px; }
+    .pomo-stats { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; font-size: 12px; }
+    .pomo-stats-lbl { color: var(--pd-muted); }
+    .pomo-stats-val { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--pd-text); font-variant-numeric: tabular-nums; }
+    #pomoDots { display: flex; gap: 4px; }
+    #pomoDots i { width: 8px; height: 8px; border-radius: 50%; background: var(--pd-divider); display: inline-block; }
+    #pomoDots i.on { background: var(--pd-accent); }
+    @media (orientation: portrait), (max-width: 640px) {
+      .pomo-page { flex-direction: column; padding-top: 36px; }
+      .pomo-ring-wrap { width: min(60vw, 36vh); height: min(60vw, 36vh); }
+      .pomo-side { width: 100%; }
+    }
+
+    /* Tela Mídia & Áudio — Echo Show Spotlight (100% integrada ao tema ativo) */
+    .media-spotlight {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(18px, 3.2vw, 36px);
+      padding: clamp(12px, 2.2vh, 20px) clamp(18px, 3.4vw, 36px) clamp(30px, 5vh, 38px) clamp(18px, 3.4vw, 36px);
+    }
+    .ms-art {
+      width: clamp(196px, 68vh, 300px);
+      height: clamp(196px, 68vh, 300px);
+      border-radius: calc(var(--pd-radius) + 8px);
+      background: var(--pd-card-bg);
+      border: 1px solid var(--pd-card-border);
+      box-shadow: var(--pd-shadow), 0 0 42px var(--pd-accent-glow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .ms-art img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .ms-art-fb { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--pd-accent); }
+    .ms-art-fb svg { width: clamp(64px, 14vh, 92px); height: clamp(64px, 14vh, 92px); }
+    .ms-right {
+      flex: 1;
+      min-width: 0;
+      height: clamp(196px, 68vh, 300px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .ms-app { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--pd-accent); }
+    .ms-title {
+      font-size: clamp(20px, 3.4vw, 28px);
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--pd-text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-top: 3px;
+    }
+    .ms-artist { font-size: clamp(12px, 1.8vw, 15px); font-weight: 600; color: var(--pd-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
+    .ms-prog-bar { background: var(--pd-accent) !important; }
+    .ms-times { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--pd-muted); font-variant-numeric: tabular-nums; }
+    .ms-bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: nowrap; }
+    .ms-transport { display: flex; align-items: center; gap: clamp(16px, 3vw, 28px); flex-shrink: 0; }
+    .ms-nav { background: none; border: none; color: var(--pd-text); opacity: 0.9; padding: 10px; display: flex; align-items: center; justify-content: center; }
+    .ms-play {
+      width: clamp(56px, 10.5vh, 68px);
+      height: clamp(56px, 10.5vh, 68px);
+      border-radius: 50%;
+      border: none;
+      background: var(--pd-accent);
+      color: var(--pd-on-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 22px var(--pd-accent-glow);
+    }
+    .ms-vol-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      min-width: 0;
+      width: clamp(165px, 26vw, 215px);
+      flex-shrink: 1;
+    }
+    .ms-vol-btn {
+      background: none;
+      border: none;
+      color: var(--pd-accent);
+      font-size: 16px;
+      font-weight: 900;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ms-vol-slider { flex: 1; min-width: 44px; height: 24px; }
+    .ms-vol-slider .vol-track { height: 7px; }
+    .ms-vol-slider .vol-fill { background: var(--pd-accent) !important; }
+    .ms-vol-pct { font-size: 11px; font-weight: 800; color: var(--pd-text); font-variant-numeric: tabular-nums; min-width: 32px; text-align: right; }
+    .ms-mute {
+      background: none;
+      border: 1px solid var(--pd-card-border);
+      border-radius: 999px;
+      color: var(--pd-muted);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ms-mute.muted { border-color: rgba(239, 68, 68, 0.55); color: #ef4444; background: rgba(239, 68, 68, 0.16); }
+    .ms-dev { font-size: 10px; font-weight: 700; color: var(--pd-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; margin-top: 2px; }
+    @media (orientation: portrait), (max-width: 640px) {
+      .media-spotlight { flex-direction: column; padding-top: 36px; gap: 16px; }
+      .ms-art { width: 136px; height: 136px; }
+      .ms-right { width: 100%; height: auto; gap: 12px; }
+      .ms-vol-pill { max-width: 100%; }
     }
   </style>
 </head>
@@ -541,10 +769,22 @@
 
   <div id="toast" class="toast"></div>
 
+  <!-- STANDBY PURO: overlay exclusivo, nunca faz parte do carrossel -->
+  <div id="pureStandby" aria-hidden="true">
+    <div class="sb-weather">
+      <div id="sbIcon"></div>
+      <span id="sbTemp">--°</span>
+    </div>
+    <div class="sb-clock">
+      <span id="sbH">--</span><span class="sb-colon">:</span><span id="sbM">--</span>
+    </div>
+    <div id="sbDate"></div>
+  </div>
+
   <div class="track" id="track">
 
-    <!-- TELA 1: STANDBY DESK -->
-    <div class="page standby-page">
+    <!-- TELA 1: HOME -->
+    <div class="page standby-page" data-page="home">
       <div class="standby-clock">
         <span class="standby-num" id="clkH">--</span>
         <span class="standby-num" style="opacity: 0.85; padding: 0 4px;">:</span>
@@ -579,7 +819,7 @@
     </div>
 
     <!-- TELA 2: STREAM DECK (ATALHOS DINÂMICOS DO CONFIG) -->
-    <div class="page">
+    <div class="page" data-page="deck">
       <div class="page-head">
         <span class="page-head-title">Controles & Aplicativos</span>
         <span id="deckCountHint" style="font-size: 10px; color: #64748b;">Deslize para trocar de tela</span>
@@ -591,80 +831,99 @@
       </div>
     </div>
 
-    <!-- TELA 3: MÍDIA & CONTROLE DE VOLUME REAL -->
-    <div class="page">
-      <div class="split-2">
-        <!-- Card Esquerdo: Tocando Agora -->
-        <div class="glass" style="padding: clamp(12px, 2.2vh, 20px); display: flex; flex-direction: column; justify-content: space-between; min-width: 0; overflow: hidden;">
-          <div style="flex: 1; display: flex; align-items: center; gap: clamp(14px, 2.2vw, 20px); min-width: 0; min-height: 0;">
-            <div id="mediaArtBox" class="media-art-box" style="width: clamp(112px, 28vh, 168px); height: clamp(112px, 28vh, 168px); border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55); background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
-              <img id="mediaArtImg" alt="Capa" style="width: 100%; height: 100%; object-fit: cover; display: none;" />
-              <svg id="mediaArtFallback" viewBox="0 0 24 24" style="width: 52px; height: 52px; color: #10b981;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-            </div>
-            <div style="min-width: 0; flex: 1;">
-              <div id="mediaApp" style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.8px;">Mídia</div>
-              <div id="mediaTitle" style="font-size: clamp(17px, 2.7vw, 22px); font-weight: 800; line-height: 1.2; color: #ffffff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; overflow: hidden; margin-top: 4px;">Nada tocando no PC</div>
-              <div id="mediaArtist" style="font-size: clamp(12px, 1.8vw, 15px); color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 6px;">Pressione Play para iniciar</div>
-            </div>
-          </div>
+    <!-- TELA 3: MÍDIA & ÁUDIO (ECHO SHOW SPOTLIGHT) -->
+    <div class="page media-spotlight" data-page="media">
+      <div id="mediaArtBox" class="ms-art">
+        <img id="mediaArtImg" alt="Capa" />
+        <div id="mediaArtFallback" class="ms-art-fb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+      </div>
 
-          <div style="margin: 10px 0;">
-            <div class="bar-bg" style="height: 6px;"><div id="mediaProgBar" class="bar-fill" style="width: 0%; background: #10b981;"></div></div>
-            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; font-variant-numeric: tabular-nums;">
-              <span id="mediaPos">0:00</span>
-              <span id="mediaDur">0:00</span>
-            </div>
-          </div>
+      <div class="ms-right">
+        <div style="min-width: 0;">
+          <div id="mediaApp" class="ms-app">Mídia</div>
+          <div id="mediaTitle" class="ms-title">Nada tocando no PC</div>
+          <div id="mediaArtist" class="ms-artist">Pressione Play para iniciar</div>
+        </div>
 
-          <!-- Botões puros de transporte (apenas SVGs, sem círculo branco) -->
-          <div style="display: flex; align-items: center; justify-content: center; gap: clamp(28px, 5vw, 48px); padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
-            <button type="button" onclick="mediaAction('prev')" class="tactile" aria-label="Faixa anterior" style="background: none; border: none; color: #cbd5e1; padding: 10px; display: flex; align-items: center; justify-content: center;">
-              <svg style="width: 32px; height: 32px; fill: currentColor;" viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-            </button>
-            <button type="button" onclick="mediaAction('playpause')" class="tactile" aria-label="Reproduzir ou pausar" style="background: none; border: none; color: #ffffff; padding: 10px; display: flex; align-items: center; justify-content: center;">
-              <svg id="svgPlay" style="width: 42px; height: 42px; fill: currentColor;" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-              <svg id="svgPause" style="width: 42px; height: 42px; fill: currentColor; display: none;" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1.5"/><rect x="14" y="4" width="4" height="16" rx="1.5"/></svg>
-            </button>
-            <button type="button" onclick="mediaAction('next')" class="tactile" aria-label="Próxima faixa" style="background: none; border: none; color: #cbd5e1; padding: 10px; display: flex; align-items: center; justify-content: center;">
-              <svg style="width: 32px; height: 32px; fill: currentColor;" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-            </button>
+        <div>
+          <div class="bar-bg" style="height: 6px;"><div id="mediaProgBar" class="bar-fill ms-prog-bar" style="width: 0%;"></div></div>
+          <div class="ms-times">
+            <span id="mediaPos">0:00</span>
+            <span id="mediaDur">0:00</span>
           </div>
         </div>
 
-        <!-- Card Direito: Controle de Volume do Windows -->
-        <div class="glass" style="padding: clamp(12px, 2.2vh, 20px); display: flex; flex-direction: column; justify-content: space-between; min-width: 0;">
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 28px 8px 0;">
-            <div style="min-width: 0; flex: 1;">
-              <div style="font-size: 13px; font-weight: 800; color: #ffffff;">Volume do Windows</div>
-              <div id="audioDeviceName" style="font-size: 11px; color: #38bdf8; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carregando saída de áudio...</div>
+        <div>
+          <div class="ms-bottom">
+            <div class="ms-transport">
+              <button type="button" onclick="mediaAction('prev')" class="ms-nav tactile" aria-label="Faixa anterior">
+                <svg style="width: 36px; height: 36px; fill: currentColor;" viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              </button>
+              <button type="button" onclick="mediaAction('playpause')" class="ms-play tactile" aria-label="Reproduzir ou pausar">
+                <svg id="svgPlay" style="width: 30px; height: 30px; fill: currentColor; margin-left: 3px;" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                <svg id="svgPause" style="width: 30px; height: 30px; fill: currentColor; display: none;" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1.5"/><rect x="14" y="4" width="4" height="16" rx="1.5"/></svg>
+              </button>
+              <button type="button" onclick="mediaAction('next')" class="ms-nav tactile" aria-label="Próxima faixa">
+                <svg style="width: 36px; height: 36px; fill: currentColor;" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              </button>
             </div>
-            <div id="audioVolPct" style="font-size: clamp(22px, 3.6vw, 30px); font-weight: 900; font-variant-numeric: tabular-nums; color: #ffffff; flex-shrink: 0;">--%</div>
-          </div>
 
-          <div id="volSlider" class="vol-slider" role="slider" aria-label="Volume do Windows" aria-valuemin="0" aria-valuemax="100">
-            <div class="vol-track"><div id="volFill" class="vol-fill" style="width: 0%;"></div></div>
+            <div class="ms-vol-pill glass">
+              <button type="button" onclick="stepVolume('down')" class="ms-vol-btn tactile" aria-label="Diminuir volume">−</button>
+              <div id="volSlider" class="vol-slider ms-vol-slider" role="slider" aria-label="Volume do Sistema" aria-valuemin="0" aria-valuemax="100">
+                <div class="vol-track"><div id="volFill" class="vol-fill" style="width: 0%;"></div></div>
+              </div>
+              <button type="button" onclick="stepVolume('up')" class="ms-vol-btn tactile" aria-label="Aumentar volume">+</button>
+              <span id="audioVolPct" class="ms-vol-pct">--%</span>
+              <button type="button" id="btnMute" onclick="stepVolume('mute')" class="ms-mute tactile" aria-label="Silenciar">
+                <svg viewBox="0 0 24 24" style="width: 13px; height: 13px;" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+              </button>
+            </div>
           </div>
-
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-            <button type="button" onclick="stepVolume('down')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: clamp(10px, 2vh, 16px) 8px; border-radius: 16px; color: #ffffff;">
-              <svg viewBox="0 0 24 24" style="width: 26px; height: 26px; color: #cbd5e1;" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-              <span style="font-size: 12px; font-weight: 800;">VOL −</span>
-            </button>
-            <button type="button" onclick="stepVolume('up')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: clamp(10px, 2vh, 16px) 8px; border-radius: 16px; border-color: rgba(56,189,248,0.45); color: #38bdf8;">
-              <svg viewBox="0 0 24 24" style="width: 26px; height: 26px;" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-              <span style="font-size: 12px; font-weight: 800;">VOL +</span>
-            </button>
-            <button type="button" id="btnMute" onclick="stepVolume('mute')" class="glass tactile" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: clamp(10px, 2vh, 16px) 8px; border-radius: 16px; border-color: rgba(239,68,68,0.45); color: #fca5a5;">
-              <svg viewBox="0 0 24 24" style="width: 26px; height: 26px;" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-              <span id="muteLabel" style="font-size: 12px; font-weight: 800;">MUDO</span>
-            </button>
-          </div>
+          <div id="audioDeviceName" class="ms-dev">Carregando saída de áudio...</div>
         </div>
       </div>
     </div>
 
-    <!-- TELA 4: HARDWARE PC (100% REAL, SEM IP) -->
-    <div class="page">
+    <!-- TELA 4: POMODORO & FOCO -->
+    <div class="page pomo-page" data-page="pomodoro">
+      <div class="pomo-wall" id="pomoWall">--:--</div>
+      <div class="pomo-ring-wrap">
+        <svg class="pomo-ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="pomo-track" cx="60" cy="60" r="52"></circle>
+          <circle class="pomo-fill" id="pomoFill" cx="60" cy="60" r="52" stroke-dasharray="326.73" stroke-dashoffset="0"></circle>
+        </svg>
+        <div class="pomo-center">
+          <span class="pomo-phase" id="pomoPhase">FOCO</span>
+          <span class="pomo-digits" id="pomoDigits">25:00</span>
+          <span class="pomo-cycle" id="pomoCycle">Ciclo 1 de 4</span>
+        </div>
+      </div>
+      <div class="pomo-side">
+        <div>
+          <div class="pomo-label">Modo de Sessão</div>
+          <div class="pomo-presets" id="pomoPresets">
+            <button type="button" class="pomo-pre tactile" data-min="25" data-phase="FOCO">25m</button>
+            <button type="button" class="pomo-pre tactile" data-min="50" data-phase="DEEP WORK">50m</button>
+            <button type="button" class="pomo-pre tactile" data-min="5" data-phase="PAUSA CURTA">5m</button>
+            <button type="button" class="pomo-pre tactile" data-min="15" data-phase="PAUSA LONGA">15m</button>
+          </div>
+        </div>
+        <div class="pomo-actions">
+          <button type="button" class="pomo-start tactile" id="pomoStart" onclick="pomoToggle()"><span id="pomoStartIco">▶</span><span id="pomoStartTxt">Iniciar Foco</span></button>
+          <button type="button" class="pomo-reset glass tactile" onclick="pomoReset()">↺ Reset</button>
+        </div>
+        <div class="pomo-stats glass">
+          <span class="pomo-stats-lbl">Sessões concluídas hoje</span>
+          <span class="pomo-stats-val"><span id="pomoDots"></span><span id="pomoCount">0 • 0 min</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 5: HARDWARE PC (100% REAL, SEM IP) -->
+    <div class="page" data-page="hardware">
       <div class="page-head">
         <span class="page-head-title" id="hwModeTitle">Telemetria do Computador</span>
         <button type="button" onclick="toggleTelemetryMode()" class="tactile" id="btnToggleMode" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); color: #ffffff; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700;">
@@ -776,8 +1035,8 @@
       </div>
     </div>
 
-    <!-- TELA 5: AGENDA & FEEDS (100% REAL) -->
-    <div class="page">
+    <!-- TELA 6: AGENDA & FEEDS (100% REAL) -->
+    <div class="page" data-page="feeds">
       <div class="split-5-7">
         <div class="glass" style="padding: 14px; display: flex; flex-direction: column; min-height: 0;">
           <div class="page-head" style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 2px 6px 2px;">
@@ -803,41 +1062,82 @@
 
   </div>
 
-  <!-- Pager 5 pontos -->
-  <div class="pager" role="tablist" aria-label="Telas">
-    <div class="dot active" id="d0" onclick="go(0)"></div>
-    <div class="dot" id="d1" onclick="go(1)"></div>
-    <div class="dot" id="d2" onclick="go(2)"></div>
-    <div class="dot" id="d3" onclick="go(3)"></div>
-    <div class="dot" id="d4" onclick="go(4)"></div>
-  </div>
+  <!-- Pager dinâmico: um ponto por tela ativa em cfg.pages -->
+  <div class="pager" id="pager" role="tablist" aria-label="Telas"></div>
 
   <script>
     'use strict';
-    const TOTAL_PAGES = 5;
+    // As 6 telas oficiais do Nuvra Dock. A ordem e quais aparecem vêm de cfg.pages (Nuvra Dock Studio › Páginas).
+    const SCREEN_IDS = ['home', 'deck', 'media', 'pomodoro', 'hardware', 'feeds'];
+    let activeIds = SCREEN_IDS.slice();
+    let TOTAL_PAGES = activeIds.length;
     let cur = 0;
+    let standbyActive = false;
+
+    function pageEl(id) { return document.querySelector(`.page[data-page="${id}"]`); }
+
+    function applyPos() {
+      const track = document.getElementById('track');
+      if (track) track.style.transform = `translateX(-${cur * (100 / TOTAL_PAGES)}%)`;
+      const pager = document.getElementById('pager');
+      if (pager) Array.from(pager.children).forEach((d, i) => { d.className = (i === cur) ? 'dot active' : 'dot'; });
+    }
+
+    function layoutPages() {
+      const track = document.getElementById('track');
+      TOTAL_PAGES = Math.max(1, activeIds.length);
+      for (const id of SCREEN_IDS) {
+        const el = pageEl(id);
+        if (el) el.style.display = activeIds.includes(id) ? '' : 'none';
+      }
+      for (const id of activeIds) {
+        const el = pageEl(id);
+        if (el) { el.style.width = (100 / TOTAL_PAGES) + '%'; track.appendChild(el); }
+      }
+      track.style.width = (TOTAL_PAGES * 100) + '%';
+      const pager = document.getElementById('pager');
+      pager.textContent = '';
+      activeIds.forEach((id, i) => {
+        const d = document.createElement('div');
+        d.id = 'd' + i;
+        d.dataset.page = id;
+        d.onclick = () => go(i);
+        pager.appendChild(d);
+      });
+      pager.style.display = TOTAL_PAGES > 1 ? '' : 'none';
+      cur = Math.max(0, Math.min(TOTAL_PAGES - 1, cur));
+      applyPos();
+    }
+
+    function applyPagesConfig(pages) {
+      let ids = SCREEN_IDS.slice();
+      if (Array.isArray(pages) && pages.some((p) => p && SCREEN_IDS.includes(p.id))) {
+        ids = pages.filter((p) => p && SCREEN_IDS.includes(p.id) && p.enabled !== false).map((p) => p.id);
+        ids = ids.filter((id, i) => ids.indexOf(id) === i);
+        if (!ids.length) ids = ['home'];
+      }
+      if (ids.join(',') === activeIds.join(',') && document.getElementById('pager').children.length) return;
+      const curId = activeIds[cur];
+      activeIds = ids;
+      const ni = ids.indexOf(curId);
+      cur = ni >= 0 ? ni : 0;
+      layoutPages();
+    }
 
     function go(idx) {
-      if (typeof isEcoMode !== 'undefined' && isEcoMode && idx !== 0) return;
+      if (standbyActive) return;
       cur = Math.max(0, Math.min(TOTAL_PAGES - 1, idx));
       haptic();
       window.scrollTo(0, 0);
       document.documentElement.scrollLeft = 0;
-      document.getElementById('track').style.transform = `translateX(-${cur * 20}%)`;
-      for (let i = 0; i < TOTAL_PAGES; i++) {
-        document.getElementById('d' + i).className = (i === cur) ? 'dot active' : 'dot';
-      }
+      applyPos();
     }
 
+    layoutPages();
     const initPage = parseInt(new URLSearchParams(location.search).get('p') || location.hash.replace('#', ''), 10);
     if (!Number.isNaN(initPage) && initPage >= 0 && initPage < TOTAL_PAGES) {
       cur = initPage;
-      const trk = document.getElementById('track');
-      if (trk) trk.style.transform = `translateX(-${cur * 20}%)`;
-      for (let i = 0; i < TOTAL_PAGES; i++) {
-        const dotEl = document.getElementById('d' + i);
-        if (dotEl) dotEl.className = (i === cur) ? 'dot active' : 'dot';
-      }
+      applyPos();
     }
 
     // Touch swipe suave sem brigar com slider de volume ou listas roláveis
@@ -848,7 +1148,7 @@
       touchStartY = e.touches[0].clientY;
     }, { passive: true });
     window.addEventListener('touchend', (e) => {
-      if (touchLock || (typeof isEcoMode !== 'undefined' && isEcoMode)) return;
+      if (touchLock || standbyActive) return;
       const dx = touchStartX - e.changedTouches[0].clientX;
       const dy = Math.abs(touchStartY - e.changedTouches[0].clientY);
       if (Math.abs(dx) > 48 && Math.abs(dx) > dy * 1.2) {
@@ -858,7 +1158,7 @@
     }, { passive: true });
 
     window.addEventListener('keydown', (e) => {
-      if (typeof isEcoMode !== 'undefined' && isEcoMode) return;
+      if (standbyActive) return;
       if (e.key === 'ArrowRight') go(cur + 1);
       else if (e.key === 'ArrowLeft') go(cur - 1);
     });
@@ -892,12 +1192,20 @@
     // Relógio e Data em Português
     const DIAS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
     const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const DIAS_LONGOS = ['DOMINGO', 'SEGUNDA-FEIRA', 'TERÇA-FEIRA', 'QUARTA-FEIRA', 'QUINTA-FEIRA', 'SEXTA-FEIRA', 'SÁBADO'];
     function updateClock() {
       const d = new Date();
-      document.getElementById('clkH').textContent = String(d.getHours()).padStart(2, '0');
-      document.getElementById('clkM').textContent = String(d.getMinutes()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      document.getElementById('clkH').textContent = hh;
+      document.getElementById('clkM').textContent = mm;
       document.getElementById('fullDay').textContent = `${DIAS[d.getDay()]}, ${d.getDate()}`;
       document.getElementById('fullMonth').textContent = `${MESES[d.getMonth()]} de ${d.getFullYear()}`;
+      document.getElementById('sbH').textContent = hh;
+      document.getElementById('sbM').textContent = mm;
+      document.getElementById('sbDate').textContent = `${DIAS_LONGOS[d.getDay()]} • ${d.getDate()} DE ${MESES[d.getMonth()].toUpperCase()}`;
+      const pw = document.getElementById('pomoWall');
+      if (pw) pw.textContent = `${hh}:${mm}`;
     }
     updateClock();
     setInterval(updateClock, 1000);
@@ -929,6 +1237,8 @@
           const feelsStr = (w.feelsLike !== null && w.feelsLike !== undefined) ? ` • Sensação ${w.feelsLike}°` : '';
           document.getElementById('wCity').textContent = `${w.city || 'Juiz de Fora'}${feelsStr}`;
           document.getElementById('wIcon').innerHTML = weatherSvg(Number(w.code || 0), w.isDay !== false);
+          document.getElementById('sbTemp').textContent = `${w.temp}°`;
+          document.getElementById('sbIcon').innerHTML = weatherSvg(Number(w.code || 0), w.isDay !== false);
           const al = document.getElementById('weatherAlert');
           if (al) {
             if (w.alert && w.alert.title) {
@@ -1099,6 +1409,8 @@
       r.style.setProperty('--pd-clock', pal.clock || '#86efac');
       r.style.setProperty('--pd-clock-glow', rgbaFromHex(pal.clock || '#86efac', 0.24, 'rgba(134,239,172,0.24)'));
       r.style.setProperty('--pd-accent', pal.accent || '#2dd4bf');
+      r.style.setProperty('--pd-accent-glow', rgbaFromHex(pal.accent || '#2dd4bf', 0.28, 'rgba(45,212,191,0.28)'));
+      r.style.setProperty('--pd-on-accent', isLightHex(pal.accent || '#2dd4bf') ? '#0b1220' : '#ffffff');
       r.style.setProperty('--pd-card-bg', rgbaFromHex(pal.cardBg || '#ffffff', op, 'rgba(255,255,255,0.06)'));
       r.style.setProperty('--pd-card-border', rgbaFromHex(pal.cardBorder || '#ffffff', light ? 0.65 : 0.24, 'rgba(255,255,255,0.13)'));
       r.style.setProperty('--pd-divider', light ? 'rgba(15,23,42,0.14)' : 'rgba(255,255,255,0.14)');
@@ -1139,21 +1451,128 @@
         if (!r.ok) return;
         const raw = await r.json();
         const cfg = raw.config || raw;
+        currentCfg = cfg;
         applyPhoneDeskTheme(cfg.display, cfg.wallpaperRev);
+        applyPagesConfig(cfg.pages);
         renderDeck(cfg.shortcuts || []);
+        evaluateStandby();
       } catch (_) {}
     }
+
+    // ---------------------------------------------------------------- StandBy Puro
+    // Tela exclusiva (fora do carrossel): entra quando o computador fica inacessível ou no horário noturno.
+    let currentCfg = null;
+    let offlineSeconds = 0;
+    let standbyReason = '';
+    let nightSnoozeUntil = 0;
+    let boostTimer = 0;
+    let previewStandby = false;
+    let lastNativeBright = undefined;
+
+    function nativeBridge() { return window.NuvraDockNative || window.PhoneDeskNative || null; }
+    function setNativeBrightness(v) {
+      if (IS_PREVIEW || v === lastNativeBright) return;
+      lastNativeBright = v;
+      const b = nativeBridge();
+      if (!b) return;
+      try {
+        if (v === null) { if (b.resetBrightness) b.resetBrightness(); }
+        else if (b.setBrightness) b.setBrightness(v);
+      } catch (_) {}
+    }
+    function standbyBrightness() {
+      const v = Number(currentCfg?.night?.brightness ?? 0.7);
+      return Math.max(0.05, Math.min(1, Number.isFinite(v) ? v : 0.7));
+    }
+    function hmToMin(s) {
+      const m = String(s || '').match(/^(\d{1,2}):(\d{2})/);
+      return m ? (+m[1]) * 60 + (+m[2]) : null;
+    }
+    function inNightWindow() {
+      const n = currentCfg?.night;
+      if (!n || n.enabled === false) return false;
+      const a = hmToMin(n.start), b = hmToMin(n.end);
+      if (a === null || b === null || a === b) return false;
+      const d = new Date();
+      const t = d.getHours() * 60 + d.getMinutes();
+      return a < b ? (t >= a && t < b) : (t >= a || t < b);
+    }
+    function unreachableDelaySec() {
+      const d = currentCfg?.display;
+      if (d && d.nightWhenUnreachable === false) return Infinity;
+      return Math.max(1, Number(d?.unreachableNightDelayMin || 1)) * 60;
+    }
+    function showStandby(on, reason) {
+      const ov = document.getElementById('pureStandby');
+      if (on) {
+        standbyReason = reason || standbyReason;
+        if (!standbyActive) {
+          standbyActive = true;
+          document.body.classList.add('standby-on');
+          ov.classList.add('on');
+          ov.setAttribute('aria-hidden', 'false');
+          updateClock();
+        }
+        if (!boostTimer) setNativeBrightness(standbyBrightness());
+      } else if (standbyActive) {
+        standbyActive = false;
+        standbyReason = '';
+        document.body.classList.remove('standby-on');
+        ov.classList.remove('on');
+        ov.setAttribute('aria-hidden', 'true');
+        clearTimeout(boostTimer);
+        boostTimer = 0;
+        setNativeBrightness(null);
+      }
+    }
+    function evaluateStandby() {
+      if (IS_PREVIEW) return;
+      const offline = offlineSeconds >= unreachableDelaySec();
+      const night = inNightWindow() && Date.now() > nightSnoozeUntil;
+      if (offline) showStandby(true, 'offline');
+      else if (night) showStandby(true, 'night');
+      else showStandby(false);
+    }
+    // Toque no StandBy Puro: à noite (PC ligado) libera o painel por 5 min; com o PC desligado acende 100% por 15 s.
+    document.getElementById('pureStandby').addEventListener('pointerdown', () => {
+      if (!standbyActive || IS_PREVIEW) return;
+      haptic();
+      if (standbyReason === 'night') {
+        nightSnoozeUntil = Date.now() + 5 * 60 * 1000;
+        evaluateStandby();
+        return;
+      }
+      setNativeBrightness(1);
+      clearTimeout(boostTimer);
+      boostTimer = setTimeout(() => {
+        boostTimer = 0;
+        if (standbyActive) setNativeBrightness(standbyBrightness());
+      }, 15000);
+    });
+
     loadConfigShortcuts();
     if (!IS_PREVIEW) setInterval(loadConfigShortcuts, 10000);
+    if (!IS_PREVIEW) setInterval(evaluateStandby, 20000);
 
-    // Live Preview handshake com PhoneDesk Studio (Settings)
+    // Live Preview handshake com Nuvra Dock Studio (Settings)
     window.addEventListener('message', (e) => {
       if (e.origin !== location.origin || e.data?.type !== 'phonebox-preview') return;
       const c = e.data.config || {};
+      currentCfg = c;
       applyPhoneDeskTheme(c.display, c.wallpaperRev);
+      if (Array.isArray(c.pages)) applyPagesConfig(c.pages);
       if (Array.isArray(c.shortcuts)) renderDeck(c.shortcuts);
-      if (typeof e.data.page === 'number' && !Number.isNaN(e.data.page)) {
-        go(Math.max(0, Math.min(TOTAL_PAGES - 1, e.data.page)));
+      const target = e.data.pageId
+        || (typeof e.data.page === 'number' && !Number.isNaN(e.data.page) ? [...SCREEN_IDS, 'standby'][e.data.page] : null);
+      if (target === 'standby' || e.data.standbyPreview) {
+        previewStandby = true;
+        showStandby(true, 'preview');
+      } else {
+        if (previewStandby) { previewStandby = false; showStandby(false); }
+        if (target) {
+          const i = activeIds.indexOf(target);
+          if (i >= 0) go(i);
+        }
       }
     });
     if (IS_PREVIEW && window.parent !== window) {
@@ -1198,7 +1617,7 @@
         titleEl.textContent = 'Nada tocando no PC';
         artistEl.textContent = 'Pressione Play para iniciar';
         img.style.display = 'none';
-        fb.style.display = 'block';
+        fb.style.display = 'flex';
         svgPlay.style.display = 'block';
         svgPause.style.display = 'none';
         bar.style.width = '0%';
@@ -1209,7 +1628,7 @@
 
       appEl.textContent = m.app || 'Mídia';
       titleEl.textContent = m.title;
-      artistEl.textContent = [m.artist, m.album].filter(Boolean).join(' • ') || 'Reproduzindo no Windows';
+      artistEl.textContent = [m.artist, m.album].filter(Boolean).join(' • ') || 'Reproduzindo no Computador';
 
       const playing = !!m.playing;
       svgPlay.style.display = playing ? 'none' : 'block';
@@ -1224,14 +1643,14 @@
       if (m.artId && m.artId > 0) {
         if (lastArtId !== m.artId) {
           lastArtId = m.artId;
-          img.onerror = () => { img.style.display = 'none'; fb.style.display = 'block'; };
+          img.onerror = () => { img.style.display = 'none'; fb.style.display = 'flex'; };
           img.onload = () => { img.style.display = 'block'; fb.style.display = 'none'; };
           img.src = `/api/art?id=${encodeURIComponent(m.artId)}`;
         }
       } else {
         lastArtId = null;
         img.style.display = 'none';
-        fb.style.display = 'block';
+        fb.style.display = 'flex';
       }
     }
 
@@ -1239,14 +1658,12 @@
       if (!a) return;
       const pct = Math.max(0, Math.min(100, Number(a.volume ?? 0)));
       const muted = !!a.muted;
-      document.getElementById('audioVolPct').textContent = muted ? 'MUDO' : `${pct}%`;
-      document.getElementById('audioVolPct').style.color = muted ? '#fca5a5' : '#ffffff';
+      const pctEl = document.getElementById('audioVolPct');
+      pctEl.textContent = muted ? 'MUDO' : `${pct}%`;
+      pctEl.style.color = muted ? '#ef4444' : '';
       document.getElementById('volFill').style.width = `${pct}%`;
       document.getElementById('volFill').style.opacity = muted ? '0.4' : '1';
-      document.getElementById('muteLabel').textContent = muted ? 'ATIVAR SOM' : 'MUDO';
-      document.getElementById('btnMute').style.background = muted
-        ? 'rgba(239, 68, 68, 0.28)'
-        : 'linear-gradient(135deg, rgba(255,255,255,0.085) 0%, rgba(255,255,255,0.025) 100%)';
+      document.getElementById('btnMute').classList.toggle('muted', muted);
     }
 
     async function mediaAction(cmd) {
@@ -1446,53 +1863,115 @@
         document.getElementById('gLoss').textContent = ping.lossPct !== undefined ? `${ping.lossPct}% LOSS` : '--';
         document.getElementById('gPingHost').textContent = ping.host || '--';
 
-        // PC Online: cancela o modo eco se estiver ativo
+        // PC online: sai do StandBy Puro (a menos que esteja no horário noturno)
         offlineSeconds = 0;
-        if (isEcoMode) setEcoMode(false);
+        evaluateStandby();
       } catch (_) {
         document.getElementById('netStatus').textContent = 'OFFLINE';
         offlineSeconds += 1.5;
-        // Se o computador estiver desligado ou em espera por mais de 3 minutos (180s), ativa economia de tela Desk Clock
-        if (offlineSeconds >= 180 && Date.now() > wakeLockUntil) {
-          setEcoMode(true);
-        }
+        evaluateStandby();
       }
     }
 
-    let offlineSeconds = 0;
-    let isEcoMode = false;
-    let wakeLockUntil = 0;
-
-    function setEcoMode(active) {
-      if (isEcoMode === active) return;
-      isEcoMode = active;
-      if (active) {
-        document.body.classList.add('eco-dimmed');
-        if (window.PhoneDeskNative && window.PhoneDeskNative.setBrightness) {
-          try { window.PhoneDeskNative.setBrightness(0.02); } catch (_) {}
-        }
-        // Se estiver em outra tela, volta e trava na Tela 1 (Relógio Desk StandBy)
-        if (typeof cur !== 'undefined' && cur !== 0) {
-          go(0);
-        }
+    // ---------------------------------------------------------------- Pomodoro & Foco
+    const POMO_C = 326.73;
+    let pomo = { min: 25, phase: 'FOCO', total: 1500, remain: 1500, running: false, endAt: 0 };
+    let pomoTimer = 0;
+    function pomoTodayKey() { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
+    function pomoStats() {
+      try {
+        const s = JSON.parse(localStorage.getItem('nuvra_pomo_stats') || '{}');
+        return s.day === pomoTodayKey() ? s : { day: pomoTodayKey(), count: 0, min: 0 };
+      } catch (_) { return { day: pomoTodayKey(), count: 0, min: 0 }; }
+    }
+    function pomoSave() { try { localStorage.setItem('nuvra_pomo_state', JSON.stringify(pomo)); } catch (_) {} }
+    function pomoRender() {
+      if (pomo.running) pomo.remain = Math.max(0, Math.ceil((pomo.endAt - Date.now()) / 1000));
+      const m = String(Math.floor(pomo.remain / 60)).padStart(2, '0');
+      const s = String(pomo.remain % 60).padStart(2, '0');
+      document.getElementById('pomoDigits').textContent = `${m}:${s}`;
+      document.getElementById('pomoPhase').textContent = pomo.phase;
+      const pct = pomo.total > 0 ? pomo.remain / pomo.total : 1;
+      document.getElementById('pomoFill').style.strokeDashoffset = String(POMO_C * (1 - pct));
+      const isFocus = pomo.min >= 25;
+      document.getElementById('pomoStartIco').textContent = pomo.running ? '⏸' : '▶';
+      document.getElementById('pomoStartTxt').textContent = pomo.running ? 'Pausar'
+        : (pomo.remain < pomo.total ? 'Continuar' : (isFocus ? 'Iniciar Foco' : 'Iniciar Pausa'));
+      document.querySelectorAll('#pomoPresets .pomo-pre').forEach((b) => b.classList.toggle('on', Number(b.dataset.min) === pomo.min));
+      const st = pomoStats();
+      const filled = st.count > 0 && st.count % 4 === 0 ? 4 : st.count % 4;
+      const dots = document.getElementById('pomoDots');
+      dots.textContent = '';
+      for (let i = 0; i < 4; i++) { const el = document.createElement('i'); if (i < filled) el.className = 'on'; dots.appendChild(el); }
+      document.getElementById('pomoCount').textContent = `${st.count} • ${st.min} min`;
+      document.getElementById('pomoCycle').textContent = `Ciclo ${(st.count % 4) + 1} de 4`;
+    }
+    function pomoStop() { clearInterval(pomoTimer); pomoTimer = 0; }
+    function pomoTick() {
+      pomoRender();
+      if (pomo.running && pomo.remain <= 0) pomoComplete();
+    }
+    function pomoComplete() {
+      pomoStop();
+      pomo.running = false;
+      if (pomo.min >= 25) {
+        const st = pomoStats();
+        st.count += 1;
+        st.min += pomo.min;
+        try { localStorage.setItem('nuvra_pomo_stats', JSON.stringify(st)); } catch (_) {}
+      }
+      if ('vibrate' in navigator) { try { navigator.vibrate([220, 120, 220, 120, 220]); } catch (_) {} }
+      showToast(pomo.min >= 25 ? 'Sessão de foco concluída! Hora da pausa.' : 'Pausa encerrada! Bora focar.');
+      pomo.remain = pomo.total;
+      pomoSave();
+      pomoRender();
+    }
+    function pomoToggle() {
+      haptic();
+      if (pomo.running) {
+        pomo.remain = Math.max(0, Math.ceil((pomo.endAt - Date.now()) / 1000));
+        pomo.running = false;
+        pomoStop();
       } else {
-        document.body.classList.remove('eco-dimmed');
-        if (window.PhoneDeskNative && window.PhoneDeskNative.resetBrightness) {
-          try { window.PhoneDeskNative.resetBrightness(); } catch (_) {}
-        }
+        if (pomo.remain <= 0) pomo.remain = pomo.total;
+        pomo.endAt = Date.now() + pomo.remain * 1000;
+        pomo.running = true;
+        pomoStop();
+        pomoTimer = setInterval(pomoTick, 250);
       }
+      pomoSave();
+      pomoRender();
     }
-
-    function handleUserActivity() {
-      if (isEcoMode) {
-        // Ao tocar na tela com o PC desligado, acorda para ver as horas claramente por 15 segundos
-        wakeLockUntil = Date.now() + 15000;
-        setEcoMode(false);
-      }
+    function pomoReset() {
+      haptic();
+      pomoStop();
+      pomo.running = false;
+      pomo.remain = pomo.total;
+      pomoSave();
+      pomoRender();
     }
-    window.addEventListener('touchstart', handleUserActivity, { passive: true });
-    window.addEventListener('pointerdown', handleUserActivity, { passive: true });
-    window.addEventListener('click', handleUserActivity, { passive: true });
+    document.querySelectorAll('#pomoPresets .pomo-pre').forEach((b) => {
+      b.addEventListener('click', () => {
+        haptic();
+        pomoStop();
+        pomo.min = Number(b.dataset.min);
+        pomo.phase = b.dataset.phase;
+        pomo.total = pomo.min * 60;
+        pomo.remain = pomo.total;
+        pomo.running = false;
+        pomoSave();
+        pomoRender();
+      });
+    });
+    try {
+      const saved = JSON.parse(localStorage.getItem('nuvra_pomo_state') || 'null');
+      if (saved && saved.total > 0) pomo = { ...pomo, ...saved };
+    } catch (_) {}
+    if (pomo.running) {
+      if (Date.now() >= pomo.endAt) { pomo.remain = 0; pomoComplete(); }
+      else pomoTimer = setInterval(pomoTick, 250);
+    }
+    pomoRender();
 
     fetchState();
     setInterval(fetchState, 1500);

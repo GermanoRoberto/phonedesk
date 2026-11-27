@@ -1,5 +1,5 @@
-﻿{
-  "deviceName": "PhoneDesk",
+{
+  "deviceName": "Nuvra Dock",
   "telemetryMode": "workstation",
   "weather": {
     "city": "Juiz de Fora",
@@ -17,10 +17,12 @@
     "enabled": true,
     "start": "00:30",
     "end": "07:30",
-    "brightness": 0.01
+    "brightness": 0.7
   },
   "display": {
-    "appearance": { "style": "cards" },
+    "appearance": {
+      "style": "cards"
+    },
     "language": "auto",
     "showSeconds": true,
     "hour12": false,
@@ -49,14 +51,17 @@
     },
     "savedThemes": [],
     "artTint": true,
-    "wallpaper": { "dim": 45, "blur": 0 }
+    "wallpaper": {
+      "dim": 45,
+      "blur": 0
+    }
   },
   "lan": {
     "enabled": true,
     "port": 8766,
     "webEnabled": true,
     "webPort": 8770,
-    "webRequireToken": false
+    "webRequireToken": true
   },
   "updates": {
     "auto": true,
@@ -65,13 +70,10 @@
   "pages": [
     {
       "id": "home",
-      "title": "Home (Página Inicial)",
+      "title": "Home",
       "icon": "🏠",
       "enabled": true,
-      "widgets": [
-        { "id": "clock", "type": "clock", "x": 0, "y": 0, "w": 6, "h": 6, "options": { "status": true, "weather": true, "date": true } },
-        { "id": "weather", "type": "weather", "x": 6, "y": 0, "w": 6, "h": 6, "options": {} }
-      ]
+      "widgets": []
     },
     {
       "id": "deck",
@@ -88,8 +90,15 @@
       "widgets": []
     },
     {
+      "id": "pomodoro",
+      "title": "Pomodoro & Foco",
+      "icon": "🍅",
+      "enabled": true,
+      "widgets": []
+    },
+    {
       "id": "hardware",
-      "title": "Hardware PC",
+      "title": "Hardware",
       "icon": "⚡",
       "enabled": true,
       "widgets": []
@@ -103,21 +112,97 @@
     }
   ],
   "shortcuts": [
-    { "id": "browser",  "label": "Navegador",      "icon": "🌐", "color": "#0284c7", "cmd": "https://google.com" },
-    { "id": "explorer", "label": "Arquivos",       "icon": "📁", "color": "#eab308", "cmd": "explorer.exe" },
-    { "id": "terminal", "label": "Terminal / CMD", "icon": "⌨️", "color": "#334155", "cmd": "wt.exe" },
-    { "id": "calc",     "label": "Calculadora",    "icon": "🔢", "color": "#0d9488", "cmd": "calc.exe" },
-    { "id": "spotify",  "label": "Spotify",        "icon": "🎵", "color": "#16a34a", "cmd": "spotify:" },
-    { "id": "whatsapp", "label": "WhatsApp",       "icon": "💬", "color": "#22c55e", "cmd": "https://web.whatsapp.com" },
-    { "id": "notepad",  "label": "Bloco de Notas", "icon": "📝", "color": "#2563eb", "cmd": "notepad.exe" },
-    { "id": "taskmgr",  "label": "Tarefas",        "icon": "📊", "color": "#6366f1", "cmd": "taskmgr.exe" },
-    { "id": "settings", "label": "Configurações",  "icon": "⚙️", "color": "#475569", "cmd": "ms-settings:" },
-    { "id": "snip",     "label": "Captura de Tela","icon": "✂️", "color": "#f97316", "cmd": "ms-screenclip:" },
-    { "id": "mute",     "label": "Mudo Geral",     "icon": "🔇", "color": "#9333ea", "cmd": "builtin:mute" },
-    { "id": "lock",     "label": "Bloquear PC",    "icon": "🔒", "color": "#dc2626", "cmd": "builtin:lock" }
+    {
+      "id": "browser",
+      "label": "Navegador",
+      "icon": "🌐",
+      "color": "#0284c7",
+      "cmd": "https://google.com"
+    },
+    {
+      "id": "explorer",
+      "label": "Arquivos",
+      "icon": "📁",
+      "color": "#eab308",
+      "cmd": "explorer.exe"
+    },
+    {
+      "id": "terminal",
+      "label": "Terminal / CMD",
+      "icon": "⌨️",
+      "color": "#334155",
+      "cmd": "wt.exe"
+    },
+    {
+      "id": "calc",
+      "label": "Calculadora",
+      "icon": "🔢",
+      "color": "#0d9488",
+      "cmd": "calc.exe"
+    },
+    {
+      "id": "spotify",
+      "label": "Spotify",
+      "icon": "🎵",
+      "color": "#16a34a",
+      "cmd": "spotify:"
+    },
+    {
+      "id": "whatsapp",
+      "label": "WhatsApp",
+      "icon": "💬",
+      "color": "#22c55e",
+      "cmd": "https://web.whatsapp.com"
+    },
+    {
+      "id": "notepad",
+      "label": "Bloco de Notas",
+      "icon": "📝",
+      "color": "#2563eb",
+      "cmd": "notepad.exe"
+    },
+    {
+      "id": "taskmgr",
+      "label": "Tarefas",
+      "icon": "📊",
+      "color": "#6366f1",
+      "cmd": "taskmgr.exe"
+    },
+    {
+      "id": "settings",
+      "label": "Configurações",
+      "icon": "⚙️",
+      "color": "#475569",
+      "cmd": "ms-settings:"
+    },
+    {
+      "id": "snip",
+      "label": "Captura de Tela",
+      "icon": "✂️",
+      "color": "#f97316",
+      "cmd": "ms-screenclip:"
+    },
+    {
+      "id": "mute",
+      "label": "Mudo Geral",
+      "icon": "🔇",
+      "color": "#9333ea",
+      "cmd": "builtin:mute"
+    },
+    {
+      "id": "lock",
+      "label": "Bloquear PC",
+      "icon": "🔒",
+      "color": "#dc2626",
+      "cmd": "builtin:lock"
+    }
   ],
   "calendars": [],
   "feeds": [
-    { "name": "G1 Tecnologia", "url": "https://g1.globo.com/rss/g1/tecnologia/", "category": "Tecnologia" }
+    {
+      "name": "G1 Tecnologia",
+      "url": "https://g1.globo.com/rss/g1/tecnologia/",
+      "category": "Tecnologia"
+    }
   ]
 }

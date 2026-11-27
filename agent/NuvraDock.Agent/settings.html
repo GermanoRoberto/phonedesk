@@ -78,7 +78,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .switch input:checked + span::after { left: 21px; }
 
 /* pages: layout editor */
-.pages-layout { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 16px; align-items: start; }
+.pages-layout { display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 18px; align-items: start; }
 #pageTabs { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 4px; }
 .ptab { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 9px; cursor: pointer; border: 1px solid transparent; user-select: none; }
 .ptab:hover { background: var(--panel-2); }
@@ -635,7 +635,20 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
 .pd-color-field input[type=color] { width: 40px; height: 30px; padding: 2px; border-radius: 7px; border: 1px solid var(--line-strong); background: var(--panel); cursor: pointer; }
 .pd-slider-field { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; }
 .pd-slider-field label { font-size: 12px; font-weight: 600; color: var(--text); display: flex; justify-content: space-between; }
+.pd-legacy { display: none !important; }
+.nv-screens { display: flex; flex-direction: column; gap: 6px; }
+.nv-row { display: flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); cursor: pointer; min-width: 0; }
+.nv-row.on { border-color: var(--accent-border, var(--accent)); box-shadow: var(--shadow); }
+.nv-row.off .nv-name { opacity: .45; text-decoration: line-through; }
+.nv-num { width: 16px; text-align: right; font-size: 12px; font-weight: 700; opacity: .55; flex-shrink: 0; }
+.nv-ico { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+.nv-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nv-row .switch { transform: scale(0.85); transform-origin: center; flex-shrink: 0; }
+.nv-row .icon-btn { width: 24px; height: 24px; padding: 0; flex-shrink: 0; }
+.nv-row .icon-btn[disabled] { opacity: .28; }
+.nv-sb { border-style: dashed; }
 </style>
+
 </head>
 <body>
 <div class="layout">
@@ -674,13 +687,13 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
     <div class="pd-nav-wrap">
       <div class="pd-card-kicker" style="padding:0 8px">Workspace</div>
       <nav id="nav">
-        <a href="#pages" class="on" data-i18n="s.nav.pages">Pages</a>
-        <a href="#shortcuts" data-i18n="s.nav.shortcuts">Shortcuts</a>
+        <a href="#pages" class="on">Páginas</a>
+        <a href="#shortcuts">Atalhos</a>
         <a href="#themes">Temas</a>
-        <a href="#rules" data-i18n="s.nav.rules">Rules</a>
-        <a href="#webhooks" data-i18n="s.nav.webhooks">Webhooks</a>
-        <a href="#general" data-i18n="s.nav.general">General</a>
-        <a href="#advanced" data-i18n="s.nav.advanced">Advanced</a>
+        <a href="#rules" class="pd-legacy" hidden>Rules</a>
+        <a href="#webhooks" class="pd-legacy" hidden>Webhooks</a>
+        <a href="#general">Geral</a>
+        <a href="#advanced" class="pd-legacy" hidden>Advanced</a>
       </nav>
     </div>
 
@@ -729,8 +742,9 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
 
     <main>
     <section id="pages" class="on">
-      <h2 data-i18n="s.nav.pages">Pages</h2>
-      <p class="lead" data-i18n="s.pages.lead">Each page is a 12 × 6 grid of widgets. Pick a page on the left, arrange its widgets on the phone below and set their options.
+      <h2>Telas do Painel</h2>
+      <p class="lead">As 6 telas do Nuvra Dock: ligue/desligue e mude a ordem do carrossel no celular. O <b>StandBy Puro</b> não faz parte do carrossel: ele entra sozinho quando o computador fica inacessível ou no horário noturno (Geral › StandBy Puro).</p>
+      <p class="lead pd-legacy">Each page is a 12 × 6 grid of widgets. Pick a page on the left, arrange its widgets on the phone below and set their options.
         Drag pages to reorder them; the first one is the home page the panel returns to when idle. On the phone, swipe, use the volume keys,
         or tap a dot to go to its page (or slide along the dots to pick one); tap the current dot or the grid button next to the dots, or long-press an empty part of a page, for an overview of all pages.</p>
       <div class="pages-layout">
@@ -739,7 +753,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
           <div id="peHead"></div>
           <div id="stage">
             <div class="stage-bar">
-              <div class="seg" id="stageSeg"><button data-v="layout" data-i18n="s.pages.layout">Layout</button><button data-v="live" class="on" data-i18n="s.pages.livePreview">Live preview</button></div>
+              <div class="seg pd-legacy" id="stageSeg"><button data-v="layout" data-i18n="s.pages.layout">Layout</button><button data-v="live" class="on" data-i18n="s.pages.livePreview">Live preview</button></div>
               <div class="pd-screen-tabs" id="stageScreenTabs" hidden style="margin:0"></div>
               <span class="hint" id="stageHint"></span>
             </div>
@@ -751,8 +765,8 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
     </section>
 
     <section id="shortcuts">
-      <h2 data-i18n="s.nav.shortcuts">Shortcuts</h2>
-      <p class="lead" data-i18n="s.shortcuts.lead">The keys shown by Shortcut grid and Big button widgets. Click a key to edit it, drag to reorder. The phone only sends the key's id; commands never leave this computer.</p>
+      <h2>Atalhos (Stream Deck)</h2>
+      <p class="lead">As teclas da tela Stream Deck. Clique para editar, arraste para reordenar. O celular só envia o id da tecla; os comandos nunca saem deste computador.</p>
       <div class="deck" id="deck"></div>
       <div class="card editor" id="editor"></div>
     </section>
@@ -819,10 +833,10 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
     </section>
 
     <section id="general">
-      <h2 data-i18n="s.nav.general">General</h2>
-      <div class="card" id="appearanceSettings"></div>
-      <div class="card" id="controlSettings"></div>
-      <p class="lead" data-i18n="s.general.lead">Weather, night mode, display behaviour and the phone connection.</p>
+      <h2>Geral</h2>
+      <div class="card pd-legacy" id="appearanceSettings"></div>
+      <div class="card pd-legacy" id="controlSettings"></div>
+      <p class="lead">Clima, StandBy Puro, aparência, agenda, notícias e a conexão com o celular.</p>
 
       <div class="card">
         <h3 data-i18n="s.weather.title">Weather</h3>
@@ -853,7 +867,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
             </select></div>
         </div>
         <p class="hint" style="margin:8px 0 0" data-i18n="s.weather.modelHint">Apps and models disagree by a degree or two. Only Automatic and GFS supply every value: with another model the UV index, and with some also the chance of rain, may be missing.</p>
-        <p class="hint" style="margin:8px 0 0" data-i18n="s.weather.openMeteoHint">The phone asks Open-Meteo for this location only while a page has a widget that uses the weather (weather, forecast, sun &amp; moon, a clock with its weather line, Custom HTML).</p>
+        <p class="hint pd-legacy" style="margin:8px 0 0" data-i18n="s.weather.openMeteoHint">The phone asks Open-Meteo for this location only while a page has a widget that uses the weather (weather, forecast, sun &amp; moon, a clock with its weather line, Custom HTML).</p>
       </div>
 
       <div class="card">
@@ -874,7 +888,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <button class="btn sm" id="calAdd" data-i18n="s.calendars.add">＋ Add a calendar</button>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.photos.title">Photo frame</h3>
         <div class="field"><label data-i18n="s.photos.source">Photos from</label>
           <select id="photosSource" data-bind="photos.source"><option value="folder" data-i18n="s.photos.sourceFolder">A folder on this computer</option><option value="immich" data-i18n="s.photos.sourceImmich">An Immich album</option></select></div>
@@ -914,7 +928,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         </div>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.camera.title">Cameras</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.camera.hint">IP cameras for the Camera widget: a name and the camera’s RTSP address (rtsp://user:password@address:554/…, from its manual or app). This computer pulls a camera with ffmpeg only while a Camera widget shows it, and sends the phone a few pictures a second (set next to each camera). The addresses stay on this computer, but while a camera runs they are visible in its process list.</p>
         <div class="field"><label data-i18n="s.camera.ffmpeg">ffmpeg (full path; empty = find it in PATH)</label>
@@ -923,14 +937,14 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <button class="btn sm" id="cameraAdd" data-i18n="s.camera.add">＋ Add a camera</button>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.console.title">App console</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.console.hint">Keys and a dial for the App console widget, per app: the widget shows the keys of the app in front on this computer and sends them only to that app. Apps are process names, as in Task Manager's Details tab (photoshop, gimp-2.10). One key per line, a label then the keys: Undo = ctrl+z. Windows only; the keys stay on this computer.</p>
         <div id="consoleList"></div>
         <button class="btn sm" id="consoleAdd" data-i18n="s.console.add">＋ Add an app</button>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.ha.title">Home Assistant</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n-html="s.ha.tokenHint">For the <b>Home Assistant</b> widget. Create a token in Home Assistant › your profile › Security ›
           <i>Long-lived access tokens</i>. The token stays on this computer; the phone only sees the entities its widgets list.
@@ -942,7 +956,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <div class="row"><button class="btn sm" id="haTest" data-i18n="s.test">Test</button><span class="hint" id="haState"></span></div>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.discord.title">Discord</h3>
         <div class="row" style="margin-bottom:8px"><label class="switch"><input type="checkbox" data-bind="discord.enabled"><span></span></label> <span data-i18n="s.discord.enable">Connect to the Discord app on this PC (for the Discord widget)</span></div>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.discord.hint">Create an application at discord.com/developers/applications, add the redirect http://127.0.0.1 under OAuth2, and copy its client ID and secret here. Discord asks you to approve PhoneDesk once. If it refuses the login, add your account under the application's App Testers. Step by step: docs/DISCORD.md.</p>
@@ -958,7 +972,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <p class="hint" style="margin:0" data-i18n="s.discord.chatHint">Sends the text of the channels you open in the widget to the phone. Asks Discord for permission to read messages, so Discord asks you to approve PhoneDesk once more. The text stays in memory only (never in a file or the log) and is gone when Discord disconnects or this is turned off. If you decline, only the chat stays off.</p>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.steam.title">Steam</h3>
         <div class="row" style="margin-bottom:8px"><label class="switch"><input type="checkbox" data-bind="steam.enabled" aria-labelledby="steamEnabledLabel"><span></span></label> <span id="steamEnabledLabel" data-i18n="s.steam.enable">Connect Steam (for the Steam friends widget)</span></div>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.steam.hint">Create a user Web API key at steamcommunity.com/dev/apikey and enter your SteamID64 or profile URL. Custom profile names are resolved when saved; only the SteamID64 is stored. Your profile's friend list must be visible to this API key for GetFriendList; make Game details public to show games. The key stays on this computer. Step by step: docs/STEAM.md.</p>
@@ -968,7 +982,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         </div>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.obs.title">OBS Studio</h3>
         <div class="row" style="margin-bottom:8px"><label class="switch"><input type="checkbox" data-bind="obs.enabled"><span></span></label> <span data-i18n-html="s.obs.enable">Connect to OBS (for the <b>OBS</b> widget, the On air widget and rules)</span></div>
         <p class="hint" style="margin:0 0 12px" data-i18n-html="s.obs.hint">In OBS: Tools › WebSocket Server Settings › <i>Enable WebSocket server</i>; copy the password from <i>Show Connect Info</i>.</p>
@@ -979,7 +993,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <div class="row"><button class="btn sm" id="obsTest" data-i18n="s.test">Test</button><span class="hint" id="obsState"></span></div>
       </div>
 
-      <div class="card" id="phoneMicCard">
+      <div class="card pd-legacy" id="phoneMicCard">
         <h3 data-i18n="s.phoneMic.title">Phone mic</h3>
         <div class="row" style="margin-bottom:8px"><label class="switch"><input type="checkbox" data-bind="phoneMic.enabled" aria-labelledby="phoneMicEnabledLabel"><span></span></label> <span id="phoneMicEnabledLabel" data-i18n="s.phoneMic.enable">Use the phone's microphone as a computer microphone</span></div>
         <div class="row" style="margin-bottom:8px"><button class="btn sm" id="phoneMicSetup" data-setup="/api/phone-mic/setup" data-i18n="s.phoneMic.setup">Set up</button><span class="hint" id="phoneMicSetupState" aria-live="polite"></span></div>
@@ -990,26 +1004,30 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
       </div>
 
       <div class="card">
-        <h3 data-i18n="s.night.title">Night mode</h3>
-        <div class="row" style="margin-bottom:12px"><label class="switch"><input type="checkbox" data-bind="night.enabled"><span></span></label> <span data-i18n="s.night.enable">Dim the screen at night and show only the clock</span></div>
+        <h3>StandBy Puro &amp; Modo Noturno</h3>
+        <p class="hint" style="margin:0 0 12px">Tela exclusiva com o relógio branco e o clima do dia no canto, sem as outras telas. Toque nela à noite para liberar o painel por 5 minutos; com o computador desligado, o toque acende o brilho máximo por 15 segundos.</p>
+        <div class="row" style="margin-bottom:12px"><label class="switch"><input type="checkbox" data-bind="night.enabled"><span></span></label> <span>Mostrar o StandBy Puro no horário noturno</span></div>
         <div class="grid2">
           <div class="row" style="gap:10px">
-            <div class="field" style="flex:1"><label data-i18n="s.night.from">From</label><input type="time" data-bind="night.start"></div>
-            <div class="field" style="flex:1"><label data-i18n="s.night.to">To</label><input type="time" data-bind="night.end"></div>
+            <div class="field" style="flex:1"><label>Das</label><input type="time" data-bind="night.start"></div>
+            <div class="field" style="flex:1"><label>Até</label><input type="time" data-bind="night.end"></div>
           </div>
-          <div class="field"><label><span data-i18n="s.night.brightness">Night brightness: </span><span id="nbv"></span></label><input type="range" min="0.01" max="0.3" step="0.01" data-bind="night.brightness" data-type="num"></div>
+          <div class="field"><label><span>Brilho do StandBy Puro: </span><span id="nbv"></span></label><input type="range" min="0.1" max="1" step="0.05" data-bind="night.brightness" data-type="num"></div>
         </div>
+        <label class="check" style="margin-top:10px"><input type="checkbox" data-bind="display.nightWhenUnreachable"> <span>Mostrar o StandBy Puro quando o computador estiver desligado ou inacessível</span></label>
+        <div class="field" style="max-width:420px"><label>Minutos sem o computador antes do StandBy Puro</label><input type="number" min="1" max="30" data-bind="display.unreachableNightDelayMin" data-type="int"></div>
+        <div class="row" style="margin-top:8px"><button type="button" class="btn sm" onclick="location.hash='#pages'; setTimeout(() => window.nvPreviewStandby && window.nvPreviewStandby(), 150)">Visualizar StandBy Puro</button></div>
       </div>
 
       <div class="card">
         <h3 data-i18n="s.display.title">Display</h3>
         <div class="row" style="gap:16px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap">
-          <div class="field" style="margin:0"><label data-i18n="lang.label">Language</label>
+          <div class="field pd-legacy" style="margin:0"><label data-i18n="lang.label">Language</label>
             <select data-bind="display.language" id="displayLangSel"></select></div>
           <div class="field" style="margin:0"><label data-i18n="s.display.theme">Theme</label>
             <select data-bind="display.theme"><option value="standby-oled">OLED StandBy (Preto Absoluto)</option><option value="cobalt-desk">Cobalt Desk (Azul Executivo)</option><option value="carbon-pro">Carbon Pro (Grafite Metálico)</option><option value="amber-night">Amber Desk (Âmbar Noturno)</option><option value="nordic-light">Nordic Light (Claro Diurno)</option><option value="crimson-studio">Crimson Studio</option><option value="forest-moss">Forest Moss</option><option value="sunset-slate">Sunset Slate</option><option value="custom">Personalizado (Workspace › Temas)</option></select></div>
           <div class="field" style="margin:0"><label data-i18n="s.display.accent">Accent colour</label><input type="color" data-bind="display.accent" style="width:56px;height:36px;padding:2px"></div>
-          <label class="check" style="margin-bottom:8px"><input type="checkbox" data-bind="display.artTint"> <span data-i18n="s.display.artTint">Tint the background with the album art</span></label>
+          <label class="check pd-legacy" style="margin-bottom:8px"><input type="checkbox" data-bind="display.artTint"> <span data-i18n="s.display.artTint">Tint the background with the album art</span></label>
         </div>
         <div class="field" style="max-width:640px"><label data-i18n="s.display.wallpaper">Wallpaper</label>
           <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
@@ -1027,27 +1045,25 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <div class="field" style="max-width:420px"><label data-i18n="s.display.timeFormat">Time format</label>
           <select data-bind="display.hour12" data-type="hour12"><option value="false" data-i18n="s.display.h24">24-hour (14:05)</option><option value="true" data-i18n="s.display.h12">12-hour (2:05 PM)</option><option value="auto" data-i18n="s.display.orientation.auto">Follow the phone</option></select></div>
         <label class="check"><input type="checkbox" data-bind="display.showSeconds"> <span data-i18n="s.display.showSeconds">Show seconds on the clock</span></label>
-        <label class="check"><input type="checkbox" data-bind="display.vibrate"> <span data-i18n="s.display.vibrate">Vibrate when a session finishes or needs input</span></label>
-        <label class="check"><input type="checkbox" data-bind="display.finishToast"> <span data-i18n="s.display.finishToast">Show a message when a session finishes</span></label>
-        <label class="check"><input type="checkbox" data-bind="display.finishSound"> <span data-i18n="s.display.finishSound">Sound when a session finishes</span></label>
-        <div class="field" style="max-width:420px"><label data-i18n="s.display.finishSoundVolume">Sound volume (% of the phone's media volume)</label><input type="number" min="10" max="100" data-bind="display.finishSoundVolume" data-type="int"></div>
-        <label class="check"><input type="checkbox" data-bind="display.volumeKeys"> <span data-i18n="s.display.volumeKeys">The phone's volume keys switch pages</span></label>
-        <label class="check"><input type="checkbox" data-bind="display.autoBrightness"> <span data-i18n="s.display.autoBrightness">Brightness follows the room (light sensor)</span></label>
-        <label class="check"><input type="checkbox" data-bind="display.nightWhenDark"> <span data-i18n="s.display.nightWhenDark">Show the night screen whenever the room is dark</span></label>
-        <label class="check"><input type="checkbox" data-bind="display.nightWhenUnreachable"> <span data-i18n="s.display.nightWhenUnreachable">Show the night screen when the computer is unreachable</span></label>
-        <div class="field" style="max-width:420px"><label data-i18n="s.display.unreachableNightDelay">Minutes before the night screen comes on</label><input type="number" min="1" max="30" data-bind="display.unreachableNightDelayMin" data-type="int"></div>
-        <label class="check"><input type="checkbox" data-bind="display.proximityWake"> <span data-i18n="s.display.proximityWake">A hand near the phone wakes the night screen</span></label>
-        <label class="check"><input type="checkbox" data-bind="display.controlsTop"> <span data-i18n="s.display.controlsTop">Page dots and the Allow / Deny buttons at the top of the screen</span></label>
-        <div class="row" style="gap:16px;margin-top:8px;align-items:flex-end;flex-wrap:wrap">
+        <label class="check pd-legacy"><input type="checkbox" data-bind="display.vibrate"> <span data-i18n="s.display.vibrate">Vibrate when a session finishes or needs input</span></label>
+        <label class="check pd-legacy"><input type="checkbox" data-bind="display.finishToast"> <span data-i18n="s.display.finishToast">Show a message when a session finishes</span></label>
+        <label class="check pd-legacy"><input type="checkbox" data-bind="display.finishSound"> <span data-i18n="s.display.finishSound">Sound when a session finishes</span></label>
+        <div class="field pd-legacy" style="max-width:420px"><label data-i18n="s.display.finishSoundVolume">Sound volume (% of the phone's media volume)</label><input type="number" min="10" max="100" data-bind="display.finishSoundVolume" data-type="int"></div>
+        <label class="check pd-legacy"><input type="checkbox" data-bind="display.volumeKeys"> <span data-i18n="s.display.volumeKeys">The phone's volume keys switch pages</span></label>
+        <label class="check pd-legacy"><input type="checkbox" data-bind="display.autoBrightness"> <span data-i18n="s.display.autoBrightness">Brightness follows the room (light sensor)</span></label>
+        <label class="check pd-legacy"><input type="checkbox" data-bind="display.nightWhenDark"> <span data-i18n="s.display.nightWhenDark">Show the night screen whenever the room is dark</span></label>
+        <label class="check pd-legacy"><input type="checkbox" data-bind="display.proximityWake"> <span data-i18n="s.display.proximityWake">A hand near the phone wakes the night screen</span></label>
+        <label class="check pd-legacy"><input type="checkbox" data-bind="display.controlsTop"> <span data-i18n="s.display.controlsTop">Page dots and the Allow / Deny buttons at the top of the screen</span></label>
+        <div class="row pd-legacy" style="gap:16px;margin-top:8px;align-items:flex-end;flex-wrap:wrap">
           <div class="field" style="margin:0"><label data-i18n="s.display.pageBar">Page navigation</label>
             <select data-bind="display.pageBar"><option value="dots" data-i18n="s.display.pageBar.dots">Dots</option><option value="auto" data-i18n="s.display.pageBar.auto">Page bar when you touch the dots</option><option value="bar" data-i18n="s.display.pageBar.bar">Page bar, always shown</option><option value="hidden" data-i18n="s.display.pageBar.hidden">Hidden</option></select></div>
           <div class="field" style="margin:0"><label data-i18n="s.display.pageBarSide">Page bar position</label>
             <select data-bind="display.pageBarSide"><option value="bottom" data-i18n="s.display.pageBarSide.bottom">Bottom</option><option value="left" data-i18n="s.display.pageBarSide.left">Left</option><option value="right" data-i18n="s.display.pageBarSide.right">Right</option></select></div>
         </div>
-        <span class="hint" data-i18n="s.display.pageBarHint">The page bar shows each page's icon and name; tap one to go there. Always shown, it takes a strip of the screen and the pages get a little smaller.</span>
+        <span class="hint pd-legacy" data-i18n="s.display.pageBarHint">The page bar shows each page's icon and name; tap one to go there. Always shown, it takes a strip of the screen and the pages get a little smaller.</span>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.oled.title">OLED burn-in protection</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.oled.lead">For OLED screens that show the same page for hours. The AMOLED black theme and the night screen help too.</p>
         <label class="check"><input type="checkbox" data-bind="display.pixelShift"> <span data-i18n="s.oled.pixelShift">Move the panel by a few pixels every 2 minutes, and the night clock around the screen</span></label>
@@ -1055,7 +1071,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
           <span class="hint" data-i18n="s.oled.idleDimHint">A touch brightens it again without pressing anything; so do a page switch, a notification and a permission prompt.</span></div>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.pageSwitch.title">Page switching</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.pageSwitch.lead">How rules, webhooks and the idle return change the page. Instead of jumping, the phone shows “Claude needs me — switching to AI in 3…” with Stay and Go now, then fades over. It never pulls a page away while you are using the panel, and rules that fire one after another wait their turn instead of bouncing the screen back and forth.</p>
         <div class="grid2">
@@ -1083,7 +1099,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <label class="check"><input type="checkbox" data-bind="display.lockPhoneWithShortcut"> <span data-i18n="s.kiosk.lockPhoneWithShortcut">Sleep the phone with the Lock shortcut: also turn the phone screen off whenever the Lock shortcut is run (ADB required)</span></label>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.battery.title">Battery care</h3>
         <p class="hint" style="margin:0 0 12px"><span data-i18n="s.battery.leadHead">A phone that is plugged in all the time wears its battery out. PhoneDesk can keep it between two</span>
           <span data-i18n="s.battery.leadMid">levels by switching the phone's power on and off. Phones cannot stop charging by themselves without root, so the power is switched</span>
@@ -1102,21 +1118,21 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
           <span class="hint" id="chargeState"></span></div>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.cursor.title">Cursor sessions</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.cursor.hint">Show recent Cursor agent chats on the AI sessions widget (off by default). Only the last message's role is kept; chat text is never shown, stored or sent. Project names use the folder basename from Cursor's workspaceStorage.</p>
         <div class="row" style="margin-bottom:8px"><label class="switch"><input type="checkbox" data-bind="cursor.sessions"><span></span></label> <span data-i18n="s.cursor.sessions">Show Cursor sessions</span></div>
         <div class="row" style="margin-bottom:8px"><label class="switch"><input type="checkbox" data-bind="cursor.watchWsl" aria-labelledby="cursorWatchWslLabel"><span></span></label> <span id="cursorWatchWslLabel" data-i18n="s.cursor.watchWsl">Also watch Cursor in WSL (projects opened with Remote - WSL; a stopped distro is never started for this)</span></div>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.antigravity.title">Antigravity sessions</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.antigravity.hint">Show recent Antigravity chats on the AI sessions widget (off by default). Only step metadata and token counters are kept; prompts, replies and tool arguments are never shown, stored or sent.</p>
         <div class="row" style="margin-bottom:8px"><label class="switch"><input type="checkbox" data-bind="antigravity.sessions" aria-labelledby="antigravitySessionsLabel"><span></span></label> <span id="antigravitySessionsLabel" data-i18n="s.antigravity.sessions">Show Antigravity sessions</span></div>
         <label class="check"><input type="checkbox" data-bind="antigravity.shareSessionTitles"> <span data-i18n="s.antigravity.shareSessionTitles">Show Antigravity chat titles on the phone (Antigravity draws them from the conversation)</span></label>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.approvals.title">AI coding agent permission prompts</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n-html="s.approvals.hint">When Codex or Claude Code asks for permission, the phone shows the request with <b>Allow</b> and <b>Deny</b>. Install the hook for each agent you use; existing hook files are preserved and backed up.</p>
         <div class="row" style="margin-bottom:8px"><b style="min-width:92px" data-i18n="s.approvals.codex">Codex</b><button class="btn" id="codexHookBtn" data-i18n="s.claude.installHook">Install hook</button><span class="hint" id="codexHookState"></span></div>
@@ -1142,7 +1158,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <div class="field" style="max-width:260px"><label data-i18n="s.opencode.countdown">Seconds before Allow always can be pressed (0 = at once)</label><input type="number" min="0" max="60" data-bind="opencode.alwaysCountdownSec" data-type="int"></div>
       </div>
 
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.quotas.title">AI quotas &amp; CodexBar</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.quotas.lead">Choose which AI coding services to track and show on the panel, and configure rotation.</p>
         <div class="field"><label data-i18n="s.quotas.tracked">Tracked AI services</label>
@@ -1175,7 +1191,7 @@ nav a[href="#themes"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Cs
         <p id="usbProblem" hidden style="margin:10px 0 0;font-size:13px;color:var(--warn)"></p>
         <p id="webviewProblem" hidden style="margin:10px 0 0;font-size:13px;color:var(--warn)"></p>
       </div>
-      <div class="card">
+      <div class="card pd-legacy">
         <h3 data-i18n="s.phones.title">Phones</h3>
         <p class="hint" style="margin:0 0 12px" data-i18n="s.phones.lead">Several phones (or a phone and a tablet) can use this computer at once, over USB or Wi-Fi. Give each one a name and choose the pages it shows; a phone shows all pages until you choose.</p>
         <div id="phoneList"><p class="hint" data-i18n="s.phones.empty">No phone has connected yet.</p></div>
@@ -1665,21 +1681,71 @@ function fitPages(pages) {
   return list;
 }
 
+const NV_SCREENS = [
+  { id: 'home', title: 'Home', icon: '🏠', desc: 'Relógio, data, clima, alertas e o próximo compromisso da agenda.' },
+  { id: 'deck', title: 'Stream Deck', icon: '🎛️', desc: 'Os atalhos configurados em Atalhos, com os ícones reais dos programas.' },
+  { id: 'media', title: 'Mídia & Áudio', icon: '🎵', desc: 'O que está tocando no computador, controles de faixa e volume do sistema.' },
+  { id: 'pomodoro', title: 'Pomodoro & Foco', icon: '🍅', desc: 'Timer de foco (25/50 min) e pausas (5/15 min) com as cores do tema ativo.' },
+  { id: 'hardware', title: 'Hardware', icon: '⚡', desc: 'CPU, RAM, disco, rede e GPU do computador em tempo real (modo Trabalho / Gamer).' },
+  { id: 'feeds', title: 'Agenda & Feeds', icon: '📰', desc: 'Compromissos dos calendários .ics e as notícias dos feeds RSS (Geral).' },
+];
+// Keeps cfg.pages on exactly the six Nuvra Dock screens (same rule as the agent's NuvraPages).
+function nvEnsurePages() {
+  const list = [];
+  for (const p of cfg.pages || []) {
+    const def = NV_SCREENS.find((s) => s.id === String(p?.id || '').trim());
+    if (!def || list.some((x) => x.id === def.id)) continue;
+    list.push({ id: def.id, title: def.title, icon: def.icon, enabled: p.enabled !== false, widgets: [] });
+  }
+  NV_SCREENS.forEach((def, i) => {
+    if (!list.some((x) => x.id === def.id)) list.splice(Math.min(i, list.length), 0, { id: def.id, title: def.title, icon: def.icon, enabled: true, widgets: [] });
+  });
+  cfg.pages = list;
+}
+function nvSelectPreview(id) {
+  pdStagePage = Math.max(0, PD_SCREEN_IDS.indexOf(id));
+  const tabs = $('stageScreenTabs');
+  if (tabs) Array.from(tabs.children).forEach((b, i) => b.classList.toggle('on', i === pdStagePage));
+  sendPreview();
+}
+window.nvPreviewStandby = () => { selPage = -1; renderPages(); nvSelectPreview('standby'); };
 function renderPages() {
-  if (selPage >= cfg.pages.length) selPage = Math.max(0, cfg.pages.length - 1);
+  nvEnsurePages();
   const list = $('pageTabs');
-  list.replaceChildren(...cfg.pages.map((p, i) => {
-    const row = h('div', { class: 'ptab' + (i === selPage ? ' on' : '') + (p.enabled === false ? ' off' : ''), draggable: 'true', 'data-i': i,
-      onclick: () => { selPage = i; selWidget = -1; renderPages(); } },
-      h('span', { class: 'pt-num' }, String(i + 1)), h('span', { class: 'pt-ico' }, rich(p.icon || '◻')), h('span', { class: 'pt-name' }, p.title || '(untitled)'),
-      h('span', { class: 'pt-n' }, String((p.widgets || []).length)));
-    dragSort(row, cfg.pages, (from, to) => { selPage = to; renderPages(); changed(); });
-    return row;
-  }), h('button', { class: 'btn', style: { width: '100%', marginTop: '8px' }, onclick: () => openTemplates(null) }, t('s.js.newPage')),
-    h('div', { class: 'row', style: { gap: '6px', marginTop: '8px' } },
-      h('button', { class: 'btn sm', style: { flex: '1' }, title: t('s.js.saveAllPages'), onclick: () => exportPages(cfg.pages, 'phonedesk-pages') }, icon('download', 'm'), t('s.js.export')),
-      h('button', { class: 'btn sm', style: { flex: '1' }, title: t('s.js.loadPages'), onclick: importPages }, icon('upload', 'm'), t('s.js.import'))));
+  const move = (i, d) => { const j = i + d; [cfg.pages[i], cfg.pages[j]] = [cfg.pages[j], cfg.pages[i]]; selPage = j; renderPages(); changed(); };
+  const rows = cfg.pages.map((p, i) => {
+    const def = NV_SCREENS.find((s) => s.id === p.id);
+    return h('div', { class: 'nv-row' + (i === selPage ? ' on' : '') + (p.enabled === false ? ' off' : ''),
+      onclick: () => { selPage = i; renderPages(); nvSelectPreview(p.id); } },
+      h('span', { class: 'nv-num' }, String(i + 1)),
+      h('span', { class: 'nv-ico' }, def.icon),
+      h('span', { class: 'nv-name', title: def.desc }, def.title),
+      h('label', { class: 'switch', title: 'Mostrar no painel', onclick: (e) => e.stopPropagation() },
+        h('input', { type: 'checkbox', checked: p.enabled !== false, onchange: (e) => {
+          if (!e.target.checked && cfg.pages.filter((x) => x.enabled !== false).length === 1) { e.target.checked = true; toast('Deixe pelo menos uma tela ativa', true); return; }
+          p.enabled = e.target.checked; renderPages(); changed();
+        } }), h('span')),
+      h('button', { class: 'icon-btn', title: 'Mover para cima', disabled: i === 0, onclick: (e) => { e.stopPropagation(); move(i, -1); } }, icon('chevron-up')),
+      h('button', { class: 'icon-btn', title: 'Mover para baixo', disabled: i === cfg.pages.length - 1, onclick: (e) => { e.stopPropagation(); move(i, 1); } }, icon('chevron-down')));
+  });
+  list.replaceChildren(h('div', { class: 'nv-screens' }, ...rows,
+    h('div', { class: 'nv-row nv-sb' + (selPage === -1 ? ' on' : ''), onclick: () => window.nvPreviewStandby() },
+      h('span', { class: 'nv-num' }, '·'), h('span', { class: 'nv-ico' }, '🕒'),
+      h('span', { class: 'nv-name' }, 'StandBy Puro'), h('span', { class: 'hint' }, 'fora do carrossel'))));
   renderPageEditor();
+}
+function renderPageEditor() {
+  fillHomeSelect();
+  $('stage').hidden = false;
+  const p = selPage >= 0 ? cfg.pages[selPage] : null;
+  const def = p ? NV_SCREENS.find((s) => s.id === p.id) : null;
+  $('peHead').replaceChildren(h('div', { class: 'card' },
+    h('h3', { style: { margin: '0 0 6px' } }, def ? `${def.icon} ${def.title}` : '🕒 StandBy Puro'),
+    h('p', { class: 'hint', style: { margin: 0 } }, def
+      ? def.desc + (p.enabled === false ? ' (desligada: não aparece no celular)' : '')
+      : 'Relógio branco e clima do dia sobre preto absoluto, sem as outras telas, pontos ou botões. Entra quando o computador fica inacessível ou no horário noturno; brilho em Geral › StandBy Puro.')));
+  $('peRest').replaceChildren();
+  queuePreview();
 }
 
 const fmtIdle = (s) => (!s ? t('s.js.never') : s < 60 ? `${s} s` : s % 60 ? `${Math.round(s / 6) / 10} ${t('s.js.min')}` : `${s / 60} ${t('s.js.min')}`);
@@ -1691,62 +1757,13 @@ function fillHomeSelect() {
   sel.value = cfg.display.homePage || '';
 }
 
-function renderPageEditor() {
-  fillHomeSelect();
-  const p = curPage();
-  $('stage').hidden = !p;
-  if (!p) { $('peHead').replaceChildren(h('p', { class: 'lead' }, t('s.js.noPages'))); $('peRest').replaceChildren(); return; }
-  p.widgets ??= [];
-  const move = (d) => { const j = selPage + d; [cfg.pages[selPage], cfg.pages[j]] = [cfg.pages[j], cfg.pages[selPage]]; selPage = j; renderPages(); changed(); };
-  $('peHead').replaceChildren(
-    h('div', { class: 'card' },
-      h('div', { class: 'row', style: { gap: '10px' } },
-        h('input', { type: 'text', class: 'icon-input', value: p.icon || '', maxlength: 8, title: 'Icon', 'aria-label': 'Icon', oninput: (e) => { p.icon = e.target.value; changed(); renderTabsOnly(); } }),
-        h('input', { type: 'text', value: p.title || '', placeholder: t('s.js.pageName'), 'aria-label': t('s.js.pageName'), style: { flex: '1', fontSize: '16px', fontWeight: '600' }, oninput: (e) => { p.title = e.target.value; changed(); renderTabsOnly(); } }),
-        h('label', { class: 'check', title: t('s.js.showOnPhone') }, h('label', { class: 'switch' },
-          h('input', { type: 'checkbox', checked: p.enabled !== false, onchange: (e) => {
-            if (!e.target.checked && cfg.pages.filter((x) => x.enabled !== false).length === 1) { e.target.checked = true; toast(t('s.js.keepOnePage'), true); return; }
-            p.enabled = e.target.checked; changed(); renderTabsOnly();
-          } }), h('span')), t('s.js.shown')),
-        h('button', { class: 'icon-btn', title: t('s.js.moveEarlier'), disabled: selPage === 0, onclick: () => move(-1) }, icon('chevron-up')),
-        h('button', { class: 'icon-btn', title: t('s.js.moveLater'), disabled: selPage === cfg.pages.length - 1, onclick: () => move(1) }, icon('chevron-down'))),
-      h('div', { class: 'row', style: { gap: '6px', marginTop: '10px' } },
-        h('button', { class: 'btn sm', onclick: () => openTemplates(selPage) }, t('s.js.replaceTpl')),
-        h('button', { class: 'btn sm', onclick: () => { const c = JSON.parse(JSON.stringify(p)); c.id = ''; c.title += t('s.js.dupPageSuffix'); cfg.pages.splice(selPage + 1, 0, c); selPage++; renderPages(); changed(); } }, t('s.js.dupPage')),
-        h('button', { class: 'btn sm', title: t('s.js.exportPageHint'), onclick: () => exportPages([p], 'phonedesk-page-' + (p.id || 'page')) }, t('s.js.exportPage')),
-        h('button', { class: 'btn sm', onclick: () => { p.widgets = []; selWidget = -1; renderPageEditor(); changed(); } }, t('s.js.clear')),
-        h('span', { class: 'spacer' }),
-        h('button', { class: 'btn sm' + (isHome(p) ? ' on' : ''), title: t('s.js.homePageHint'),
-          onclick: () => { if (!p.id) { toast(t('s.js.saveFirstForId'), true); return; } cfg.display.homePage = p.id; renderPageEditor(); changed(); } },
-          icon('home', 'm'), isHome(p) ? t('s.js.homePage') : t('s.js.makeHome')),
-        h('label', { class: 'hint', title: t('s.js.backHomeAfterHint') }, t('s.js.backHomeAfter'),
-          h('select', { onchange: (e) => { p.idleSec = e.target.value === '' ? null : +e.target.value; changed(); } },
-            ...[['', `${tc('default')} (${fmtIdle(cfg.display.idleReturnSec ?? 90)})`], ['0', tc('never')], ['30', '30 s'], ['60', '1 min'], ['120', '2 min'], ['300', '5 min'], ['900', '15 min'], ['3600', '1 hour']]
-              .map(([v, l]) => h('option', { value: v, selected: String(p.idleSec ?? '') === v }, l)))),
-        h('button', { class: 'btn sm danger', disabled: cfg.pages.length === 1, onclick: () => {
-          if (!confirm(t('s.js.deletePageConfirm', { title: p.title }))) return;
-          cfg.pages.splice(selPage, 1); selWidget = -1; renderPages(); changed();
-        } }, t('s.js.deletePage')))));
-  $('peHead').append(appearanceEditor(p, () => [cfg.display?.appearance], t('s.js.pageAppearance')));
-  $('peRest').replaceChildren(
-    h('p', { class: 'hint layout-hint', style: { margin: '6px 0 14px' } }, t('s.js.layoutHint')),
-    h('div', { class: 'ed-cols' },
-      h('div', { class: 'card', id: 'inspector' }),
-      h('div', { class: 'card' }, h('div', { class: 'row', style: { justifyContent: 'space-between', marginBottom: '8px' } }, h('h3', { style: { margin: 0 } }, t('s.js.addWidget')),
-        h('input', { type: 'search', id: 'palSearch', placeholder: t('s.js.searchWidgets', { n: catalog.widgets.length }), value: palQuery, style: { width: '210px' },
-          oninput: (e) => { palQuery = e.target.value; renderPalette(); } })), h('div', { class: 'palette', id: 'palette' }))));
-  renderCanvas();
-  renderPalette();
-  renderInspector();
-  queuePreview();
-}
-
 // ---------------------------------------------------------------- live preview
 // The real PhoneDesk 5-screen panel (/index.html) in an iframe, fed the unsaved settings live.
-const PD_SCREENS = ['1. StandBy', '2. Stream Deck', '3. Mídia & Áudio', '4. Hardware PC', '5. Agenda & Feeds'];
+const PD_SCREEN_IDS = ['home', 'deck', 'media', 'pomodoro', 'hardware', 'feeds', 'standby'];
+const PD_SCREENS = ['Home', 'Stream Deck', 'Mídia & Áudio', 'Pomodoro & Foco', 'Hardware', 'Agenda & Feeds', 'StandBy Puro'];
 let stageMode = 'live', previewFrame = null, previewReady = false, previewTimer = 0, pdStagePage = 0;
 var themePreviewFrame = null, themePreviewReady = false, pdThemePage = 0;
-try { const st = localStorage.getItem('pb-stage'); stageMode = st === 'layout' ? 'layout' : 'live'; } catch (_) {}
+stageMode = 'live'; // Nuvra Dock: the panel has fixed screens, there is no widget grid to lay out
 
 function setStage(mode) {
   stageMode = mode;
@@ -1780,7 +1797,7 @@ if ($('stageScreenTabs')) {
 function updateStageText() {
   const translate = window.PhoneBoxI18n.tc;
   $('stageHint').textContent = stageMode === 'live'
-    ? 'Pré-visualização real das 5 telas do Nuvra Dock (deslize ou clique nas telas acima).'
+    ? 'Pré-visualização real do Nuvra Dock com as configurações ainda não salvas.'
     : '';
   if (previewFrame) previewFrame.title = translate('Live preview of the panel');
 }
@@ -1790,11 +1807,11 @@ function sendPreview() {
   const config = JSON.parse(JSON.stringify(cfg));
   config.wallpaperRev = wallpaperShown;
   if (previewFrame && previewReady && stageMode === 'live')
-    previewFrame.contentWindow.postMessage({ type: 'phonebox-preview', config, page: pdStagePage }, location.origin);
+    previewFrame.contentWindow.postMessage({ type: 'phonebox-preview', config, page: pdStagePage, pageId: PD_SCREEN_IDS[pdStagePage] }, location.origin);
   if (appearancePreviewFrame && appearancePreviewReady)
     appearancePreviewFrame.contentWindow.postMessage({ type: 'phonebox-preview', config, page: Number($('appearancePreviewPage')?.value || 0) }, location.origin);
   if (themePreviewFrame && themePreviewReady)
-    themePreviewFrame.contentWindow.postMessage({ type: 'phonebox-preview', config, page: pdThemePage }, location.origin);
+    themePreviewFrame.contentWindow.postMessage({ type: 'phonebox-preview', config, page: pdThemePage, pageId: PD_SCREEN_IDS[pdThemePage] }, location.origin);
 }
 function queuePreview() { clearTimeout(previewTimer); previewTimer = setTimeout(sendPreview, 80); }
 
@@ -1809,6 +1826,7 @@ for (const b of $('stageSeg').children) b.onclick = () => setStage(b.dataset.v);
 setStage(stageMode);
 
 function renderTabsOnly() {
+  if (!$('pageTabs').querySelector('.ptab')) return;
   const tabs = $('pageTabs').querySelectorAll('.ptab');
   cfg.pages.forEach((p, i) => {
     const t = tabs[i];
