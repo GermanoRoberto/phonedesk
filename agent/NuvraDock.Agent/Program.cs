@@ -1758,8 +1758,71 @@ public partial class Program
 
     internal static List<object> ScanInstalledWindowsApps()
     {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var apps = new List<(string Name, string Path)>();
+
+        if (OperatingSystem.IsMacOS())
+        {
+            string[] roots =
+            [
+                "/Applications",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Applications"),
+                "/System/Applications",
+            ];
+            foreach (var root in roots)
+            {
+                if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root)) continue;
+                try
+                {
+                    foreach (var entry in Directory.EnumerateDirectories(root, "*.app", new EnumerationOptions { MaxRecursionDepth = 2, RecurseSubdirectories = true }))
+                    {
+                        // Ignore nested helper .app bundles inside another .app
+                        if (entry[root.Length..].Contains(".app/", StringComparison.OrdinalIgnoreCase)) continue;
+                        var name = Path.GetFileNameWithoutExtension(entry).Trim();
+                        if (!string.IsNullOrWhiteSpace(name) && seen.Add(name)) apps.Add((name, entry));
+                    }
+                }
+                catch { }
+            }
+            return apps.OrderBy(a => a.Name, StringComparer.OrdinalIgnoreCase).Select(a => (object)new { name = a.Name, path = a.Path }).ToList();
+        }
+
+        if (OperatingSystem.IsLinux())
+        {
+            string[] roots =
+            [
+                "/usr/share/applications",
+                "/usr/local/share/applications",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "applications"),
+            ];
+            foreach (var root in roots)
+            {
+                if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root)) continue;
+                try
+                {
+                    foreach (var file in Directory.EnumerateFiles(root, "*.desktop", SearchOption.AllDirectories))
+                    {
+                        string? name = null, exec = null;
+                        bool hidden = false;
+                        foreach (var line in File.ReadLines(file))
+                        {
+                            if (line.StartsWith("[") && line != "[Desktop Entry]") break;
+                            if (line is "NoDisplay=true" or "Hidden=true") { hidden = true; break; }
+                            if (name is null && line.StartsWith("Name=", StringComparison.Ordinal)) name = line[5..].Trim();
+                            else if (exec is null && line.StartsWith("Exec=", StringComparison.Ordinal))
+                                exec = System.Text.RegularExpressions.Regex.Replace(line[5..], @"\s+%[fFuUdDnNickvm]", "").Trim();
+                        }
+                        if (!hidden && !string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(exec) && seen.Add(name))
+                            apps.Add((name, exec));
+                    }
+                }
+                catch { }
+            }
+            return apps.OrderBy(a => a.Name, StringComparer.OrdinalIgnoreCase).Select(a => (object)new { name = a.Name, path = a.Path }).ToList();
+        }
+
         if (!OperatingSystem.IsWindows()) return [];
-        string?[] roots =
+        string?[] winRoots =
         [
             Environment.GetFolderPath(Environment.SpecialFolder.Programs),
             Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms),
@@ -1767,9 +1830,7 @@ public partial class Program
             Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
         ];
         string[] skip = ["uninstall", "desinstalar", "remover", "help", "ajuda", "readme", "leia-me", "documentation"];
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var apps = new List<(string Name, string Path)>();
-        foreach (var root in roots)
+        foreach (var root in winRoots)
         {
             if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root)) continue;
             try
