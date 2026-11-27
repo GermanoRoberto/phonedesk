@@ -71,42 +71,42 @@
     {
       "id": "home",
       "title": "Home",
-      "icon": "🏠",
+      "icon": "",
       "enabled": true,
       "widgets": []
     },
     {
       "id": "deck",
       "title": "Stream Deck",
-      "icon": "🎛️",
+      "icon": "",
       "enabled": true,
       "widgets": []
     },
     {
       "id": "media",
       "title": "Mídia & Áudio",
-      "icon": "🎵",
+      "icon": "",
       "enabled": true,
       "widgets": []
     },
     {
       "id": "pomodoro",
       "title": "Pomodoro & Foco",
-      "icon": "🍅",
+      "icon": "",
       "enabled": true,
       "widgets": []
     },
     {
       "id": "hardware",
       "title": "Hardware",
-      "icon": "⚡",
+      "icon": "",
       "enabled": true,
       "widgets": []
     },
     {
       "id": "feeds",
       "title": "Agenda & Feeds",
-      "icon": "📰",
+      "icon": "",
       "enabled": true,
       "widgets": []
     }

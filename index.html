@@ -596,13 +596,13 @@
     .pomo-track { fill: none; stroke: var(--pd-divider); stroke-width: 7; }
     .pomo-fill {
       fill: none;
-      stroke: var(--pd-accent);
+      stroke: var(--pd-clock);
       stroke-width: 7;
       stroke-linecap: round;
       transition: stroke-dashoffset 0.35s ease, stroke 0.25s ease;
     }
     .pomo-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-    .pomo-phase { font-size: clamp(10px, 1.5vw, 12px); font-weight: 800; letter-spacing: 0.16em; color: var(--pd-accent); }
+    .pomo-phase { font-size: clamp(10px, 1.5vw, 12px); font-weight: 800; letter-spacing: 0.16em; color: var(--pd-clock); }
     .pomo-digits { font-size: clamp(40px, 8vw, 64px); font-weight: 900; line-height: 1; color: var(--pd-text); font-variant-numeric: tabular-nums; margin: 4px 0 6px; }
     .pomo-cycle { font-size: clamp(11px, 1.5vw, 13px); color: var(--pd-muted); font-weight: 600; }
     .pomo-side { flex: 1; max-width: 400px; display: flex; flex-direction: column; gap: clamp(10px, 2vh, 16px); }
@@ -618,7 +618,7 @@
       border: 1px solid var(--pd-card-border);
       color: var(--pd-text);
     }
-    .pomo-pre.on { background: var(--pd-accent); border-color: var(--pd-accent); color: var(--pd-on-accent); }
+    .pomo-pre.on { background: var(--pd-clock); border-color: var(--pd-clock); color: var(--pd-on-clock); }
     .pomo-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
     .pomo-start {
       display: flex;
@@ -628,8 +628,8 @@
       padding: clamp(12px, 2.6vh, 16px);
       border-radius: 16px;
       border: none;
-      background: var(--pd-accent);
-      color: var(--pd-on-accent);
+      background: var(--pd-clock);
+      color: var(--pd-on-clock);
       font-size: 15px;
       font-weight: 800;
       box-shadow: 0 6px 20px var(--pd-clock-glow);
@@ -640,14 +640,14 @@
     .pomo-stats-val { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--pd-text); font-variant-numeric: tabular-nums; }
     #pomoDots { display: flex; gap: 4px; }
     #pomoDots i { width: 8px; height: 8px; border-radius: 50%; background: var(--pd-divider); display: inline-block; }
-    #pomoDots i.on { background: var(--pd-accent); }
+    #pomoDots i.on { background: var(--pd-clock); }
     @media (orientation: portrait), (max-width: 640px) {
       .pomo-page { flex-direction: column; padding-top: 36px; }
       .pomo-ring-wrap { width: min(60vw, 36vh); height: min(60vw, 36vh); }
       .pomo-side { width: 100%; }
     }
 
-    /* Tela Mídia & Áudio — Echo Show Spotlight (100% integrada ao tema ativo) */
+    /* Tela Mídia & Áudio — Capa em Destaque (100% integrada ao tema ativo) */
     .media-spotlight {
       flex-direction: row;
       align-items: center;
@@ -661,7 +661,7 @@
       border-radius: calc(var(--pd-radius) + 8px);
       background: var(--pd-card-bg);
       border: 1px solid var(--pd-card-border);
-      box-shadow: var(--pd-shadow), 0 0 42px var(--pd-accent-glow);
+      box-shadow: var(--pd-shadow), 0 0 42px var(--pd-clock-glow);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -671,7 +671,7 @@
       position: relative;
     }
     .ms-art img { width: 100%; height: 100%; object-fit: cover; display: none; }
-    .ms-art-fb { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--pd-accent); }
+    .ms-art-fb { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--pd-clock); }
     .ms-art-fb svg { width: clamp(64px, 14vh, 92px); height: clamp(64px, 14vh, 92px); }
     .ms-right {
       flex: 1;
@@ -681,7 +681,7 @@
       flex-direction: column;
       justify-content: space-between;
     }
-    .ms-app { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--pd-accent); }
+    .ms-app { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--pd-clock); }
     .ms-title {
       font-size: clamp(20px, 3.4vw, 28px);
       font-weight: 900;
@@ -694,7 +694,7 @@
       margin-top: 3px;
     }
     .ms-artist { font-size: clamp(12px, 1.8vw, 15px); font-weight: 600; color: var(--pd-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
-    .ms-prog-bar { background: var(--pd-accent) !important; }
+    .ms-prog-bar { background: var(--pd-clock) !important; }
     .ms-times { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--pd-muted); font-variant-numeric: tabular-nums; }
     .ms-bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: nowrap; }
     .ms-transport { display: flex; align-items: center; gap: clamp(16px, 3vw, 28px); flex-shrink: 0; }
@@ -704,12 +704,12 @@
       height: clamp(56px, 10.5vh, 68px);
       border-radius: 50%;
       border: none;
-      background: var(--pd-accent);
-      color: var(--pd-on-accent);
+      background: var(--pd-clock);
+      color: var(--pd-on-clock);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 6px 22px var(--pd-accent-glow);
+      box-shadow: 0 6px 22px var(--pd-clock-glow);
     }
     .ms-vol-pill {
       display: flex;
@@ -724,7 +724,7 @@
     .ms-vol-btn {
       background: none;
       border: none;
-      color: var(--pd-accent);
+      color: var(--pd-clock);
       font-size: 16px;
       font-weight: 900;
       width: 22px;
@@ -736,7 +736,7 @@
     }
     .ms-vol-slider { flex: 1; min-width: 44px; height: 24px; }
     .ms-vol-slider .vol-track { height: 7px; }
-    .ms-vol-slider .vol-fill { background: var(--pd-accent) !important; }
+    .ms-vol-slider .vol-fill { background: var(--pd-clock) !important; }
     .ms-vol-pct { font-size: 11px; font-weight: 800; color: var(--pd-text); font-variant-numeric: tabular-nums; min-width: 32px; text-align: right; }
     .ms-mute {
       background: none;
@@ -831,7 +831,7 @@
       </div>
     </div>
 
-    <!-- TELA 3: MÍDIA & ÁUDIO (ECHO SHOW SPOTLIGHT) -->
+    <!-- TELA 3: MÍDIA & ÁUDIO -->
     <div class="page media-spotlight" data-page="media">
       <div id="mediaArtBox" class="ms-art">
         <img id="mediaArtImg" alt="Capa" />
@@ -1408,6 +1408,7 @@
       r.style.setProperty('--pd-soft', light ? (pal.text || '#0f172a') : '#cbd5e1');
       r.style.setProperty('--pd-clock', pal.clock || '#86efac');
       r.style.setProperty('--pd-clock-glow', rgbaFromHex(pal.clock || '#86efac', 0.24, 'rgba(134,239,172,0.24)'));
+      r.style.setProperty('--pd-on-clock', isLightHex(pal.clock || '#86efac') ? '#0b1220' : '#ffffff');
       r.style.setProperty('--pd-accent', pal.accent || '#2dd4bf');
       r.style.setProperty('--pd-accent-glow', rgbaFromHex(pal.accent || '#2dd4bf', 0.28, 'rgba(45,212,191,0.28)'));
       r.style.setProperty('--pd-on-accent', isLightHex(pal.accent || '#2dd4bf') ? '#0b1220' : '#ffffff');

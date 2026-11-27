@@ -1,4 +1,4 @@
-# Nuvra Dock (v1.0.2) 📱🖥️🍎
+# Nuvra Dock (v1.0.2)
 
 > **Transforme qualquer smartphone ou tablet Android em um Smart Desk Panel & Control Deck interativo para Windows, macOS (Apple Silicon, Intel & Hackintosh) e Linux.**  
 > Execução 100% local na sua rede ou via USB/ADB (sem nuvem, sem assinaturas e sem intermediários).
@@ -10,14 +10,14 @@
 
 ---
 
-## 🆕 Novidades da Release v1.0.2
+## Novidades da Release v1.0.2
 
 - **StandBy Puro (Tela Exclusiva):** modo dedicado fora do carrossel com relógio branco sobre preto absoluto, temperatura + ícone do dia no canto superior esquerdo e brilho ajustável (`70%` padrão, `10%–100%`), ativado automaticamente quando o computador fica inacessível ou no horário noturno.
-- **Nova Tela `🍅 Pomodoro & Foco`:** timer circular com presets (`25m`, `50m`, `5m`, `15m`), Play/Pause, Reset, contador de sessões do dia e cores 100% integradas ao tema ativo.
-- **Mídia & Áudio (Echo Show Spotlight):** capa do álbum em destaque, controles de reprodução ampliados, cápsula compacta de volume do sistema e cores 100% sincronizadas com o tema ativo.
+- **Nova Tela Pomodoro & Foco:** timer circular com presets (`25m`, `50m`, `5m`, `15m`), Play/Pause, Reset, contador de sessões do dia e cores 100% integradas ao tema ativo.
+- **Mídia & Áudio:** capa do álbum em destaque, controles de reprodução ampliados, cápsula compacta de volume do sistema e cores 100% sincronizadas com o tema ativo.
 - **Nuvra Dock Studio Limpo:** painel de controle enxuto com 4 abas reais (**Páginas**, **Atalhos**, **Temas** e **Geral**), gerenciador direto das 6 telas do carrossel e pré-visualização ao vivo do **StandBy Puro**.
 
-## 🆕 Novidades da Release v1.0.1
+## Novidades da Release v1.0.1
 
 - **Virada Oficial para Nuvra Dock (`NuvraDockAgent` + `com.nuvradock.app`):**
   - Migração automática de `config.json` e dispositivos Wi-Fi salvos da pasta antiga `PhoneDesk` para `NuvraDock`.
@@ -35,7 +35,7 @@
 
 ---
 
-## 💻 Compatibilidade de Sistemas
+## Compatibilidade de Sistemas
 
 | Plataforma | Arquiteturas | Recursos Nativos Suportados |
 | :--- | :--- | :--- |
@@ -46,7 +46,7 @@
 
 ---
 
-## 🎨 Motor de Temas Exclusivo com Pré-Visualização Ao Vivo
+## Motor de Temas Exclusivo com Pré-Visualização Ao Vivo
 Diferente de projetos com layouts engessados e temas bloqueados, o **Nuvra Dock** traz um **Theme Engine completo** no navegador do computador com visualização em tempo real antes de aplicar no celular:
 
 ![Motor de Temas e Personalização](docs/screenshots/07-themes-studio.png)
@@ -56,7 +56,7 @@ Diferente de projetos com layouts engessados e temas bloqueados, o **Nuvra Dock*
 
 ---
 
-## 📸 Vitrine de Funcionalidades
+## Vitrine de Funcionalidades
 
 ### 1. Home — Relógio, Clima Exato & Alertas Meteorológicos
 ![Home - Relógio e Clima com Alertas](docs/screenshots/01-standby.png)
@@ -64,7 +64,7 @@ Diferente de projetos com layouts engessados e temas bloqueados, o **Nuvra Dock*
 ### 2. Stream Deck — Gaveta Universal de Programas (Windows & macOS)
 ![Stream Deck - Gaveta Padrão](docs/screenshots/02-stream-deck.png)
 
-### 3. Mídia & Controle de Volume (Echo Show Spotlight)
+### 3. Mídia & Controle de Volume
 ![Controle de Mídia e Volume](docs/screenshots/03-media-volume.png)
 
 ### 4. Pomodoro & Foco
@@ -84,14 +84,14 @@ Diferente de projetos com layouts engessados e temas bloqueados, o **Nuvra Dock*
 
 ---
 
-# 📖 Manual Passo a Passo de Instalação
+# Manual Passo a Passo de Instalação
 
-## 🪟 No Windows
+## No Windows
 1. Execute o `NuvraDockAgent.exe` (migra automaticamente dados anteriores do *PhoneDesk* e inicia em segundo plano).
 2. Acesse o **Nuvra Dock Studio** em **`http://127.0.0.1:8765/`** (ou `http://localhost:8770/settings`).
 3. Conecte qualquer celular ou tablet Android via USB com Depuração USB ativa uma vez: o agente instalará automaticamente o `NuvraDock.apk` (`com.nuvradock.app`), removerá versões antigas e provisionará o Wi-Fi ADB!
 
-## 🍎 No macOS (Apple Silicon, Intel & Hackintosh)
+## No macOS (Apple Silicon, Intel & Hackintosh)
 1. Compile e publique o binário nativo para a arquitetura do seu Mac (`.NET 10 SDK`):
    ```bash
    # Mac Intel / Hackintosh (x64)
@@ -106,5 +106,5 @@ Diferente de projetos com layouts engessados e temas bloqueados, o **Nuvra Dock*
 
 ---
 
-## 📄 Licença
+## Licença
 Distribuído sob a licença MIT. Baseado inicialmente na arquitetura open-source do [PhoneBox](https://github.com/ersinkoc/phonebox), expandido e reestruturado como **Nuvra Dock**. Veja [THIRD-PARTY-NOTICES.txt](agent/NuvraDock.Agent/THIRD-PARTY-NOTICES.txt) e [SECURITY.md](SECURITY.md).

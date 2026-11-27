@@ -1208,12 +1208,12 @@ public sealed partial class ConfigStore(string path)
     /// <summary>The six screens the Nuvra Dock panel actually has, in their default order.</summary>
     public static readonly (string Id, string Title, string Icon)[] NuvraScreens =
     [
-        ("home", "Home", "🏠"),
-        ("deck", "Stream Deck", "🎛️"),
-        ("media", "Mídia & Áudio", "🎵"),
-        ("pomodoro", "Pomodoro & Foco", "🍅"),
-        ("hardware", "Hardware", "⚡"),
-        ("feeds", "Agenda & Feeds", "📰"),
+        ("home", "Home", ""),
+        ("deck", "Stream Deck", ""),
+        ("media", "Mídia & Áudio", ""),
+        ("pomodoro", "Pomodoro & Foco", ""),
+        ("hardware", "Hardware", ""),
+        ("feeds", "Agenda & Feeds", ""),
     ];
 
     /// <summary>

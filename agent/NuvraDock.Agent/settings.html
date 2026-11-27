@@ -1682,12 +1682,12 @@ function fitPages(pages) {
 }
 
 const NV_SCREENS = [
-  { id: 'home', title: 'Home', icon: '🏠', desc: 'Relógio, data, clima, alertas e o próximo compromisso da agenda.' },
-  { id: 'deck', title: 'Stream Deck', icon: '🎛️', desc: 'Os atalhos configurados em Atalhos, com os ícones reais dos programas.' },
-  { id: 'media', title: 'Mídia & Áudio', icon: '🎵', desc: 'O que está tocando no computador, controles de faixa e volume do sistema.' },
-  { id: 'pomodoro', title: 'Pomodoro & Foco', icon: '🍅', desc: 'Timer de foco (25/50 min) e pausas (5/15 min) com as cores do tema ativo.' },
-  { id: 'hardware', title: 'Hardware', icon: '⚡', desc: 'CPU, RAM, disco, rede e GPU do computador em tempo real (modo Trabalho / Gamer).' },
-  { id: 'feeds', title: 'Agenda & Feeds', icon: '📰', desc: 'Compromissos dos calendários .ics e as notícias dos feeds RSS (Geral).' },
+  { id: 'home', title: 'Home', icon: 'house', desc: 'Relógio, data, clima, alertas e o próximo compromisso da agenda.' },
+  { id: 'deck', title: 'Stream Deck', icon: 'app-window', desc: 'Os atalhos configurados em Atalhos, com os ícones reais dos programas.' },
+  { id: 'media', title: 'Mídia & Áudio', icon: 'music', desc: 'O que está tocando no computador, controles de faixa e volume do sistema.' },
+  { id: 'pomodoro', title: 'Pomodoro & Foco', icon: 'alarm-clock', desc: 'Timer de foco (25/50 min) e pausas (5/15 min) com as cores do tema ativo.' },
+  { id: 'hardware', title: 'Hardware', icon: 'zap', desc: 'CPU, RAM, disco, rede e GPU do computador em tempo real (modo Trabalho / Gamer).' },
+  { id: 'feeds', title: 'Agenda & Feeds', icon: 'newspaper', desc: 'Compromissos dos calendários .ics e as notícias dos feeds RSS (Geral).' },
 ];
 // Keeps cfg.pages on exactly the six Nuvra Dock screens (same rule as the agent's NuvraPages).
 function nvEnsurePages() {
@@ -1718,7 +1718,7 @@ function renderPages() {
     return h('div', { class: 'nv-row' + (i === selPage ? ' on' : '') + (p.enabled === false ? ' off' : ''),
       onclick: () => { selPage = i; renderPages(); nvSelectPreview(p.id); } },
       h('span', { class: 'nv-num' }, String(i + 1)),
-      h('span', { class: 'nv-ico' }, def.icon),
+      h('span', { class: 'nv-ico' }, icon(def.icon, 'm')),
       h('span', { class: 'nv-name', title: def.desc }, def.title),
       h('label', { class: 'switch', title: 'Mostrar no painel', onclick: (e) => e.stopPropagation() },
         h('input', { type: 'checkbox', checked: p.enabled !== false, onchange: (e) => {
@@ -1730,7 +1730,7 @@ function renderPages() {
   });
   list.replaceChildren(h('div', { class: 'nv-screens' }, ...rows,
     h('div', { class: 'nv-row nv-sb' + (selPage === -1 ? ' on' : ''), onclick: () => window.nvPreviewStandby() },
-      h('span', { class: 'nv-num' }, '·'), h('span', { class: 'nv-ico' }, '🕒'),
+      h('span', { class: 'nv-num' }, '·'), h('span', { class: 'nv-ico' }, icon('clock', 'm')),
       h('span', { class: 'nv-name' }, 'StandBy Puro'), h('span', { class: 'hint' }, 'fora do carrossel'))));
   renderPageEditor();
 }
@@ -1740,7 +1740,8 @@ function renderPageEditor() {
   const p = selPage >= 0 ? cfg.pages[selPage] : null;
   const def = p ? NV_SCREENS.find((s) => s.id === p.id) : null;
   $('peHead').replaceChildren(h('div', { class: 'card' },
-    h('h3', { style: { margin: '0 0 6px' } }, def ? `${def.icon} ${def.title}` : '🕒 StandBy Puro'),
+    h('h3', { style: { margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px' } },
+      icon(def ? def.icon : 'clock', 'm'), def ? def.title : 'StandBy Puro'),
     h('p', { class: 'hint', style: { margin: 0 } }, def
       ? def.desc + (p.enabled === false ? ' (desligada: não aparece no celular)' : '')
       : 'Relógio branco e clima do dia sobre preto absoluto, sem as outras telas, pontos ou botões. Entra quando o computador fica inacessível ou no horário noturno; brilho em Geral › StandBy Puro.')));
